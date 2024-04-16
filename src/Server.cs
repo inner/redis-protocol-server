@@ -28,6 +28,6 @@ void ConnectionCallback(IAsyncResult asyncResult)
     } while (bytesRead == tempBuffer.Length);
 
     var clientCommand = buffer.ToString();
-    socket.Send(Encoding.ASCII.GetBytes("PONG\r\n"));
+    socket.Send(Encoding.ASCII.GetBytes("+PONG\\r\\n"));
     socket.Close();
 }
