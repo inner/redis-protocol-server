@@ -15,19 +15,42 @@ while (true)
 void ConnectionCallback(IAsyncResult asyncResult)
 {
     var socket = server.EndAcceptSocket(asyncResult);
-    Console.WriteLine($"TCP Connection [{socket.LocalEndPoint}->{socket.RemoteEndPoint}] established!");
-
-    var buffer = new StringBuilder();
-    var tempBuffer = new byte[1024];
-    int bytesRead;
-
-    do
+    var connectionId = $"{socket.LocalEndPoint}->{socket.RemoteEndPoint}";
+    
+    while (socket.Connected)
     {
-        bytesRead = socket.Receive(tempBuffer);
-        buffer.Append(Encoding.ASCII.GetString(tempBuffer, 0, bytesRead));
-    } while (bytesRead == tempBuffer.Length);
+        try
+        {
+            Console.WriteLine($"TCP Connection [{connectionId}] established!");
 
-    var clientCommand = buffer.ToString();
-    socket.Send(Encoding.ASCII.GetBytes("+PONG\r\n"));
+            var buffer = new byte[1024];
+            var data = socket.Receive(buffer);
+
+            while (data > 0)
+            {
+                Console.WriteLine($"[{connectionId}] received: {Encoding.ASCII.GetString(buffer, 0, data).Trim()}");
+                socket.Send(Encoding.ASCII.GetBytes("+PONG\r\n"));
+                data = socket.Receive(buffer);
+            }
+        }
+        catch (SocketException)
+        {
+            Console.WriteLine($"Closing TCP connection: [{connectionId}].");
+        }
+        finally
+        {
+            CloseSocket(connectionId, socket);
+        }
+    }
+}
+
+void CloseSocket(string connectionId, Socket? socket)
+{
+    if (socket == null)
+    {
+        return;
+    }
+    
+    Console.WriteLine($"TCP Connection [{connectionId}] closed.");
     socket.Close();
 }
