@@ -17,7 +17,7 @@ public class RespClientCommandExecutor
     
     private string ExecuteSimpleString(string respCommandString)
     {
-        return "+PONG\r\n";
+        return "+PONG\\r\\n";
     }
     
     private string ExecuteSimpleError(string respCommandString)
@@ -39,6 +39,6 @@ public class RespClientCommandExecutor
     {
         var commandParts = respCommandString.Split("\\r\\n");
         
-        return "*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n";
+        return "*2\r\\n$3\\r\\nfoo\\r\\n$3\\r\\nbar\\r\\n";
     }
 }

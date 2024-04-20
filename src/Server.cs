@@ -8,7 +8,8 @@ Console.WriteLine("Logs from your program will appear here!");
 var server = new TcpListener(IPAddress.Any, 6379);
 server.Start();
 
-var clientCommandExecutor = new ClientCommandExecutor();
+// var clientCommandExecutor = new ClientCommandExecutor();
+var respClientCommandExecutor = new RespClientCommandExecutor();
 
 while (true)
 {
@@ -26,15 +27,15 @@ void ConnectionCallback(IAsyncResult asyncResult)
         {
             Console.WriteLine($"TCP Connection [{connectionId}] established!");
 
-            var buffer = new byte[1024];
-            var data = socket.Receive(buffer);
-            
-            while (data > 0)
-            {
-                Console.WriteLine($"[{connectionId}] received: {Encoding.ASCII.GetString(buffer, 0, data).Trim()}");
-                socket.Send("+PONG\r\n"u8.ToArray());
-                data = socket.Receive(buffer);
-            }
+            // var buffer = new byte[1024];
+            // var data = socket.Receive(buffer);
+            //
+            // while (data > 0)
+            // {
+            //     Console.WriteLine($"[{connectionId}] received: {Encoding.ASCII.GetString(buffer, 0, data).Trim()}");
+            //     socket.Send("+PONG\r\n"u8.ToArray());
+            //     data = socket.Receive(buffer);
+            // }
             
             // while (true)
             // {
@@ -54,7 +55,26 @@ void ConnectionCallback(IAsyncResult asyncResult)
             //     socket.Send(Encoding.UTF8.GetBytes(response));
             // }
             
+            while (true)
+            {
+                var buffer = new byte[1024];
+                var data = socket.Receive(buffer);
             
+                var respClientCommandString = Encoding.UTF8.GetString(buffer, 0, data);
+                
+                if (string.IsNullOrWhiteSpace(respClientCommandString))
+                {
+                    socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
+                    continue;
+                }
+                
+                Console.WriteLine($"[{connectionId}] received: {respClientCommandString}");
+                
+                var respClientCommandType = respClientCommandString.GetRespClientCommandType();
+                var response = respClientCommandExecutor.Execute(respClientCommandType, respClientCommandString);
+                
+                socket.Send(Encoding.UTF8.GetBytes(response));
+            }
         }
         catch (SocketException)
         {
