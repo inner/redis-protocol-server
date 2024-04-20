@@ -37,7 +37,7 @@ public class RespClientCommandExecutor
 
     private string ExecuteArray(string respCommandString)
     {
-        var commandParts = respCommandString.Split("\r\n");
+        var commandParts = respCommandString.Split("\\r\\n");
         
         Console.WriteLine($"Received: {respCommandString}");
         
@@ -45,7 +45,7 @@ public class RespClientCommandExecutor
 
         if (commandCount == 1 && string.Equals(commandParts[2], "ping", StringComparison.InvariantCultureIgnoreCase))
         {
-            return "+PONG\\r\\n";
+            return "+PONG\r\n";
         }
         
         if (commandCount == 2 &&
