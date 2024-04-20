@@ -39,21 +39,26 @@ public class RespClientCommandExecutor
     {
         var commandParts = respCommandString.Split("\\r\\n");
         
-        Console.WriteLine($"Received: {respCommandString}");
+        // find number in string commandParts[0] and assign it to variable
+        var commandCount = int.Parse(commandParts[0].Substring(1));
         
-        var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
+        // var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
 
-        if (commandCount == 1 && string.Equals(commandParts[2], "ping", StringComparison.InvariantCultureIgnoreCase))
+        if (commandCount == 1 && string.Equals(commandParts[2], "ping",
+                StringComparison.InvariantCultureIgnoreCase))
         {
-            return "+PONG\r\n";
+            Console.WriteLine("Received PING command.");
+            return "+PONG\\r\\n";
         }
         
-        if (commandCount == 2 &&
-                 string.Equals(commandParts[2], "ping", StringComparison.InvariantCultureIgnoreCase))
-        {
-            return $"${commandParts[4].Length}\\r\\n{commandParts[4]}\\r\\n";
-        }
+        return "+PONG\\r\\n";
+        
+        // if (commandCount == 2 &&
+        //          string.Equals(commandParts[2], "ping", StringComparison.InvariantCultureIgnoreCase))
+        // {
+        //     return $"${commandParts[4].Length}\\r\\n{commandParts[4]}\\r\\n";
+        // }
 
-        return "*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n";
+        // return "*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n";
     }
 }
