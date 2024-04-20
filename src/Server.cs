@@ -32,7 +32,6 @@ void ConnectionCallback(IAsyncResult asyncResult)
             while (data > 0)
             {
                 Console.WriteLine($"[{connectionId}] received: {Encoding.ASCII.GetString(buffer, 0, data).Trim()}");
-                socket.Send(Encoding.ASCII.GetBytes("+PONG\r\n"));
                 socket.Send("+PONG\r\n"u8.ToArray());
                 data = socket.Receive(buffer);
             }
