@@ -26,23 +26,36 @@ void ConnectionCallback(IAsyncResult asyncResult)
         {
             Console.WriteLine($"TCP Connection [{connectionId}] established!");
 
-            while (true)
+            var buffer = new byte[1024];
+            var data = socket.Receive(buffer);
+            
+            while (data > 0)
             {
-                var buffer = new byte[1024];
-                var data = socket.Receive(buffer);
-
-                var clientCommandString = Encoding.UTF8.GetString(buffer, 0, data);
-                
-                if (string.IsNullOrWhiteSpace(clientCommandString))
-                {
-                    socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
-                    continue;
-                }
-                
-                Console.WriteLine($"[{connectionId}] received: {clientCommandString}");
-                var response = clientCommandExecutor.Execute(clientCommandString);
-                socket.Send(Encoding.UTF8.GetBytes(response));
+                Console.WriteLine($"[{connectionId}] received: {Encoding.ASCII.GetString(buffer, 0, data).Trim()}");
+                socket.Send(Encoding.ASCII.GetBytes("+PONG\r\n"));
+                socket.Send("+PONG\r\n"u8.ToArray());
+                data = socket.Receive(buffer);
             }
+            
+            // while (true)
+            // {
+            //     var buffer = new byte[1024];
+            //     var data = socket.Receive(buffer);
+            //
+            //     var clientCommandString = Encoding.UTF8.GetString(buffer, 0, data);
+            //     
+            //     if (string.IsNullOrWhiteSpace(clientCommandString))
+            //     {
+            //         socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
+            //         continue;
+            //     }
+            //     
+            //     Console.WriteLine($"[{connectionId}] received: {clientCommandString}");
+            //     var response = clientCommandExecutor.Execute(clientCommandString);
+            //     socket.Send(Encoding.UTF8.GetBytes(response));
+            // }
+            
+            
         }
         catch (SocketException)
         {
