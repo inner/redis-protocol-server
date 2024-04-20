@@ -27,7 +27,7 @@ public class ClientCommandExecutor
     {
         if (string.IsNullOrWhiteSpace(clientCommand))
         {
-            throw new ArgumentException("Invalid client command.");
+            throw new ArgumentException("Invalid client command - empty or whitespace.");
         }
 
         if (string.Equals(clientCommand, ClientCommandType.Ping.ToString(),
@@ -42,7 +42,7 @@ public class ClientCommandExecutor
             return ClientCommandType.Echo;
         }
 
-        throw new ArgumentException("Invalid client command.");
+        throw new ArgumentException($"Invalid client command: {clientCommand}");
     }
 }
 
