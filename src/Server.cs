@@ -31,18 +31,16 @@ void ConnectionCallback(IAsyncResult asyncResult)
                 var buffer = new byte[1024];
                 var data = socket.Receive(buffer);
 
-                var respClientCommandString = Encoding.UTF8.GetString(buffer, 0, data);
+                var clientCommandString = Encoding.UTF8.GetString(buffer, 0, data);
                 
-                if (string.IsNullOrWhiteSpace(respClientCommandString))
+                if (string.IsNullOrWhiteSpace(clientCommandString))
                 {
                     socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
                     continue;
                 }
                 
-                Console.WriteLine($"[{connectionId}] received: {respClientCommandString}");
-
-                var response = clientCommandExecutor.Execute(respClientCommandString);
-
+                Console.WriteLine($"[{connectionId}] received: {clientCommandString}");
+                var response = clientCommandExecutor.Execute(clientCommandString);
                 socket.Send(Encoding.UTF8.GetBytes(response));
             }
         }

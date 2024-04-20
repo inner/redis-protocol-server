@@ -17,7 +17,7 @@ public class ClientCommandExecutor
         
         return commandType switch
         {
-            ClientCommandType.Ping => "+PONG\r\n",
+            ClientCommandType.Ping => "+PONG\\r\\n",
             ClientCommandType.Echo => $"${commandParts[1].Length}\\r\\n{commandParts[1]}\\r\\n",
             _ => throw new ArgumentException("Invalid client command.")
         };
