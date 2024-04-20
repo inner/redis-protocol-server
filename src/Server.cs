@@ -8,7 +8,7 @@ Console.WriteLine("Logs from your program will appear here!");
 var server = new TcpListener(IPAddress.Any, 6379);
 server.Start();
 
-var respClientCommandExecutor = new RespClientCommandExecutor();
+// var respClientCommandExecutor = new RespClientCommandExecutor();
 
 while (true)
 {
@@ -34,10 +34,14 @@ void ConnectionCallback(IAsyncResult asyncResult)
                 var respClientCommandString = Encoding.UTF8.GetString(buffer, 0, data);
                 Console.WriteLine($"[{connectionId}] received: {respClientCommandString}");
 
-                var respCommandType = respClientCommandString.GetRespClientCommandType();
-                var respResponse = respClientCommandExecutor.Execute(respCommandType, respClientCommandString);
+                var commands = respClientCommandString.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var response = $"${commands[1].Length}\r\n{commands[1]}\r\n";
                 
-                socket.Send("+PONG\r\n"u8.ToArray());
+                // var respCommandType = respClientCommandString.GetRespClientCommandType();
+                // var respResponse = respClientCommandExecutor.Execute(respCommandType, respClientCommandString);
+                // socket.Send("+PONG\r\n"u8.ToArray());
+                
+                socket.Send(Encoding.UTF8.GetBytes(response));
                 data = socket.Receive(buffer);
             }
         }
