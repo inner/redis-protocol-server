@@ -1,11 +1,14 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis;
 
 Console.WriteLine("Logs from your program will appear here!");
 
 var server = new TcpListener(IPAddress.Any, 6379);
 server.Start();
+
+var respClientCommandExecutor = new RespClientCommandExecutor();
 
 while (true)
 {
@@ -28,7 +31,12 @@ void ConnectionCallback(IAsyncResult asyncResult)
 
             while (data > 0)
             {
-                Console.WriteLine($"[{connectionId}] received: {Encoding.ASCII.GetString(buffer, 0, data).Trim()}");
+                var respClientCommandString = Encoding.UTF8.GetString(buffer, 0, data);
+                Console.WriteLine($"[{connectionId}] received: {respClientCommandString}");
+
+                var respCommandType = respClientCommandString.GetRespClientCommandType();
+                var respResponse = respClientCommandExecutor.Execute(respCommandType, respClientCommandString);
+                
                 socket.Send("+PONG\r\n"u8.ToArray());
                 data = socket.Receive(buffer);
             }
@@ -42,6 +50,11 @@ void ConnectionCallback(IAsyncResult asyncResult)
             CloseSocket(connectionId, socket);
         }
     }
+
+    if (asyncResult.IsCompleted)
+    {
+        Console.WriteLine("Connection closed.");
+    }
 }
 
 void CloseSocket(string connectionId, Socket? socket)
@@ -50,7 +63,7 @@ void CloseSocket(string connectionId, Socket? socket)
     {
         return;
     }
-    
+
     Console.WriteLine($"TCP Connection [{connectionId}] closed.");
     socket.Close();
 }
