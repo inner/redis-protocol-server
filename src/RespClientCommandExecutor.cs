@@ -37,7 +37,7 @@ public class RespClientCommandExecutor
 
     private string ExecuteArray(string respCommandString)
     {
-        var commandParts = respCommandString.Split("\\r\\n");
+        var commandParts = respCommandString.Split("\r\n");
         
         Console.WriteLine($"Received: {respCommandString}");
         
