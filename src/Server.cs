@@ -67,8 +67,10 @@ void ConnectionCallback(IAsyncResult asyncResult)
                     socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
                     continue;
                 }
+
+                respClientCommandString = respClientCommandString.Replace("\r\n", "\\r\\n");
                 
-                Console.WriteLine($"[{connectionId}] received: {respClientCommandString.Replace("\r\n", "\\r\\n")}");
+                Console.WriteLine($"[{connectionId}] received: {respClientCommandString}");
                 
                 var respClientCommandType = respClientCommandString.GetRespClientCommandType();
                 var response = respClientCommandExecutor.Execute(respClientCommandType, respClientCommandString);
