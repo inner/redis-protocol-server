@@ -48,7 +48,7 @@ public class RespClientCommandExecutor
                 StringComparison.InvariantCultureIgnoreCase))
         {
             Console.WriteLine("Received PING command.");
-            return "+PONG\\r\\n";
+            return "+PONG\r\n";
         }
         
         return "+PONG\\r\\n";
