@@ -37,7 +37,7 @@ public class RespClientCommandExecutor
 
     private string ExecuteArray(string respCommandString)
     {
-        var commandParts = respCommandString.Split("\\r\\n");
+        var commandParts = respCommandString.Split("\r\n");
         
         // find number in string commandParts[0] and assign it to variable
         var commandCount = int.Parse(commandParts[0].Substring(1));
