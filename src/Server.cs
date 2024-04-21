@@ -3,10 +3,12 @@ using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis;
 
-Console.WriteLine("Logs from your program will appear here!");
+Console.WriteLine("Starting Redis server.");
 
 var server = new TcpListener(IPAddress.Any, 6379);
 server.Start();
+
+Console.WriteLine("Server started.");
 
 var respCommandReceiver = new RespCommandReceiver();
 
