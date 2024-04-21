@@ -2,7 +2,7 @@
 
 public static class RespClientCommandStringExtensions
 {
-    public static RespClientCommandType GetRespClientCommandType(this string clientCommandString)
+    public static RespDataType GetRespDataType(this string clientCommandString)
     {
         if (string.IsNullOrWhiteSpace(clientCommandString))
         {
@@ -11,17 +11,17 @@ public static class RespClientCommandStringExtensions
         
         return clientCommandString.Substring(0, 1) switch
         {
-            "+" => RespClientCommandType.SimpleString,
-            "-" => RespClientCommandType.SimpleError,
-            ":" => RespClientCommandType.Integer,
-            "$" => RespClientCommandType.BulkString,
-            "*" => RespClientCommandType.Array,
+            "+" => RespDataType.SimpleString,
+            "-" => RespDataType.SimpleError,
+            ":" => RespDataType.Integer,
+            "$" => RespDataType.BulkString,
+            "*" => RespDataType.Array,
             _ => throw new ArgumentException("Invalid RESP client command.")
         };
     }
 }
 
-public enum RespClientCommandType
+public enum RespDataType
 {
     SimpleString,
     SimpleError,

@@ -2,15 +2,15 @@
 
 public class RespClientCommandExecutor
 {
-    public string Execute(RespClientCommandType respClientCommandType, string respCommandString)
+    public string Execute(RespDataType respDataType, string respCommandString)
     {
-        return respClientCommandType switch
+        return respDataType switch
         {
-            RespClientCommandType.SimpleString => ExecuteSimpleString(respCommandString),
-            RespClientCommandType.SimpleError => ExecuteSimpleError(respCommandString),
-            RespClientCommandType.Integer => ExecuteInteger(respCommandString),
-            RespClientCommandType.BulkString => ExecuteBulkString(respCommandString),
-            RespClientCommandType.Array => ExecuteArray(respCommandString),
+            RespDataType.SimpleString => ExecuteSimpleString(respCommandString),
+            RespDataType.SimpleError => ExecuteSimpleError(respCommandString),
+            RespDataType.Integer => ExecuteInteger(respCommandString),
+            RespDataType.BulkString => ExecuteBulkString(respCommandString),
+            RespDataType.Array => ExecuteArray(respCommandString),
             _ => throw new ArgumentException("Invalid RESP client command.")
         };
     }
@@ -38,11 +38,7 @@ public class RespClientCommandExecutor
     private string ExecuteArray(string respCommandString)
     {
         var commandParts = respCommandString.Split("\\r\\n");
-        
-        // find number in string commandParts[0] and assign it to variable
         var commandCount = int.Parse(commandParts[0].Substring(1));
-        
-        // var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
 
         if (commandCount == 1 && string.Equals(commandParts[2], "ping",
                 StringComparison.InvariantCultureIgnoreCase))
@@ -51,7 +47,7 @@ public class RespClientCommandExecutor
             return "+PONG\r\n";
         }
         
-        return "+PONG\\r\\n";
+        return "+PONG\r\n";
         
         // if (commandCount == 2 &&
         //          string.Equals(commandParts[2], "ping", StringComparison.InvariantCultureIgnoreCase))
