@@ -50,6 +50,7 @@ public class RespCommandReceiver
         {
             RespCommandType.Ping => new Ping().Execute(commandCount, commandParts),
             RespCommandType.Echo => new Echo().Execute(commandCount, commandParts),
+            RespCommandType.Quit => new Quit().Execute(commandCount, commandParts),
             _ => throw new ArgumentException("Unknown RESP command type.")
         };
     }

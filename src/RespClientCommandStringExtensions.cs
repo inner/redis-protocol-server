@@ -40,6 +40,12 @@ public static class RespClientCommandStringExtensions
         {
             return RespCommandType.Echo;
         }
+        
+        if (string.Equals(respCommandTypeString, RespCommandType.Quit.ToString(),
+                StringComparison.InvariantCultureIgnoreCase))
+        {
+            return RespCommandType.Quit;
+        }
 
         throw new ArgumentException($"Unknown client command: {respCommandTypeString}");
     }

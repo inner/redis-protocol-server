@@ -3,5 +3,6 @@
 public enum RespCommandType
 {
     Ping,
-    Echo
+    Echo,
+    Quit
 }
