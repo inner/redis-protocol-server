@@ -1,4 +1,6 @@
-﻿namespace codecrafters_redis;
+﻿using codecrafters_redis.RespCommands;
+
+namespace codecrafters_redis;
 
 public class RespCommandReceiver
 {
@@ -41,24 +43,13 @@ public class RespCommandReceiver
     {
         var commandParts = respCommandString.Split("\\r\\n");
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
+        var respCommandType = commandParts[2].GetRespCommandType();
         
-        // var commandType = commandParts[0].GetRespCommandType();
-
-        if (commandCount == 1 && string.Equals(commandParts[2], "ping",
-                StringComparison.InvariantCultureIgnoreCase))
+        return respCommandType switch
         {
-            Console.WriteLine("Received PING command.");
-            return "+PONG\r\n";
-        }
-        
-        return "+PONG\r\n";
-        
-        // if (commandCount == 2 &&
-        //          string.Equals(commandParts[2], "ping", StringComparison.InvariantCultureIgnoreCase))
-        // {
-        //     return $"${commandParts[4].Length}\\r\\n{commandParts[4]}\\r\\n";
-        // }
-
-        // return "*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n";
+            RespCommandType.Ping => new Ping().Execute(commandCount, commandParts),
+            RespCommandType.Echo => new Echo().Execute(commandCount, commandParts),
+            _ => throw new ArgumentException("Unknown RESP command type.")
+        };
     }
 }
