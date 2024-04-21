@@ -1,9 +1,11 @@
 ﻿namespace codecrafters_redis;
 
-public class RespClientCommandExecutor
+public class RespCommandReceiver
 {
-    public string Execute(RespDataType respDataType, string respCommandString)
+    public string Receive(string respCommandString)
     {
+        var respDataType = respCommandString.GetRespDataType();
+        
         return respDataType switch
         {
             RespDataType.SimpleString => ExecuteSimpleString(respCommandString),
@@ -38,7 +40,9 @@ public class RespClientCommandExecutor
     private string ExecuteArray(string respCommandString)
     {
         var commandParts = respCommandString.Split("\\r\\n");
-        var commandCount = int.Parse(commandParts[0].Substring(1));
+        var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
+        
+        var commandType = commandParts[0].GetRespCommandType();
 
         if (commandCount == 1 && string.Equals(commandParts[2], "ping",
                 StringComparison.InvariantCultureIgnoreCase))

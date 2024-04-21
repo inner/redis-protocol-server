@@ -8,8 +8,7 @@ Console.WriteLine("Logs from your program will appear here!");
 var server = new TcpListener(IPAddress.Any, 6379);
 server.Start();
 
-// var clientCommandExecutor = new ClientCommandExecutor();
-var respClientCommandExecutor = new RespClientCommandExecutor();
+var respCommandReceiver = new RespCommandReceiver();
 
 while (true)
 {
@@ -26,14 +25,14 @@ void ConnectionCallback(IAsyncResult asyncResult)
         try
         {
             Console.WriteLine($"TCP Connection [{connectionId}] established!");
-            
+
             while (true)
             {
                 var buffer = new byte[1024];
                 var data = socket.Receive(buffer);
-            
+
                 var respClientCommandString = Encoding.UTF8.GetString(buffer, 0, data);
-                
+
                 if (string.IsNullOrWhiteSpace(respClientCommandString))
                 {
                     socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
@@ -41,12 +40,13 @@ void ConnectionCallback(IAsyncResult asyncResult)
                 }
 
                 respClientCommandString = respClientCommandString.Replace("\r\n", "\\r\\n");
+
+                var receivedMessage =
+                    $"[{connectionId}] received: \"{respClientCommandString.Replace("\n", string.Empty)}\"";
                 
-                Console.WriteLine($"[{connectionId}] received: {respClientCommandString}");
+                Console.WriteLine(receivedMessage);
                 
-                var respClientCommandType = respClientCommandString.GetRespDataType();
-                var response = respClientCommandExecutor.Execute(respClientCommandType, respClientCommandString);
-                
+                var response = respCommandReceiver.Receive(respClientCommandString);
                 socket.Send(Encoding.UTF8.GetBytes(response));
             }
         }
