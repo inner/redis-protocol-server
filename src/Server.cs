@@ -68,7 +68,7 @@ void ConnectionCallback(IAsyncResult asyncResult)
                     continue;
                 }
                 
-                Console.WriteLine($"[{connectionId}] received: {respClientCommandString.Replace("\r\n", string.Empty)}");
+                Console.WriteLine($"[{connectionId}] received: {respClientCommandString.Replace("\r\n", "\\r\\n")}");
                 
                 var respClientCommandType = respClientCommandString.GetRespClientCommandType();
                 var response = respClientCommandExecutor.Execute(respClientCommandType, respClientCommandString);
