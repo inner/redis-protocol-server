@@ -1,4 +1,6 @@
-﻿namespace codecrafters_redis;
+﻿using codecrafters_redis.Enums;
+
+namespace codecrafters_redis;
 
 public static class RespClientCommandStringExtensions
 {

@@ -1,4 +1,5 @@
-﻿using codecrafters_redis.RespCommands;
+﻿using codecrafters_redis.Enums;
+using codecrafters_redis.RespCommands;
 
 namespace codecrafters_redis;
 
@@ -15,7 +16,7 @@ public class RespCommandReceiver
             RespDataType.Integer => ExecuteInteger(respCommandString),
             RespDataType.BulkString => ExecuteBulkString(respCommandString),
             RespDataType.Array => ExecuteArray(respCommandString),
-            _ => throw new ArgumentException("Invalid RESP client command.")
+            _ => throw new ArgumentException("Invalid RESP data type.")
         };
     }
 
