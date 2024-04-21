@@ -42,7 +42,7 @@ public class RespCommandReceiver
         var commandParts = respCommandString.Split("\\r\\n");
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
         
-        var commandType = commandParts[0].GetRespCommandType();
+        // var commandType = commandParts[0].GetRespCommandType();
 
         if (commandCount == 1 && string.Equals(commandParts[2], "ping",
                 StringComparison.InvariantCultureIgnoreCase))
