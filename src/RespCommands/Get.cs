@@ -9,6 +9,6 @@ public class Get : RespCommandBase
 
         return cacheItem is null or { Value: null }
             ? "$-1\r\n"
-            : $"${cacheItem.Value.Length}\r\n{cacheItem}\r\n";
+            : $"${cacheItem.Value.Length}\r\n{cacheItem.Value}\r\n";
     }
 }
