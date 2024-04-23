@@ -7,7 +7,7 @@ public class Set : RespCommandBase
         var cacheKey = commandParts[4];
         var cacheValue = commandParts[6];
         
-        if (commandParts.Length < 8)
+        if (commandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
             return "+OK\r\n";
