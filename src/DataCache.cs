@@ -6,20 +6,24 @@ public static class DataCache
 {
     private static ConcurrentDictionary<string, CacheItem> Cache { get; } = new();
     
-    public static void Add(string key, string value, long? expiry = null)
+    public static void Set(string key, string value, int? expiry = null)
     {
         Cache[key] = new CacheItem
         {
             Key = key,
             Value = value,
-            Expiry = expiry
+            Expiry = expiry.HasValue
+                ? DateTime.Now.AddMilliseconds(expiry.Value)
+                : null
         };
     }
     
-    public static string? Get(string key)
+    public static CacheItem? Get(string key)
     {
         return Cache.TryGetValue(key, out var cacheItem)
-            ? cacheItem.Value
+            ? cacheItem.Expiry.HasValue && cacheItem.Expiry.Value < DateTime.Now
+                ? null
+                : cacheItem
             : null;
     }
 }
@@ -28,5 +32,5 @@ public class CacheItem
 {
     public string Key { get; set; }
     public string? Value { get; set; }
-    public long? Expiry { get; set; }
+    public DateTime? Expiry { get; set; }
 }

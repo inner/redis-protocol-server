@@ -5,10 +5,10 @@ public class Get : RespCommandBase
     public override string Execute(int commandCount, string[] commandParts)
     {
         var cacheKey = commandParts[4];
-        var cacheValue = DataCache.Get(cacheKey);
+        var cacheItem = DataCache.Get(cacheKey);
 
-        return string.IsNullOrWhiteSpace(cacheValue)
+        return cacheItem is null or { Value: null }
             ? "$-1\r\n"
-            : $"${cacheValue.Length}\r\n{cacheValue}\r\n";
+            : $"${cacheItem.Value.Length}\r\n{cacheItem}\r\n";
     }
 }
