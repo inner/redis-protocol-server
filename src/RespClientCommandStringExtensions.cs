@@ -22,29 +22,16 @@ public static class RespClientCommandStringExtensions
         };
     }
     
-    public static RespCommandType GetRespCommandType(this string respCommandTypeString)
+    public static RespCommandType ToRespCommandType(this string respCommandTypeString)
     {
         if (string.IsNullOrWhiteSpace(respCommandTypeString))
         {
             throw new ArgumentException("Invalid RESP command type - empty or whitespace.");
         }
 
-        if (string.Equals(respCommandTypeString, RespCommandType.Ping.ToString(),
-                StringComparison.InvariantCultureIgnoreCase))
+        if (Enum.TryParse<RespCommandType>(respCommandTypeString, true, out var respCommandType))
         {
-            return RespCommandType.Ping;
-        }
-
-        if (string.Equals(respCommandTypeString, RespCommandType.Echo.ToString(),
-                StringComparison.InvariantCultureIgnoreCase))
-        {
-            return RespCommandType.Echo;
-        }
-        
-        if (string.Equals(respCommandTypeString, RespCommandType.Quit.ToString(),
-                StringComparison.InvariantCultureIgnoreCase))
-        {
-            return RespCommandType.Quit;
+            return respCommandType;
         }
 
         throw new ArgumentException($"Unknown client command: {respCommandTypeString}");

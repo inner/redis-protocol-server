@@ -44,7 +44,7 @@ public class RespCommandReceiver
     {
         var commandParts = respCommandString.Split("\\r\\n");
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
-        var respCommandType = commandParts[2].GetRespCommandType();
+        var respCommandType = commandParts[2].ToRespCommandType();
         
         return respCommandType switch
         {
