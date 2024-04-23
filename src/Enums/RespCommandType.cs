@@ -4,5 +4,7 @@ public enum RespCommandType
 {
     Ping,
     Echo,
-    Quit
+    Quit,
+    Set,
+    Get
 }
