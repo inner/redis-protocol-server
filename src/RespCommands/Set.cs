@@ -13,12 +13,12 @@ public class Set : RespCommandBase
             return "+OK\r\n";
         }
         
-        const string expiryCommandConstant = "EX";
+        const string expiryCommandConstant = "PX";
 
         var expiryCommand = commandParts[8];
-        if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
         {
-            throw new AggregateException("Unrecognized command used for SET.");
+            throw new AggregateException($"Unrecognized command used for SET: '{expiryCommand}'.");
         }
         
         var expiry = int.Parse(commandParts[10]);
