@@ -94,9 +94,9 @@ void CloseSocket(string connectionId, Socket? socket)
 void LogReceivedMessage(string s, string respClientCommandString)
 {
     respClientCommandString = respClientCommandString[..^1];
-    var receivedMessage = $"[{s}] received: \"{respClientCommandString.Replace("\r\n", @"\r\n")}\"";
+    var receivedMessage = $"[{s}] received: \"{respClientCommandString.Replace("\r\n", @"\r\n")}\"\n";
 
-    Console.WriteLine(receivedMessage);
+    Console.Write(receivedMessage);
 }
 
 string GenerateRandomReplId()
