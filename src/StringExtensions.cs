@@ -2,7 +2,7 @@
 
 namespace codecrafters_redis;
 
-public static class RespClientCommandStringExtensions
+public static class StringExtensions
 {
     public static RespDataType GetRespDataType(this string respDataTypeString)
     {

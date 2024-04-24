@@ -1,9 +1,9 @@
 ﻿namespace codecrafters_redis.RespCommands;
 
-public class Quit : RespCommandBase
+public class Quit : CommandBase
 {
     public override string Execute(int commandCount, string[] commandParts)
     {
-        return "+OK\r\n";
+        return Constants.OkResponse;
     }
 }

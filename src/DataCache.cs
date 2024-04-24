@@ -30,7 +30,7 @@ public static class DataCache
 
 public class CacheItem
 {
-    public string Key { get; set; }
+    public required string Key { get; set; }
     public string? Value { get; set; }
     public DateTime? Expiry { get; set; }
 }

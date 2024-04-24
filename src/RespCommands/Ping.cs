@@ -1,6 +1,6 @@
 ﻿namespace codecrafters_redis.RespCommands;
 
-public class Ping : RespCommandBase
+public class Ping : CommandBase
 {
     public override string Execute(int commandCount, string[] commandParts)
     {

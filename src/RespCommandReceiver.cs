@@ -45,15 +45,23 @@ public class RespCommandReceiver
         var commandParts = respCommandString.Split("\\r\\n");
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
         var respCommandType = commandParts[2].ToRespCommandType();
+
+        return ExecuteCommand(respCommandType, commandCount, commandParts);
+    }
+    
+    private string ExecuteCommand(RespCommandType commandType, int commandCount, string[] commandParts)
+    {
+        var className = $"codecrafters_redis.RespCommands.{commandType}";
         
-        return respCommandType switch
+        var type = Type.GetType(className);
+        
+        if (type == null)
         {
-            RespCommandType.Ping => new Ping().Execute(commandCount, commandParts),
-            RespCommandType.Echo => new Echo().Execute(commandCount, commandParts),
-            RespCommandType.Quit => new Quit().Execute(commandCount, commandParts),
-            RespCommandType.Set => new Set().Execute(commandCount, commandParts),
-            RespCommandType.Get => new Get().Execute(commandCount, commandParts),
-            _ => throw new ArgumentException("Unknown RESP command type.")
-        };
+            throw new ArgumentException("Unknown RESP command.");
+        }
+        
+        var command = (CommandBase)Activator.CreateInstance(type)!;
+
+        return command.Execute(commandCount, commandParts);
     }
 }

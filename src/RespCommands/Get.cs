@@ -1,6 +1,6 @@
 ﻿namespace codecrafters_redis.RespCommands;
 
-public class Get : RespCommandBase
+public class Get : CommandBase
 {
     public override string Execute(int commandCount, string[] commandParts)
     {
@@ -8,7 +8,7 @@ public class Get : RespCommandBase
         var cacheItem = DataCache.Get(cacheKey);
 
         return cacheItem is null or { Value: null }
-            ? "$-1\r\n"
+            ? Constants.NullResponse
             : $"${cacheItem.Value.Length}\r\n{cacheItem.Value}\r\n";
     }
 }

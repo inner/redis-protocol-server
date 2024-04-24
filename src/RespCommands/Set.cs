@@ -1,6 +1,6 @@
 ﻿namespace codecrafters_redis.RespCommands;
 
-public class Set : RespCommandBase
+public class Set : CommandBase
 {
     public override string Execute(int commandCount, string[] commandParts)
     {
@@ -10,7 +10,7 @@ public class Set : RespCommandBase
         if (commandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
-            return "+OK\r\n";
+            return Constants.OkResponse;
         }
         
         const string expiryCommandConstant = "PX";
@@ -18,12 +18,12 @@ public class Set : RespCommandBase
         var expiryCommand = commandParts[8];
         if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
         {
-            throw new AggregateException($"Unrecognized command used for SET: '{expiryCommand}'.");
+            throw new AggregateException($"Unrecognized command used for '{nameof(Set)}': '{expiryCommand}'.");
         }
         
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
 
-        return "+OK\r\n";
+        return Constants.OkResponse;
     }
 }
