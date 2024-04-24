@@ -6,19 +6,11 @@ public class Info : Base
 {
     public override string Execute(int commandCount, string[] commandParts)
     {
-        // var dict = new Dictionary<string, string>();
-        
-        // if (ServerInfo.IsMaster)
-        // {
-        //     dict.Add("master_replid", GenerateRandomReplId());
-        //     dict.Add("master_repl_offset", "0");
-        // }
-
         var dict = new Dictionary<string, string>
         {
-            { "master_replid", GenerateRandomReplId() },
-            { "master_repl_offset", "0" },
             { "role", ServerInfo.IsMaster ? "master" : "slave" },
+            { "master_replid", "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb" },
+            { "master_repl_offset", "0" },
             { "connected_slaves", "0" },
             { "second_repl_offset", "-1" },
             { "repl_backlog_active", "0" },
