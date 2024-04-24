@@ -7,7 +7,22 @@ Console.WriteLine("Starting Redis server.");
 
 var port = args.Length > 0 && (args[0] == "--port" || args[0] == "-p")
     ? int.Parse(args[1])
-    : 6379;
+    : Constants.DefaultRedisPort;
+
+var masterHost = args.Length > 2 && args[2] == "--replicaof"
+    ? args[3]
+    : null;
+
+int? masterPort = args.Length > 2 && args[2] == "--replicaof"
+    ? int.Parse(args[4])
+    : null;
+
+var isMaster = masterHost == null;
+
+ServerInfo.Port = port;
+ServerInfo.IsMaster = isMaster;
+ServerInfo.MasterHost = masterHost;
+ServerInfo.MasterPort = masterPort;
 
 var server = new TcpListener(IPAddress.Any, port);
 server.Start();
