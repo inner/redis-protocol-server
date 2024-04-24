@@ -7,8 +7,7 @@ public class Receiver
 {
     public string Receive(string respCommandString)
     {
-        // respCommandString = respCommandString.Replace("\r\n", "\\r\\n");
-        
+        respCommandString = respCommandString.Replace("\r\n", "\\r\\n");
         var respDataType = respCommandString.GetRespDataType();
         
         return respDataType switch
