@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace codecrafters_redis.RespCommands;
+namespace codecrafters_redis.Commands;
 
 public class Info : Base
 {
@@ -10,14 +10,18 @@ public class Info : Base
         {
             { "role", ServerInfo.IsMaster ? "master" : "slave" },
             { "connected_slaves", "0" },
-            { "master_replid", "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb" },
-            { "master_repl_offset", "0" },
             { "second_repl_offset", "-1" },
             { "repl_backlog_active", "0" },
             { "repl_backlog_size", "1048576" },
             { "repl_backlog_first_byte_offset", "0" },
             { "repl_backlog_histlen", string.Empty }
         };
+
+        if (ServerInfo.IsMaster)
+        {
+            dict.Add("master_replid", GenerateRandomReplId());
+            dict.Add("master_repl_offset", "0");
+        }
 
         var sb = new StringBuilder();
 
@@ -28,5 +32,18 @@ public class Info : Base
         }
 
         return sb.ToString();
+    }
+    
+    private string GenerateRandomReplId()
+    {
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var random = new Random();
+        var result = new string(
+            Enumerable.Repeat(chars, 40)
+                .Select(s => s[random.Next(s.Length)])
+                .ToArray()
+        );
+
+        return result;
     }
 }

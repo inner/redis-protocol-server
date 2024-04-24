@@ -1,5 +1,5 @@
-﻿using codecrafters_redis.Enums;
-using codecrafters_redis.RespCommands;
+﻿using codecrafters_redis.Commands;
+using codecrafters_redis.Enums;
 
 namespace codecrafters_redis;
 
@@ -32,8 +32,7 @@ public class Receiver
     
     private string ExecuteCommand(CommandType commandType, int commandCount, string[] commandParts)
     {
-        var className = $"codecrafters_redis.RespCommands.{commandType}";
-        
+        var className = $"codecrafters_redis.Commands.{commandType}";
         var type = Type.GetType(className);
         
         if (type == null)

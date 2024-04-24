@@ -1,4 +1,4 @@
-﻿namespace codecrafters_redis.RespCommands;
+﻿namespace codecrafters_redis.Commands;
 
 public abstract class Base
 {
