@@ -5,7 +5,11 @@ using codecrafters_redis;
 
 Console.WriteLine("Starting Redis server.");
 
-var server = new TcpListener(IPAddress.Any, 6379);
+var port = args.Length > 0 && args[0] == "--port"
+    ? int.Parse(args[1])
+    : 6379;
+
+var server = new TcpListener(IPAddress.Any, port);
 server.Start();
 
 Console.WriteLine("Server started.");
