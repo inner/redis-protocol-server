@@ -3,8 +3,6 @@ using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis;
 
-Console.WriteLine("Starting Redis server");
-
 var port = args.Length > 0 && (args[0] == "--port" || args[0] == "-p")
     ? int.Parse(args[1])
     : Constants.DefaultRedisPort;
@@ -24,10 +22,14 @@ ServerInfo.IsMaster = isMaster;
 ServerInfo.MasterHost = masterHost;
 ServerInfo.MasterPort = masterPort;
 
+var serverType = ServerInfo.IsMaster
+    ? "MASTER"
+    : "SLAVE";
+
+Console.WriteLine($"Starting Redis {serverType} server");
+
 var server = new TcpListener(IPAddress.Any, port);
 server.Start();
-
-Console.WriteLine("Server started");
 
 var receiver = new Receiver();
 
