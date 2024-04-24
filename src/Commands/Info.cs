@@ -16,9 +16,9 @@ public class Info : Base
 
         var dict = new Dictionary<string, string>
         {
-            { "role", ServerInfo.IsMaster ? "master" : "slave" },
             { "master_replid", GenerateRandomReplId() },
             { "master_repl_offset", "0" },
+            { "role", ServerInfo.IsMaster ? "master" : "slave" },
             { "connected_slaves", "0" },
             { "second_repl_offset", "-1" },
             { "repl_backlog_active", "0" },

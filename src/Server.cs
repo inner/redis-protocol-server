@@ -62,8 +62,6 @@ void HandleConnection(Socket socket)
                     continue;
                 }
 
-                LogReceivedMessage(connectionId, respClientCommandString);
-
                 var response = receiver.Receive(respClientCommandString);
                 socket.Send(Encoding.UTF8.GetBytes(response));
             }
@@ -88,14 +86,4 @@ void CloseSocket(string connectionId, Socket? socket)
 
     Console.WriteLine($"TCP Connection [{connectionId}] closed");
     socket.Close();
-}
-
-void LogReceivedMessage(string s, string respClientCommandString)
-{
-    var receivedMessage =
-        $"[{s}] received: \"{respClientCommandString
-            .Replace("\\\\r\\\\n", "\\r\\n")
-            .Replace("\n", string.Empty)}\"";
-
-    Console.WriteLine(receivedMessage);
 }
