@@ -93,10 +93,8 @@ void CloseSocket(string connectionId, Socket? socket)
 
 void LogReceivedMessage(string s, string respClientCommandString)
 {
-    var receivedMessage =
-        $"[{s}] received: \"{respClientCommandString
-            .Replace("\\r\\n", "\\\\r\\\\n")
-            .Replace("\n", string.Empty)}\"";
+    respClientCommandString = respClientCommandString[..^1];
+    var receivedMessage = $"[{s}] received: \"{respClientCommandString}\"";
 
     Console.WriteLine(receivedMessage);
 }
