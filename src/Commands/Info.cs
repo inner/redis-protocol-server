@@ -8,9 +8,9 @@ public class Info : Base
     {
         var dict = new Dictionary<string, string>
         {
-            { "role", ServerInfo.IsMaster ? "master" : "slave" },
             { "master_replid", GenerateRandomReplId() },
             { "master_repl_offset", "0" },
+            { "role", ServerInfo.IsMaster ? "master" : "slave" },
             { "connected_slaves", "0" },
             { "second_repl_offset", "-1" },
             { "repl_backlog_active", "0" },
@@ -18,12 +18,6 @@ public class Info : Base
             { "repl_backlog_first_byte_offset", "0" },
             { "repl_backlog_histlen", string.Empty }
         };
-
-        // if (ServerInfo.IsMaster)
-        // {
-        //     dict.Add("master_replid", GenerateRandomReplId());
-        //     dict.Add("master_repl_offset", "0");
-        // }
 
         var sb = new StringBuilder();
 
