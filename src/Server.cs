@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis;
 
-Console.WriteLine("Starting Redis server.");
+Console.WriteLine("Starting Redis server");
 
 var port = args.Length > 0 && (args[0] == "--port" || args[0] == "-p")
     ? int.Parse(args[1])
@@ -27,7 +27,7 @@ ServerInfo.MasterPort = masterPort;
 var server = new TcpListener(IPAddress.Any, port);
 server.Start();
 
-Console.WriteLine("Server started.");
+Console.WriteLine("Server started");
 
 var receiver = new Receiver();
 
@@ -45,7 +45,7 @@ void ConnectionCallback(IAsyncResult asyncResult)
     {
         try
         {
-            Console.WriteLine($"TCP Connection [{connectionId}] established!");
+            Console.WriteLine($"TCP Connection [{connectionId}] established");
 
             while (true)
             {
@@ -68,7 +68,7 @@ void ConnectionCallback(IAsyncResult asyncResult)
         }
         catch (SocketException)
         {
-            Console.WriteLine($"Closing TCP connection: [{connectionId}].");
+            Console.WriteLine($"Closing TCP connection: [{connectionId}]");
         }
         finally
         {
@@ -78,7 +78,7 @@ void ConnectionCallback(IAsyncResult asyncResult)
 
     if (asyncResult.IsCompleted)
     {
-        Console.WriteLine("Connection closed.");
+        Console.WriteLine("Connection closed");
     }
 }
 
@@ -89,7 +89,7 @@ void CloseSocket(string connectionId, Socket? socket)
         return;
     }
 
-    Console.WriteLine($"TCP Connection [{connectionId}] closed.");
+    Console.WriteLine($"TCP Connection [{connectionId}] closed");
     socket.Close();
 }
 
