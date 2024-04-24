@@ -12,35 +12,15 @@ public class Receiver
         
         return respDataType switch
         {
+            DataType.Array => ExecuteArray(respCommandString),
             DataType.SimpleString => ExecuteSimpleString(),
             DataType.SimpleError => ExecuteSimpleError(),
             DataType.Integer => ExecuteInteger(),
             DataType.BulkString => ExecuteBulkString(),
-            DataType.Array => ExecuteArray(respCommandString),
             _ => throw new ArgumentException("Invalid data type.")
         };
     }
-
-    private string ExecuteSimpleString()
-    {
-        return "+PONG\\r\\n";
-    }
-
-    private string ExecuteSimpleError()
-    {
-        return "-ERR unknown command 'foobar'\r\n";
-    }
-
-    private string ExecuteInteger()
-    {
-        return ":1000\r\n";
-    }
-
-    private string ExecuteBulkString()
-    {
-        return "$6\r\nfoobar\r\n";
-    }
-
+    
     private string ExecuteArray(string respCommandString)
     {
         var commandParts = respCommandString.Split("\\r\\n");
@@ -64,5 +44,25 @@ public class Receiver
         var command = (Base)Activator.CreateInstance(type)!;
 
         return command.Execute(commandCount, commandParts);
+    }
+
+    private string ExecuteSimpleString()
+    {
+        return "+PONG\\r\\n";
+    }
+
+    private string ExecuteSimpleError()
+    {
+        return "-ERR unknown command 'foobar'\r\n";
+    }
+
+    private string ExecuteInteger()
+    {
+        return ":1000\r\n";
+    }
+
+    private string ExecuteBulkString()
+    {
+        return "$6\r\nfoobar\r\n";
     }
 }
