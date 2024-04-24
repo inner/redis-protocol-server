@@ -17,7 +17,7 @@ public class Receiver
             DataType.Integer => ExecuteInteger(),
             DataType.BulkString => ExecuteBulkString(),
             DataType.Array => ExecuteArray(respCommandString),
-            _ => throw new ArgumentException("Invalid RESP data type.")
+            _ => throw new ArgumentException("Invalid data type.")
         };
     }
 
