@@ -35,12 +35,12 @@ var receiver = new Receiver();
 
 while (true)
 {
-    server.BeginAcceptSocket(ConnectionCallback, server);
+    var socket = server.AcceptSocket();
+    _ = Task.Run(() => HandleConnection(socket));
 }
 
-void ConnectionCallback(IAsyncResult asyncResult)
+void HandleConnection(Socket socket)
 {
-    var socket = server.EndAcceptSocket(asyncResult);
     var connectionId = $"{socket.LocalEndPoint}->{socket.RemoteEndPoint}";
 
     while (socket.Connected)
@@ -76,11 +76,6 @@ void ConnectionCallback(IAsyncResult asyncResult)
         {
             CloseSocket(connectionId, socket);
         }
-    }
-
-    if (asyncResult.IsCompleted)
-    {
-        Console.WriteLine("Connection closed");
     }
 }
 
