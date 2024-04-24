@@ -95,7 +95,7 @@ void LogReceivedMessage(string s, string respClientCommandString)
 {
     var receivedMessage =
         $"[{s}] received: \"{respClientCommandString
-            .Replace("\\\\r\\\\n", "\\r\\n")
+            .Replace("\\r\\n", "\\\\r\\\\n")
             .Replace("\n", string.Empty)}\"";
 
     Console.WriteLine(receivedMessage);
