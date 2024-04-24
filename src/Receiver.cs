@@ -43,7 +43,7 @@ public class Receiver
 
     private string ExecuteArray(string respCommandString)
     {
-        var commandParts = respCommandString.Split("\\\\r\\\\n");
+        var commandParts = respCommandString.Split("\\r\\n");
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
         var respCommandType = commandParts[2].ToRespCommandType();
 
