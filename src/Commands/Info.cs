@@ -1,15 +1,13 @@
-﻿using System.Text;
-
-namespace codecrafters_redis.Commands;
+﻿namespace codecrafters_redis.Commands;
 
 public class Info : Base
 {
     public override string Execute(int commandCount, string[] commandParts)
     {
-        var infoValues = new Dictionary<string, string>
+        var infoValues = new Dictionary<string, string?>
         {
             { "role", ServerInfo.IsMaster ? "master" : "slave" },
-            { "master_replid", GenerateRandomReplId() },
+            { "master_replid", ServerInfo.IsMaster ? ServerInfo.MasterReplId : string.Empty },
             { "master_repl_offset", "0" },
             { "connected_slaves", "0" },
             { "second_repl_offset", "-1" },
@@ -22,18 +20,5 @@ public class Info : Base
         var value = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
         
         return $"${value.Length}\r\n{value}\r\n";
-    }
-
-    private string GenerateRandomReplId()
-    {
-        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        var random = new Random();
-        var result = new string(
-            Enumerable.Repeat(chars, 40)
-                .Select(s => s[random.Next(s.Length)])
-                .ToArray()
-        );
-
-        return result;
     }
 }

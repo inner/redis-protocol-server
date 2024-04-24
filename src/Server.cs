@@ -21,12 +21,13 @@ ServerInfo.Port = port;
 ServerInfo.IsMaster = isMaster;
 ServerInfo.MasterHost = masterHost;
 ServerInfo.MasterPort = masterPort;
+ServerInfo.MasterReplId = GenerateRandomReplId();
 
 var serverType = ServerInfo.IsMaster
-    ? "MASTER"
-    : "SLAVE";
+    ? "master"
+    : "slave";
 
-Console.WriteLine($"Starting Redis {serverType} server");
+Console.WriteLine($"Starting Redis '{serverType}' server");
 
 var server = new TcpListener(IPAddress.Any, port);
 server.Start();
@@ -62,6 +63,8 @@ void HandleConnection(Socket socket)
                     continue;
                 }
 
+                LogReceivedMessage(connectionId, respClientCommandString);
+
                 var response = receiver.Receive(respClientCommandString);
                 socket.Send(Encoding.UTF8.GetBytes(response));
             }
@@ -86,4 +89,27 @@ void CloseSocket(string connectionId, Socket? socket)
 
     Console.WriteLine($"TCP Connection [{connectionId}] closed");
     socket.Close();
+}
+
+void LogReceivedMessage(string s, string respClientCommandString)
+{
+    var receivedMessage =
+        $"[{s}] received: \"{respClientCommandString
+            .Replace("\\\\r\\\\n", "\\r\\n")
+            .Replace("\n", string.Empty)}\"";
+
+    Console.WriteLine(receivedMessage);
+}
+
+string GenerateRandomReplId()
+{
+    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var random = new Random();
+    var result = new string(
+        Enumerable.Repeat(chars, 40)
+            .Select(s => s[random.Next(s.Length)])
+            .ToArray()
+    );
+
+    return result;
 }
