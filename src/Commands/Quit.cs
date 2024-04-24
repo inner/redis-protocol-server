@@ -1,6 +1,6 @@
 ﻿namespace codecrafters_redis.RespCommands;
 
-public class Quit : CommandBase
+public class Quit : Base
 {
     public override string Execute(int commandCount, string[] commandParts)
     {

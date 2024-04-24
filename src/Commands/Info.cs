@@ -2,7 +2,7 @@
 
 namespace codecrafters_redis.RespCommands;
 
-public class Info : CommandBase
+public class Info : Base
 {
     public override string Execute(int commandCount, string[] commandParts)
     {

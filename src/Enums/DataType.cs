@@ -1,6 +1,6 @@
 ﻿namespace codecrafters_redis.Enums;
 
-public enum RespDataType
+public enum DataType
 {
     SimpleString,
     SimpleError,

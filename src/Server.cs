@@ -29,7 +29,7 @@ server.Start();
 
 Console.WriteLine("Server started.");
 
-var respCommandReceiver = new RespCommandReceiver();
+var receiver = new Receiver();
 
 while (true)
 {
@@ -60,14 +60,9 @@ void ConnectionCallback(IAsyncResult asyncResult)
                     continue;
                 }
 
-                respClientCommandString = respClientCommandString.Replace("\r\n", "\\r\\n");
+                LogReceivedMessage(connectionId, respClientCommandString);
 
-                var receivedMessage =
-                    $"[{connectionId}] received: \"{respClientCommandString.Replace("\n", string.Empty)}\"";
-                
-                Console.WriteLine(receivedMessage);
-                
-                var response = respCommandReceiver.Receive(respClientCommandString);
+                var response = receiver.Receive(respClientCommandString);
                 socket.Send(Encoding.UTF8.GetBytes(response));
             }
         }
@@ -96,4 +91,14 @@ void CloseSocket(string connectionId, Socket? socket)
 
     Console.WriteLine($"TCP Connection [{connectionId}] closed.");
     socket.Close();
+}
+
+void LogReceivedMessage(string s, string respClientCommandString)
+{
+    var receivedMessage =
+        $"[{s}] received: \"{respClientCommandString
+            .Replace("\\\\r\\\\n", "\\r\\n")
+            .Replace("\n", string.Empty)}\"";
+
+    Console.WriteLine(receivedMessage);
 }

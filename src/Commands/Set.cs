@@ -1,6 +1,6 @@
 ﻿namespace codecrafters_redis.RespCommands;
 
-public class Set : CommandBase
+public class Set : Base
 {
     public override string Execute(int commandCount, string[] commandParts)
     {
