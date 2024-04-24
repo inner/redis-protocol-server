@@ -8,26 +8,15 @@ public class Info : CommandBase
     {
         var dict = new Dictionary<string, string>
         {
-            { "redis_version", "6.0.9" },
-            { "redis_git_sha1", "00000000" },
-            { "redis_git_dirty", "0" },
-            { "redis_build_id", "b1b1b1b1b1b1b1b1" },
-            { "redis_mode", "standalone" },
-            { "os", "Linux 5.4.0-42-generic x86_64" },
-            { "arch_bits", "64" },
-            { "multiplexing_api", "epoll" },
-            { "atomicvar_api", "atomic-builtin" },
-            { "gcc_version", "9.3.0" },
-            { "process_id", "1" },
-            { "run_id", "" },
-            { "tcp_port", "6379" },
-            { "uptime_in_seconds", "0" },
-            { "uptime_in_days", "0" },
-            { "hz", "10" },
-            { "configured_hz", "10" },
-            { "lru_clock", "0" },
-            { "executable", "/usr/local/bin/redis-server" },
-            { "config_file", "/usr/local/etc/redis.conf" }
+            { "role", "master" },
+            { "connected_slaves", "0" },
+            { "master_replid", "8371b4fb1155b71f4a04d3e1bc3e18c4a990aeeb" },
+            { "master_repl_offset", "0" },
+            { "second_repl_offset", "-1" },
+            { "repl_backlog_active", "0" },
+            { "repl_backlog_size", "1048576" },
+            { "repl_backlog_first_byte_offset", "0" },
+            { "repl_backlog_histlen", string.Empty }
         };
         
         var sb = new StringBuilder();
