@@ -8,5 +8,6 @@ public enum CommandType
     Set,
     Get,
     Info,
-    Replconf
+    Replconf,
+    Psync
 }

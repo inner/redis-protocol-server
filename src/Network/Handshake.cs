@@ -56,5 +56,19 @@ public class Handshake
         {
             throw new Exception("Handshake failed");
         }
+        
+        // send REPLCONF psync command
+        var replconfPsync = "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n";
+        var replconfPsyncBytes = Encoding.UTF8.GetBytes(replconfPsync);
+        stream.Write(replconfPsyncBytes, 0, replconfPsyncBytes.Length);
+
+        bytesRead = stream.Read(buffer, 0, buffer.Length);
+        response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+        // check if response is psync ? -1
+        if (response != "+FULLRESYNC 1234567890 0\r\n")
+        {
+            throw new Exception("Handshake failed");
+        }
     }
 }
