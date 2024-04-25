@@ -14,6 +14,7 @@ public class Set : Base
         {
             DataCache.Set(cacheKey, cacheValue);
             socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+            return;
         }
         
         const string expiryCommandConstant = "PX";
