@@ -53,17 +53,16 @@ void HandleConnection(Socket socket)
             while (true)
             {
                 var buffer = new byte[1024];
-                var data = socket.Receive(buffer);
+                var bytesReceived = socket.Receive(buffer);
+                var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
 
-                var respClientCommandString = Encoding.UTF8.GetString(buffer, 0, data);
-
-                if (string.IsNullOrWhiteSpace(respClientCommandString))
+                if (string.IsNullOrWhiteSpace(clientCommand))
                 {
                     socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
                     continue;
                 }
 
-                var response = receiver.Receive(respClientCommandString);
+                var response = receiver.Receive(clientCommand);
                 socket.Send(Encoding.UTF8.GetBytes(response));
             }
         }
