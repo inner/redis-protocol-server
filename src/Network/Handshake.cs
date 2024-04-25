@@ -66,7 +66,7 @@ public class Handshake
         response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
         // check if response is psync ? -1
-        if (response != "+FULLRESYNC 1234567890 0\r\n")
+        if (!response.Contains("FULLRESYNC"))
         {
             throw new Exception("Handshake failed");
         }
