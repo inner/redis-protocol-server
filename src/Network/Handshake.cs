@@ -106,6 +106,6 @@ public class Handshake
             logMessage += '\n';
         }
     
-        Console.Write($"Received command: {logMessage}");
+        Console.Write($"Received command2: {logMessage}");
     }
 }
