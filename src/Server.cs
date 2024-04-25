@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis;
+using codecrafters_redis.Network;
 
 var port = args.Length > 0 && (args[0] == "--port" || args[0] == "-p")
     ? int.Parse(args[1])
@@ -31,6 +32,15 @@ Console.WriteLine($"Starting Redis '{serverType}' server");
 
 var server = new TcpListener(IPAddress.Any, port);
 server.Start();
+
+if (!isMaster)
+{
+    var handshake = new Handshake(
+        ServerInfo.MasterHost!,
+        ServerInfo.MasterPort!.Value);
+    
+    handshake.Ping();
+}
 
 var receiver = new Receiver();
 
