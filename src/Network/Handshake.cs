@@ -32,7 +32,7 @@ public class Handshake
         }
 
         // send REPLCONF listening-port command
-        var replconfListeningPort = "*3\r\n$7\r\nREPLCONF\r\n$9\r\nlistening\r\n$4\r\n6380\r\n";
+        var replconfListeningPort = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n6380\r\n";
         var replconfBytes = Encoding.UTF8.GetBytes(replconfListeningPort);
         stream.Write(replconfBytes, 0, replconfBytes.Length);
 
@@ -45,7 +45,7 @@ public class Handshake
         } 
 
         // send REPLCONF capa command
-        var replconfCapa = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n6380\r\n";
+        var replconfCapa = "*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n";
         var replconfCapaBytes = Encoding.UTF8.GetBytes(replconfCapa);
         stream.Write(replconfCapaBytes, 0, replconfCapaBytes.Length);
 

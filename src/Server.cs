@@ -65,6 +65,9 @@ void HandleConnection(Socket socket)
                 var buffer = new byte[1024];
                 var bytesReceived = socket.Receive(buffer);
                 var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
+                
+                // log received command
+                Console.WriteLine($"Received command: [{clientCommand.Replace("\r\n", "\\r\\n")}]");
 
                 if (string.IsNullOrWhiteSpace(clientCommand))
                 {
