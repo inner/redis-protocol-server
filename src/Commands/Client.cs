@@ -5,6 +5,8 @@ namespace codecrafters_redis.Commands;
 
 public class Client : Base
 {
+    public override bool IsPropagated => false;
+    
     public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
         socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));

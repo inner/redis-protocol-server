@@ -22,7 +22,7 @@ public static class StringExtensions
         };
     }
     
-    public static CommandType ToRespCommandType(this string respCommandTypeString)
+    public static CommandType ToCommandType(this string respCommandTypeString)
     {
         if (string.IsNullOrWhiteSpace(respCommandTypeString))
         {

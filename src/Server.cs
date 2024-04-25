@@ -80,7 +80,6 @@ void HandleConnection(Socket socket)
                 }
 
                 receiver.Receive(socket, clientCommand);
-                // socket.Send(Encoding.UTF8.GetBytes(response));
             }
         }
         catch (SocketException)
@@ -120,5 +119,12 @@ string GenerateRandomReplId()
 
 void LogReceivedCommand(string s)
 {
-    Console.WriteLine($"Received command: {s.Replace("\r\n", "\\r\\n")}");
+    var logMessage = s.Replace("\r\n", "\\r\\n");
+
+    if (!logMessage.EndsWith('\n'))
+    {
+        logMessage += '\n';
+    }
+    
+    Console.Write($"Received command: {logMessage}");
 }

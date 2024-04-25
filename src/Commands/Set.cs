@@ -5,6 +5,8 @@ namespace codecrafters_redis.Commands;
 
 public class Set : Base
 {
+    public override bool IsPropagated => true;
+    
     public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
         var cacheKey = commandParts[4];

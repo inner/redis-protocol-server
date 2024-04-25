@@ -5,6 +5,8 @@ namespace codecrafters_redis.Commands;
 
 public class Ping : Base
 {
+    public override bool IsPropagated => false;
+    
     public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
         var response = commandCount switch

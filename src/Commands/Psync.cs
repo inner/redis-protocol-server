@@ -5,6 +5,8 @@ namespace codecrafters_redis.Commands;
 
 public class Psync : Base
 {
+    public override bool IsPropagated => false;
+
     public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
         var response = $"+FULLRESYNC {ServerInfo.MasterReplId} 0\r\n";

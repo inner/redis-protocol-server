@@ -5,6 +5,8 @@ namespace codecrafters_redis.Commands;
 
 public class Info : Base
 {
+    public override bool IsPropagated => false;
+    
     public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
         var infoValues = new Dictionary<string, string?>
