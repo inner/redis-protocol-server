@@ -1,9 +1,12 @@
-﻿namespace codecrafters_redis.Commands;
+﻿using System.Net.Sockets;
+using System.Text;
+
+namespace codecrafters_redis.Commands;
 
 public class Quit : Base
 {
-    public override string Execute(int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
-        return Constants.OkResponse;
+        socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
     }
 }

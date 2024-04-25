@@ -42,7 +42,7 @@ public class Handshake
         if (response != "+OK\r\n")
         {
             throw new Exception("Handshake failed");
-        } 
+        }
 
         // send REPLCONF capa command
         var replconfCapa = "*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n";
@@ -56,7 +56,7 @@ public class Handshake
         {
             throw new Exception("Handshake failed");
         }
-        
+
         // send REPLCONF psync command
         var replconfPsync = "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n";
         var replconfPsyncBytes = Encoding.UTF8.GetBytes(replconfPsync);
@@ -64,7 +64,7 @@ public class Handshake
 
         bytesRead = stream.Read(buffer, 0, buffer.Length);
         response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-        
+
         if (!response.Contains("FULLRESYNC"))
         {
             throw new Exception("Handshake failed");

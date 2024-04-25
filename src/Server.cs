@@ -22,7 +22,12 @@ ServerInfo.Port = port;
 ServerInfo.IsMaster = isMaster;
 ServerInfo.MasterHost = masterHost;
 ServerInfo.MasterPort = masterPort;
-ServerInfo.MasterReplId = GenerateRandomReplId();
+
+if (isMaster)
+{
+    ServerInfo.MasterReplId = GenerateRandomReplId();
+    ServerInfo.MasterReplOffset = 0;
+}
 
 var serverType = ServerInfo.IsMaster
     ? "master"
@@ -38,7 +43,7 @@ if (!isMaster)
     var handshake = new Handshake(
         ServerInfo.MasterHost!,
         ServerInfo.MasterPort!.Value);
-    
+
     handshake.Start();
 }
 
@@ -65,9 +70,8 @@ void HandleConnection(Socket socket)
                 var buffer = new byte[1024];
                 var bytesReceived = socket.Receive(buffer);
                 var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
-                
-                // log received command
-                Console.WriteLine($"Received command: [{clientCommand.Replace("\r\n", "\\r\\n")}]");
+
+                LogReceivedCommand(clientCommand);
 
                 if (string.IsNullOrWhiteSpace(clientCommand))
                 {
@@ -75,8 +79,8 @@ void HandleConnection(Socket socket)
                     continue;
                 }
 
-                var response = receiver.Receive(clientCommand);
-                socket.Send(Encoding.UTF8.GetBytes(response));
+                receiver.Receive(socket, clientCommand);
+                // socket.Send(Encoding.UTF8.GetBytes(response));
             }
         }
         catch (SocketException)
@@ -112,4 +116,9 @@ string GenerateRandomReplId()
     );
 
     return result;
+}
+
+void LogReceivedCommand(string s)
+{
+    Console.WriteLine($"Received command: {s.Replace("\r\n", "\\r\\n")}");
 }

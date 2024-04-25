@@ -9,5 +9,6 @@ public enum CommandType
     Get,
     Info,
     Replconf,
-    Psync
+    Psync,
+    Client
 }

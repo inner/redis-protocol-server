@@ -1,14 +1,19 @@
-﻿namespace codecrafters_redis.Commands;
+﻿using System.Net.Sockets;
+using System.Text;
+
+namespace codecrafters_redis.Commands;
 
 public class Get : Base
 {
-    public override string Execute(int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
         var cacheKey = commandParts[4];
         var cacheItem = DataCache.Get(cacheKey);
 
-        return cacheItem is null or { Value: null }
+        var response = cacheItem is null or { Value: null }
             ? Constants.NullResponse
             : $"${cacheItem.Value.Length}\r\n{cacheItem.Value}\r\n";
+        
+        socket.Send(Encoding.UTF8.GetBytes(response));
     }
 }

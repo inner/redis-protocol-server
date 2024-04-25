@@ -1,8 +1,11 @@
-﻿namespace codecrafters_redis.Commands;
+﻿using System.Net.Sockets;
+using System.Text;
+
+namespace codecrafters_redis.Commands;
 
 public class Info : Base
 {
-    public override string Execute(int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
         var infoValues = new Dictionary<string, string?>
         {
@@ -18,7 +21,8 @@ public class Info : Base
         };
         
         var value = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
+        var response = $"${value.Length}\r\n{value}\r\n";
         
-        return $"${value.Length}\r\n{value}\r\n";
+        socket.Send(Encoding.UTF8.GetBytes(response));
     }
 }

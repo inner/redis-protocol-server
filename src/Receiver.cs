@@ -1,36 +1,48 @@
-﻿using codecrafters_redis.Commands;
+﻿using System.Net.Sockets;
+using codecrafters_redis.Commands;
 using codecrafters_redis.Enums;
 
 namespace codecrafters_redis;
 
 public class Receiver
 {
-    public string Receive(string respCommandString)
+    public void Receive(Socket socket, string respCommandString)
     {
         respCommandString = respCommandString.Replace("\r\n", "\\r\\n");
         var respDataType = respCommandString.GetRespDataType();
         
-        return respDataType switch
+        switch (respDataType)
         {
-            DataType.Array => ExecuteArray(respCommandString),
-            DataType.SimpleString => ExecuteSimpleString(),
-            DataType.SimpleError => ExecuteSimpleError(),
-            DataType.Integer => ExecuteInteger(),
-            DataType.BulkString => ExecuteBulkString(),
-            _ => throw new ArgumentException("Invalid data type.")
-        };
+            case DataType.Array:
+                ExecuteArray(socket, respCommandString);
+                break;
+            case DataType.SimpleString:
+                ExecuteSimpleString();
+                break;
+            case DataType.SimpleError:
+                ExecuteSimpleError();
+                break;
+            case DataType.Integer:
+                ExecuteInteger();
+                break;
+            case DataType.BulkString:
+                ExecuteBulkString();
+                break;
+            default:
+                throw new ArgumentException("Invalid data type.");
+        }
     }
     
-    private string ExecuteArray(string respCommandString)
+    private void ExecuteArray(Socket socket, string respCommandString)
     {
         var commandParts = respCommandString.Split("\\r\\n");
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
         var respCommandType = commandParts[2].ToRespCommandType();
 
-        return ExecuteCommand(respCommandType, commandCount, commandParts);
+        ExecuteCommand(socket, respCommandType, commandCount, commandParts);
     }
     
-    private string ExecuteCommand(CommandType commandType, int commandCount, string[] commandParts)
+    private void ExecuteCommand(Socket socket, CommandType commandType, int commandCount, string[] commandParts)
     {
         var className = $"codecrafters_redis.Commands.{commandType}";
         var type = Type.GetType(className);
@@ -41,27 +53,18 @@ public class Receiver
         }
         
         var command = (Base)Activator.CreateInstance(type)!;
-
-        return command.Execute(commandCount, commandParts);
+        command.Execute(socket, commandCount, commandParts);
     }
 
-    private string ExecuteSimpleString()
-    {
-        return "+PONG\\r\\n";
-    }
+    private void ExecuteSimpleString()
+    { }
 
-    private string ExecuteSimpleError()
-    {
-        return "-ERR unknown command 'foobar'\r\n";
-    }
+    private void ExecuteSimpleError()
+    { }
 
-    private string ExecuteInteger()
-    {
-        return ":1000\r\n";
-    }
+    private void ExecuteInteger()
+    { }
 
-    private string ExecuteBulkString()
-    {
-        return "$6\r\nfoobar\r\n";
-    }
+    private void ExecuteBulkString()
+    { }
 }

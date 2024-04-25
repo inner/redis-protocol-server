@@ -1,8 +1,11 @@
-﻿namespace codecrafters_redis.Commands;
+﻿using System.Net.Sockets;
+using System.Text;
+
+namespace codecrafters_redis.Commands;
 
 public class Set : Base
 {
-    public override string Execute(int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
         var cacheKey = commandParts[4];
         var cacheValue = commandParts[6];
@@ -10,7 +13,7 @@ public class Set : Base
         if (commandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
-            return Constants.OkResponse;
+            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
         }
         
         const string expiryCommandConstant = "PX";
@@ -24,6 +27,6 @@ public class Set : Base
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
 
-        return Constants.OkResponse;
+        socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
     }
 }

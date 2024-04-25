@@ -3,7 +3,7 @@ using System.Text;
 
 namespace codecrafters_redis.Commands;
 
-public class Replconf : Base
+public class Client : Base
 {
     public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
