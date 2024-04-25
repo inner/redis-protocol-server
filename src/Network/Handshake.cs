@@ -69,5 +69,43 @@ public class Handshake
         {
             throw new Exception("Handshake failed");
         }
+        
+        Task.Run(() => NewMethod(tcpClient.Client));
+    }
+
+    private Task NewMethod(Socket socket)
+    {
+        var receiver = new Receiver();
+        
+        while (socket.Connected)
+        {
+            var buffer = new byte[1024];
+            var bytesReceived = socket.Receive(buffer);
+            var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
+
+            LogReceivedCommand(clientCommand);
+
+            if (string.IsNullOrWhiteSpace(clientCommand))
+            {
+                socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
+                continue;
+            }
+
+            receiver.Receive(socket, clientCommand);
+        }
+        
+        return Task.CompletedTask;
+    }
+
+    void LogReceivedCommand(string s)
+    {
+        var logMessage = s.Replace("\r\n", "\\r\\n");
+
+        if (!logMessage.EndsWith('\n'))
+        {
+            logMessage += '\n';
+        }
+    
+        Console.Write($"Received command: {logMessage}");
     }
 }
