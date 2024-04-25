@@ -61,8 +61,8 @@ public class Receiver
         {
             foreach (var slaveSocket in SlaveServers.SlaveSockets)
             {
-                Console.WriteLine($"Propagating command to slave '{slaveSocket.Key}'");
-                slaveSocket.Value.Send(Encoding.UTF8.GetBytes(commandString));
+                Console.WriteLine($"Propagating command to slave '{slaveSocket.Key}'. Is Connected: '{slaveSocket.Value.Connected}'.");
+                slaveSocket.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
             }
         }
 
