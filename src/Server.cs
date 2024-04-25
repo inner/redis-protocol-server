@@ -39,7 +39,7 @@ if (!isMaster)
         ServerInfo.MasterHost!,
         ServerInfo.MasterPort!.Value);
     
-    handshake.Ping();
+    handshake.Start();
 }
 
 var receiver = new Receiver();
