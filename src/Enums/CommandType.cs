@@ -7,5 +7,6 @@ public enum CommandType
     Quit,
     Set,
     Get,
-    Info
+    Info,
+    Replconf
 }

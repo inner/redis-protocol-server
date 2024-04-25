@@ -28,7 +28,7 @@ var serverType = ServerInfo.IsMaster
     ? "master"
     : "slave";
 
-Console.WriteLine($"Starting Redis '{serverType}' server");
+Console.WriteLine($"Starting Redis '{serverType}' server on port '{port}'");
 
 var server = new TcpListener(IPAddress.Any, port);
 server.Start();
