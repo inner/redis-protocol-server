@@ -26,7 +26,7 @@ public class Handshake
         var bytesRead = stream.Read(buffer, 0, buffer.Length);
         var response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
         
-        if (response != Constants.PongResponse)
+        if (response != "+PONG\r\n")
         {
             throw new Exception("Handshake failed");
         }
@@ -39,7 +39,7 @@ public class Handshake
         bytesRead = stream.Read(buffer, 0, buffer.Length);
         response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
             
-        if (response != Constants.OkResponse)
+        if (response != "+OK\r\n")
         {
             throw new Exception("Handshake failed");
         }
@@ -52,7 +52,7 @@ public class Handshake
         bytesRead = stream.Read(buffer, 0, buffer.Length);
         response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
         
-        if (response != Constants.OkResponse)
+        if (response != "+OK\r\n")
         {
             throw new Exception("Handshake failed");
         }
