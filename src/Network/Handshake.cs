@@ -64,8 +64,7 @@ public class Handshake
 
         bytesRead = stream.Read(buffer, 0, buffer.Length);
         response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
-        // check if response is psync ? -1
+        
         if (!response.Contains("FULLRESYNC"))
         {
             throw new Exception("Handshake failed");
