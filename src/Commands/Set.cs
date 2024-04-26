@@ -6,19 +6,24 @@ namespace codecrafters_redis.Commands;
 public class Set : Base
 {
     public override bool IsPropagated => true;
-    
+
     public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
         var cacheKey = commandParts[4];
         var cacheValue = commandParts[6];
-        
+
         if (commandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+
+            if (ServerInfo.IsMaster)
+            {
+                socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+            }
+
             return;
         }
-        
+
         const string expiryCommandConstant = "PX";
 
         var expiryCommand = commandParts[8];
@@ -26,10 +31,13 @@ public class Set : Base
         {
             throw new AggregateException($"Unrecognized command used for '{nameof(Set)}': '{expiryCommand}'.");
         }
-        
+
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
 
-        socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+        if (ServerInfo.IsMaster)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+        }
     }
 }
