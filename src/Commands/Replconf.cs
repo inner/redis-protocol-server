@@ -5,7 +5,7 @@ namespace codecrafters_redis.Commands;
 
 public class Replconf : Base
 {
-    public override bool IsPropagated => true;
+    public override bool IsPropagated => false;
     
     public override void Execute(Socket socket, int commandCount, string[] commandParts)
     {
