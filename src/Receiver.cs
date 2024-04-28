@@ -84,11 +84,11 @@ public class Receiver
 
         var command = (Base)Activator.CreateInstance(type)!;
 
-        if (command.IsPropagated && ServerInfo.IsMaster)
+        if (ServerInfo.IsMaster)
         {
             foreach (var replicaSocket in ServerInfo.ReplicaSockets.Where(x => x.Value.Connected))
             {
-                Console.WriteLine($"Propagating command to replica '{replicaSocket.Key}'.");
+                Console.WriteLine($"Propagating command '{commandString}' to replica '{replicaSocket.Key}'.");
                 replicaSocket.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
             }
         }
