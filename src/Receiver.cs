@@ -16,30 +16,7 @@ public class Receiver
         switch (respDataType)
         {
             case DataType.Array:
-                var multiCommandSplit = Regex.Split(commandString, @"(\*\d+\\r\\n)")
-                    .Where(x => !string.IsNullOrWhiteSpace(x))
-                    .ToList();
-                
-                List<string> commandsToExecute = new();
-                
-                var skip = 0;
-                for (var i = 0; i < multiCommandSplit.Count/2; i++)
-                {
-                    var commandToExecute = string.Join(
-                        string.Empty,
-                        multiCommandSplit
-                            .Skip(skip)
-                            .Take(2));
-                    
-                    commandsToExecute.Add(commandToExecute);
-                    skip += 2;
-                }
-
-                foreach (var commandToExecute in commandsToExecute)
-                {
-                    ExecuteArray(socket, commandToExecute);
-                }
-                
+                ExecuteAsArrayMultiCommand(socket, commandString);
                 break;
             case DataType.SimpleString:
                 ExecuteSimpleString();
@@ -55,6 +32,33 @@ public class Receiver
                 break;
             default:
                 throw new ArgumentException("Invalid data type.");
+        }
+    }
+
+    private void ExecuteAsArrayMultiCommand(Socket socket, string commandString)
+    {
+        var multiCommandSplit = Regex.Split(commandString, @"(\*\d+\\r\\n)")
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .ToList();
+                
+        List<string> commandsToExecute = [];
+                
+        var skip = 0;
+        for (var i = 0; i < multiCommandSplit.Count/2; i++)
+        {
+            var commandToExecute = string.Join(
+                string.Empty,
+                multiCommandSplit
+                    .Skip(skip)
+                    .Take(2));
+                    
+            commandsToExecute.Add(commandToExecute);
+            skip += 2;
+        }
+
+        foreach (var commandToExecute in commandsToExecute)
+        {
+            ExecuteArray(socket, commandToExecute);
         }
     }
 
