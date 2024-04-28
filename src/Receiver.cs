@@ -2,7 +2,6 @@
 using System.Text;
 using codecrafters_redis.Commands;
 using codecrafters_redis.Enums;
-using codecrafters_redis.Network;
 
 namespace codecrafters_redis;
 
@@ -59,10 +58,10 @@ public class Receiver
 
         if (command.IsPropagated && ServerInfo.IsMaster)
         {
-            foreach (var slaveSocket in SlaveServers.SlaveSockets)
+            foreach (var replicaSocket in ServerInfo.ReplicaSockets.Where(x => x.Value.Connected))
             {
-                Console.WriteLine($"Propagating command to slave '{slaveSocket.Key}'. Is Connected: '{slaveSocket.Value.Connected}'.");
-                slaveSocket.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
+                Console.WriteLine($"Propagating command to replica '{replicaSocket.Key}'.");
+                replicaSocket.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
             }
         }
 

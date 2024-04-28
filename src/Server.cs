@@ -1,8 +1,6 @@
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using codecrafters_redis;
-using codecrafters_redis.Network;
+using codecrafters_redis.Servers;
 
 var port = args.Length > 0 && (args[0] == "--port" || args[0] == "-p")
     ? int.Parse(args[1])
@@ -16,93 +14,89 @@ int? masterPort = args.Length > 2 && args[2] == "--replicaof"
     ? int.Parse(args[4])
     : null;
 
-var isMaster = masterHost == null;
+ServerInfo.IsMaster = masterHost == null;
 
-ServerInfo.Port = port;
-ServerInfo.IsMaster = isMaster;
-ServerInfo.MasterHost = masterHost;
-ServerInfo.MasterPort = masterPort;
+// var server = new TcpListener(IPAddress.Any, port);
+// server.Start();
+//
+// if (!isMaster)
+// {
+//     var handshake = new Handshake(
+//         ServerInfo.MasterHost!,
+//         ServerInfo.MasterPort!.Value);
+//
+//     handshake.Start();
+// }
 
-if (isMaster)
+if (ServerInfo.IsMaster)
 {
     ServerInfo.MasterReplId = GenerateRandomReplId();
     ServerInfo.MasterReplOffset = 0;
+    
+    new MasterNode(IPAddress.Any, port, new Receiver())
+        .Start();
 }
-
-var serverType = ServerInfo.IsMaster
-    ? "master"
-    : "slave";
-
-Console.WriteLine($"Starting Redis '{serverType}' server on port '{port}'");
-
-var server = new TcpListener(IPAddress.Any, port);
-server.Start();
-
-if (!isMaster)
+else
 {
-    var handshake = new Handshake(
-        ServerInfo.MasterHost!,
-        ServerInfo.MasterPort!.Value);
-
-    handshake.Start();
+    new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, new Receiver())
+        .Handshake()
+        .Start();
 }
 
-var receiver = new Receiver();
-
-while (true)
-{
-    var socket = server.AcceptSocket();
-    _ = Task.Run(() => HandleConnection(socket));
-}
-
-void HandleConnection(Socket socket)
-{
-    var connectionId = $"{socket.LocalEndPoint}->{socket.RemoteEndPoint}";
-
-    while (socket.Connected)
-    {
-        try
-        {
-            Console.WriteLine($"TCP Connection [{connectionId}] established");
-
-            while (true)
-            {
-                var buffer = new byte[1024];
-                var bytesReceived = socket.Receive(buffer);
-                var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
-
-                LogReceivedCommand(clientCommand);
-
-                if (string.IsNullOrWhiteSpace(clientCommand))
-                {
-                    socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
-                    continue;
-                }
-
-                receiver.Receive(socket, clientCommand);
-            }
-        }
-        catch (SocketException)
-        {
-            Console.WriteLine($"Closing TCP connection: [{connectionId}]");
-        }
-        finally
-        {
-            CloseSocket(connectionId, socket);
-        }
-    }
-}
-
-void CloseSocket(string connectionId, Socket? socket)
-{
-    if (socket == null)
-    {
-        return;
-    }
-
-    Console.WriteLine($"TCP Connection [{connectionId}] closed");
-    socket.Close();
-}
+// while (true)
+// {
+//     var socket = server.AcceptSocket();
+//     _ = Task.Run(() => HandleConnection(socket));
+// }
+//
+// void HandleConnection(Socket socket)
+// {
+//     var connectionId = $"{socket.LocalEndPoint}->{socket.RemoteEndPoint}";
+//
+//     while (socket.Connected)
+//     {
+//         try
+//         {
+//             Console.WriteLine($"TCP Connection [{connectionId}] established");
+//
+//             while (true)
+//             {
+//                 var buffer = new byte[1024];
+//                 var bytesReceived = socket.Receive(buffer);
+//                 var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
+//
+//                 LogReceivedCommand(clientCommand);
+//
+//                 if (string.IsNullOrWhiteSpace(clientCommand))
+//                 {
+//                     socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
+//                     continue;
+//                 }
+//
+//                 receiver.Receive(socket, clientCommand);
+//             }
+//         }
+//         catch (SocketException)
+//         {
+//             Console.WriteLine($"Closing TCP connection: [{connectionId}]");
+//         }
+//         finally
+//         {
+//             CloseSocket(connectionId, socket);
+//         }
+//     }
+// }
+//
+// void CloseSocket(string connectionId, Socket? socket)
+// {
+//     if (socket == null)
+//     {
+//         return;
+//     }
+//
+//     Console.WriteLine($"TCP Connection [{connectionId}] closed");
+//     socket.Close();
+// }
 
 string GenerateRandomReplId()
 {
@@ -117,14 +111,14 @@ string GenerateRandomReplId()
     return result;
 }
 
-void LogReceivedCommand(string s)
-{
-    var logMessage = s.Replace("\r\n", "\\r\\n");
-
-    if (!logMessage.EndsWith('\n'))
-    {
-        logMessage += '\n';
-    }
-    
-    Console.Write($"Received command: {logMessage}");
-}
+// void LogReceivedCommand(string s)
+// {
+//     var logMessage = s.Replace("\r\n", "\\r\\n");
+//
+//     if (!logMessage.EndsWith('\n'))
+//     {
+//         logMessage += '\n';
+//     }
+//     
+//     Console.Write($"Received command: {logMessage}");
+// }
