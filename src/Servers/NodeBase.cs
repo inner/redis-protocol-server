@@ -70,7 +70,7 @@ public abstract class NodeBase
                     var bytesReceived = socket.Receive(buffer);
                     var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
 
-                    // LogReceivedCommand(clientCommand);
+                    LogReceivedCommand(clientCommand);
 
                     if (string.IsNullOrWhiteSpace(clientCommand))
                     {

@@ -29,6 +29,8 @@ public class ReplicaNode : NodeBase
         SendReplconfListeningPort(stream);
         SendReplconfCapaPsync2(stream);
         SendPsync(stream);
+
+        ServerInfo.ReplicaHandshakeCompleted = true;
         
         Task.Run(() => HandleConnection(tcpClient.Client));
         

@@ -9,4 +9,5 @@ public static class ServerInfo
     public static string? MasterReplId { get; set; }
     public static int MasterReplOffset  { get; set; }
     public static readonly ConcurrentDictionary<string, Socket> ReplicaSockets = new();
+    public static bool ReplicaHandshakeCompleted { get; set; }
 }
