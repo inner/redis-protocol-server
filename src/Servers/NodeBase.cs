@@ -74,7 +74,7 @@ public abstract class NodeBase
 
                     if (string.IsNullOrWhiteSpace(clientCommand))
                     {
-                        // socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
+                        socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
                         continue;
                     }
 

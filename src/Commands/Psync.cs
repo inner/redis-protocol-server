@@ -19,5 +19,7 @@ public class Psync : Base
             .ToArray();
         
         socket.Send(rdbResynchronizationFileMsg);
+        
+        ServerInfo.ReplicaSockets.TryAdd(socket.RemoteEndPoint!.ToString()!, socket);
     }
 }
