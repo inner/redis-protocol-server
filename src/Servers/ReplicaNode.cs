@@ -12,6 +12,8 @@ public class ReplicaNode : NodeBase
     public ReplicaNode(IPAddress localAddress, int port, string masterNode, int masterPort, Receiver receiver)
         : base(localAddress, port, receiver)
     {
+        SetServerInfo();
+
         this.port = port;
         tcpClient = new TcpClient(masterNode, masterPort);
     }
@@ -40,7 +42,7 @@ public class ReplicaNode : NodeBase
         const string ping = "*1\r\n$4\r\nPING\r\n";
         StreamWrite(stream, ping);
         
-        if (StreamRead(stream) != "+PONG\r\n")
+        if (StreamRead(stream) != Constants.PongResponse)
         {
             ThrowHandshakeFailed();
         }
@@ -51,7 +53,7 @@ public class ReplicaNode : NodeBase
         const string replconfListeningPort = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n6380\r\n";
         StreamWrite(stream, replconfListeningPort);
         
-        if (StreamRead(stream) != "+OK\r\n")
+        if (StreamRead(stream) != Constants.OkResponse)
         {
             ThrowHandshakeFailed();
         }
@@ -62,7 +64,7 @@ public class ReplicaNode : NodeBase
         const string replconfCapa = "*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n";
         StreamWrite(stream, replconfCapa);
         
-        if (StreamRead(stream) != "+OK\r\n")
+        if (StreamRead(stream) != Constants.OkResponse)
         {
             ThrowHandshakeFailed();
         }
@@ -97,5 +99,24 @@ public class ReplicaNode : NodeBase
     {
         var bytes = Encoding.UTF8.GetBytes(ping);
         stream.Write(bytes, 0, bytes.Length);
+    }
+    
+    private static void SetServerInfo()
+    {
+        ServerInfo.MasterReplId = GenerateRandomReplId();
+        ServerInfo.MasterReplOffset = 0;
+    }
+    
+    private static string GenerateRandomReplId()
+    {
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var random = new Random();
+        var result = new string(
+            Enumerable.Repeat(chars, 40)
+                .Select(s => s[random.Next(s.Length)])
+                .ToArray()
+        );
+
+        return result;
     }
 }
