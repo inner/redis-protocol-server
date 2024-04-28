@@ -15,7 +15,10 @@ public class Ping : Base
             2 => $"${commandParts[4].Length}\r\n{commandParts[4]}\r\n",
             _ => throw new ArgumentException("Wrong number of arguments for 'ping' command")
         };
-        
-        socket.Send(Encoding.UTF8.GetBytes(response));
+
+        if (ServerInfo.IsMaster)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(response));
+        }
     }
 }
