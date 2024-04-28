@@ -9,11 +9,32 @@ public class MasterNode : NodeBase
     public MasterNode(IPAddress localAddress, int port, Receiver receiver)
         : base(localAddress, port, receiver)
     {
+        SetServerInfo();
+        
         this.port = port;
     }
 
     protected override void LogOnStart()
     {
         Console.WriteLine($"Starting Redis 'master' server on port '{port}'");
+    }
+    
+    private static void SetServerInfo()
+    {
+        ServerInfo.MasterReplId = GenerateRandomReplId();
+        ServerInfo.MasterReplOffset = 0;
+    }
+    
+    private static string GenerateRandomReplId()
+    {
+        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var random = new Random();
+        var result = new string(
+            Enumerable.Repeat(chars, 40)
+                .Select(s => s[random.Next(s.Length)])
+                .ToArray()
+        );
+
+        return result;
     }
 }

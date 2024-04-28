@@ -12,8 +12,6 @@ public class ReplicaNode : NodeBase
     public ReplicaNode(IPAddress localAddress, int port, string masterNode, int masterPort, Receiver receiver)
         : base(localAddress, port, receiver)
     {
-        SetServerInfo();
-
         this.port = port;
         tcpClient = new TcpClient(masterNode, masterPort);
     }
@@ -99,24 +97,5 @@ public class ReplicaNode : NodeBase
     {
         var bytes = Encoding.UTF8.GetBytes(ping);
         stream.Write(bytes, 0, bytes.Length);
-    }
-    
-    private static void SetServerInfo()
-    {
-        ServerInfo.MasterReplId = GenerateRandomReplId();
-        ServerInfo.MasterReplOffset = 0;
-    }
-    
-    private static string GenerateRandomReplId()
-    {
-        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        var random = new Random();
-        var result = new string(
-            Enumerable.Repeat(chars, 40)
-                .Select(s => s[random.Next(s.Length)])
-                .ToArray()
-        );
-
-        return result;
     }
 }
