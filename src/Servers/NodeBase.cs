@@ -84,6 +84,7 @@ public abstract class NodeBase
             catch (SocketException)
             {
                 Console.WriteLine($"Closing TCP connection: [{connectionId}]");
+                socket.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
             }
             finally
             {
