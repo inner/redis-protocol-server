@@ -9,6 +9,11 @@ public class Replconf : Base
     
     public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
+        if (!replicaConnection)
+        {
+            return;
+        }
+        
         if (string.Equals(commandParts[4], "listening-port", StringComparison.InvariantCultureIgnoreCase) ||
             string.Equals(commandParts[4], "capa", StringComparison.InvariantCultureIgnoreCase))
         {
