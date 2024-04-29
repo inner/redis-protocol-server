@@ -19,6 +19,19 @@ public class Replconf : Base
             string.Equals(commandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
         {
             socket.Send(Encoding.UTF8.GetBytes("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"));
+            
+            Thread.Sleep(1000);
+
+            // Check if the response is ACK
+            var buffer = new byte[1024];
+            var bytesReceived = socket.Receive(buffer);
+            var response = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
+            if (!response.Contains("ACK"))
+            {
+                // Handle the case where a GETACK doesn’t receive an ACK back
+                // This could be logging the error, retrying the command, etc.
+                Console.WriteLine("GETACK did not receive an ACK back.");
+            }
         }
         
         // if (string.Equals(commandParts[4], "ack", StringComparison.InvariantCultureIgnoreCase) &&

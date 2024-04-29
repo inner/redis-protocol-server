@@ -62,7 +62,7 @@ public abstract class NodeBase
         {
             try
             {
-                // Console.WriteLine($"TCP Connection [{connectionId}] established");
+                Console.WriteLine($"TCP Connection [{connectionId}] established");
 
                 while (true)
                 {
@@ -70,11 +70,10 @@ public abstract class NodeBase
                     var bytesReceived = socket.Receive(buffer);
                     var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
 
-                    //LogReceivedCommand(clientCommand);
+                    LogReceivedCommand(clientCommand);
 
                     if (string.IsNullOrWhiteSpace(clientCommand))
                     {
-                        //socket.Send(Encoding.UTF8.GetBytes(Environment.NewLine));
                         socket.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
                         continue;
                     }

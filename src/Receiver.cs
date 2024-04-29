@@ -12,7 +12,6 @@ public class Receiver
     {
         if (string.IsNullOrEmpty(commandString))
         {
-            // send resp null to the socket
             socket.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
         }
         
@@ -94,7 +93,7 @@ public class Receiver
         {
             foreach (var replicaSocket in ServerInfo.ReplicaSockets.Where(x => x.Value.Connected))
             {
-                // Console.WriteLine($"Propagating command '{commandString[..^1]}' to replica '{replicaSocket.Key}'.");
+                Console.WriteLine($"Propagating command '{commandString[..^1]}' to replica '{replicaSocket.Key}'.");
                 // replicaSocket.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
                 command.Execute(replicaSocket.Value, commandCount, commandParts, replicaConnection: true);
             }
