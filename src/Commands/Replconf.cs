@@ -15,7 +15,7 @@ public class Replconf : Base
             socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
         }
         
-        if (replicaConnection && string.Equals(commandParts[4], "getack", StringComparison.InvariantCultureIgnoreCase) &&
+        if (string.Equals(commandParts[4], "getack", StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(commandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
         {
             Console.WriteLine("Sending the ack 0");
