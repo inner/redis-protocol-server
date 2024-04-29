@@ -37,7 +37,7 @@ public abstract class NodeBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
+            Console.WriteLine($"Error: {ex.Message}, stack: {ex.StackTrace}");
             throw;
         }
     }
@@ -62,7 +62,7 @@ public abstract class NodeBase
         {
             try
             {
-                Console.WriteLine($"TCP Connection [{connectionId}] established");
+                // Console.WriteLine($"TCP Connection [{connectionId}] established");
 
                 while (true)
                 {
@@ -70,7 +70,7 @@ public abstract class NodeBase
                     var bytesReceived = socket.Receive(buffer);
                     var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
 
-                    LogReceivedCommand(clientCommand);
+                    //LogReceivedCommand(clientCommand);
 
                     if (string.IsNullOrWhiteSpace(clientCommand))
                     {
