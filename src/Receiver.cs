@@ -1,5 +1,4 @@
 ﻿using System.Net.Sockets;
-using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Commands;
 using codecrafters_redis.Enums;
@@ -10,6 +9,11 @@ public class Receiver
 {
     public void Receive(Socket socket, string commandString)
     {
+        if (string.IsNullOrEmpty(commandString))
+        {
+            return;
+        }
+        
         commandString = commandString.Replace("\r\n", "\\r\\n");
         var respDataType = commandString.GetRespDataType();
 
@@ -90,7 +94,7 @@ public class Receiver
             {
                 Console.WriteLine($"Propagating command '{commandString[..^1]}' to replica '{replicaSocket.Key}'.");
                 // replicaSocket.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
-                command.Execute(socket, commandCount, commandParts, replicaConnection: true);
+                command.Execute(replicaSocket.Value, commandCount, commandParts, replicaConnection: true);
             }
         }
 
