@@ -1,4 +1,5 @@
 ﻿using System.Net.Sockets;
+using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Commands;
 using codecrafters_redis.Enums;
@@ -88,8 +89,28 @@ public class Receiver
             foreach (var replicaSocket in ServerInfo.ReplicaSockets.Where(x => x.Value.Connected))
             {
                 Console.WriteLine($"Propagating command '{commandString[..^1]}' to replica '{replicaSocket.Key}'.");
-                // replicaSocket.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
-                command.Execute(replicaSocket.Value, commandCount, commandParts, replicaConnection: true);
+                replicaSocket.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
+
+                if (string.Equals(commandParts[4], "getack", StringComparison.InvariantCultureIgnoreCase) &&
+                    string.Equals(commandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    if (replicaSocket.Value.Poll(1000000, SelectMode.SelectRead))
+                    {
+                        var buffer = new byte[1024];
+                        var bytesReceived = replicaSocket.Value.Receive(buffer);
+                        var response = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
+                        if (!response.Contains("ACK", StringComparison.InvariantCultureIgnoreCase) )
+                        {
+                            // Handle the case where a GETACK doesn’t receive an ACK back
+                            // This could be logging the error, retrying the command, etc.
+                            // this socket
+                            replicaSocket.Value.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
+                            Console.WriteLine("GETACK didn't receive an ACK back.");
+                        }
+                    }
+                }
+                
+                //command.Execute(replicaSocket.Value, commandCount, commandParts, replicaConnection: true);
             }
         }
 
