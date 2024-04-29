@@ -19,6 +19,7 @@ public abstract class NodeBase
     }
 
     protected abstract void LogOnStart();
+    protected abstract string NodeName { get; }
 
     public void Start()
     {
@@ -51,7 +52,7 @@ public abstract class NodeBase
             logMessage += '\n';
         }
 
-        Console.Write($"Received command: {logMessage}");
+        Console.Write($"[{NodeName}] Received command: {logMessage}");
     }
 
     protected void HandleConnection(Socket socket)

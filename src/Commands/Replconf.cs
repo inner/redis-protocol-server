@@ -9,11 +9,6 @@ public class Replconf : Base
     
     public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
-        // if (!replicaConnection)
-        // {
-        //     return;
-        // }
-        
         if (string.Equals(commandParts[4], "listening-port", StringComparison.InvariantCultureIgnoreCase) ||
             string.Equals(commandParts[4], "capa", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -21,17 +16,17 @@ public class Replconf : Base
             return;
         }
         
-        if (string.Equals(commandParts[4], "getack", StringComparison.InvariantCultureIgnoreCase) &&
+        if (replicaConnection && string.Equals(commandParts[4], "getack", StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(commandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
         {
             socket.Send(Encoding.UTF8.GetBytes("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"));
             return;
         }
         
-        if (string.Equals(commandParts[4], "ack", StringComparison.InvariantCultureIgnoreCase) &&
+        if (replicaConnection && string.Equals(commandParts[4], "ack", StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(commandParts[6], "0", StringComparison.InvariantCultureIgnoreCase))
         {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
+            // socket.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
         }
     }
 }

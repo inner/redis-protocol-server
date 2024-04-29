@@ -16,7 +16,7 @@ public class Get : Base
             ? Constants.NullResponse
             : $"${cacheItem.Value.Length}\r\n{cacheItem.Value}\r\n";
 
-        if (ServerInfo.IsMaster && !replicaConnection)
+        if (!replicaConnection)
         {
             socket.Send(Encoding.UTF8.GetBytes(response));
         }

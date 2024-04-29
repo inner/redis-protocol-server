@@ -21,6 +21,8 @@ public class ReplicaNode : NodeBase
         Console.WriteLine($"Starting Redis 'replica' server on port '{port}'");
     }
 
+    protected override string NodeName => "replica-node";
+
     public ReplicaNode Handshake()
     {
         var stream = tcpClient.GetStream();

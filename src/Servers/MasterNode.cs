@@ -19,6 +19,8 @@ public class MasterNode : NodeBase
         Console.WriteLine($"Starting Redis 'master' server on port '{port}'");
     }
     
+    protected override string NodeName => "master-node";
+    
     private static void SetServerInfo()
     {
         ServerInfo.MasterReplId = GenerateRandomReplId();
