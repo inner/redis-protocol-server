@@ -16,14 +16,16 @@ int? masterPort = args.Length > 2 && args[2] == "--replicaof"
 
 ServerInfo.IsMaster = masterHost == null;
 
+var receiver = new Receiver();
+
 if (ServerInfo.IsMaster)
 {
-    new MasterNode(IPAddress.Any, port, new Receiver())
+    new MasterNode(IPAddress.Any, port, receiver)
         .Start();
 }
 else
 {
-    new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, new Receiver())
+    new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, receiver)
         .Handshake()
         .Start();
 }

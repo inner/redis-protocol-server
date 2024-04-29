@@ -8,7 +8,7 @@ public abstract class NodeBase
 {
     private readonly IPAddress localAddress;
     private readonly int port;
-    
+
     private readonly Receiver receiver;
 
     protected NodeBase(IPAddress localAddress, int port, Receiver receiver)
@@ -17,13 +17,13 @@ public abstract class NodeBase
         this.port = port;
         this.receiver = receiver;
     }
-    
+
     protected abstract void LogOnStart();
-    
+
     public void Start()
     {
         LogOnStart();
-        
+
         try
         {
             var server = new TcpListener(localAddress, port);
@@ -50,11 +50,11 @@ public abstract class NodeBase
         {
             logMessage += '\n';
         }
-    
+
         Console.Write($"Received command: {logMessage}");
     }
 
-    protected void HandleConnection(Socket socket)
+    protected void HandleConnection(Socket socket, bool replicaConnection = false)
     {
         var connectionId = $"{socket.LocalEndPoint}->{socket.RemoteEndPoint}";
 
@@ -62,7 +62,12 @@ public abstract class NodeBase
         {
             try
             {
-                Console.WriteLine($"TCP Connection [{connectionId}] established");
+                Console.ForegroundColor = replicaConnection
+                    ? ConsoleColor.Green
+                    : ConsoleColor.Red;
+
+                Console.WriteLine(
+                    $"[Replica Connection: {replicaConnection}] TCP Connection [{connectionId}] established");
 
                 while (true)
                 {
@@ -91,7 +96,7 @@ public abstract class NodeBase
             }
         }
     }
-    
+
     private void CloseSocket(string connectionId, Socket? socket)
     {
         if (socket == null)
