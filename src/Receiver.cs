@@ -40,7 +40,7 @@ public class Receiver
         var multiCommandSplit = Regex.Split(commandString, @"(\*\d+\\r\\n)")
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .ToList();
-                
+        
         List<string> commandsToExecute = [];
                 
         var skip = 0;
