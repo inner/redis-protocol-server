@@ -7,7 +7,7 @@ public class Info : Base
 {
     public override bool IsPropagated => false;
     
-    public override void Execute(Socket socket, int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
         var infoValues = new Dictionary<string, string?>
         {
@@ -24,7 +24,10 @@ public class Info : Base
         
         var value = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
         var response = $"${value.Length}\r\n{value}\r\n";
-        
-        socket.Send(Encoding.UTF8.GetBytes(response));
+
+        if (!replicaConnection)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(response));
+        }
     }
 }

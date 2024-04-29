@@ -32,7 +32,7 @@ public class ReplicaNode : NodeBase
 
         ServerInfo.ReplicaHandshakeCompleted = true;
         
-        Task.Run(() => HandleConnection(tcpClient.Client, replicaConnection: true));
+        Task.Run(() => HandleConnection(tcpClient.Client));
         
         return this;
     }

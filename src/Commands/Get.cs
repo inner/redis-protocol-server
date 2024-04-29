@@ -7,7 +7,7 @@ public class Get : Base
 {
     public override bool IsPropagated => false;
 
-    public override void Execute(Socket socket, int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];
         var cacheItem = DataCache.Get(cacheKey);
@@ -16,7 +16,7 @@ public class Get : Base
             ? Constants.NullResponse
             : $"${cacheItem.Value.Length}\r\n{cacheItem.Value}\r\n";
 
-        if (ServerInfo.IsMaster)
+        if (ServerInfo.IsMaster && !replicaConnection)
         {
             socket.Send(Encoding.UTF8.GetBytes(response));
         }

@@ -7,7 +7,7 @@ public class Replconf : Base
 {
     public override bool IsPropagated => false;
     
-    public override void Execute(Socket socket, int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
         if (string.Equals(commandParts[4], "listening-port", StringComparison.InvariantCultureIgnoreCase) ||
             string.Equals(commandParts[4], "capa", StringComparison.InvariantCultureIgnoreCase))

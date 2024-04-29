@@ -7,7 +7,7 @@ public class Ping : Base
 {
     public override bool IsPropagated => true;
     
-    public override void Execute(Socket socket, int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
         var response = commandCount switch
         {
@@ -16,7 +16,7 @@ public class Ping : Base
             _ => throw new ArgumentException("Wrong number of arguments for 'ping' command")
         };
 
-        if (ServerInfo.IsMaster)
+        if (!replicaConnection)
         {
             socket.Send(Encoding.UTF8.GetBytes(response));
         }

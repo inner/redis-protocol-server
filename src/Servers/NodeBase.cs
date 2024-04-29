@@ -54,7 +54,7 @@ public abstract class NodeBase
         Console.Write($"Received command: {logMessage}");
     }
 
-    protected void HandleConnection(Socket socket, bool replicaConnection = false)
+    protected void HandleConnection(Socket socket)
     {
         var connectionId = $"{socket.LocalEndPoint}->{socket.RemoteEndPoint}";
 
@@ -62,12 +62,7 @@ public abstract class NodeBase
         {
             try
             {
-                Console.ForegroundColor = replicaConnection
-                    ? ConsoleColor.Green
-                    : ConsoleColor.Red;
-
-                Console.WriteLine(
-                    $"[Replica Connection: {replicaConnection}] TCP Connection [{connectionId}] established");
+                Console.WriteLine($"TCP Connection [{connectionId}] established");
 
                 while (true)
                 {
@@ -106,18 +101,5 @@ public abstract class NodeBase
 
         Console.WriteLine($"TCP Connection [{connectionId}] closed");
         socket.Close();
-    }
-
-    private string GenerateRandomReplId()
-    {
-        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        var random = new Random();
-        var result = new string(
-            Enumerable.Repeat(chars, 40)
-                .Select(s => s[random.Next(s.Length)])
-                .ToArray()
-        );
-
-        return result;
     }
 }

@@ -7,7 +7,7 @@ public class Psync : Base
 {
     public override bool IsPropagated => false;
 
-    public override void Execute(Socket socket, int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
         var response = $"+FULLRESYNC {ServerInfo.MasterReplId} 0\r\n";
         socket.Send(Encoding.UTF8.GetBytes(response));

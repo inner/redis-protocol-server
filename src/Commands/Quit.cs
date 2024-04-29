@@ -7,8 +7,11 @@ public class Quit : Base
 {
     public override bool IsPropagated => false;
     
-    public override void Execute(Socket socket, int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
-        socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+        if (!replicaConnection)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+        }
     }
 }

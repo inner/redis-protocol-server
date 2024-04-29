@@ -7,7 +7,7 @@ public class Set : Base
 {
     public override bool IsPropagated => true;
 
-    public override void Execute(Socket socket, int commandCount, string[] commandParts)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];
         var cacheValue = commandParts[6];
@@ -16,7 +16,7 @@ public class Set : Base
         {
             DataCache.Set(cacheKey, cacheValue);
 
-            if (ServerInfo.IsMaster)
+            if (ServerInfo.IsMaster && !replicaConnection)
             {
                 socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
             }
@@ -35,7 +35,7 @@ public class Set : Base
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
 
-        if (ServerInfo.IsMaster)
+        if (ServerInfo.IsMaster && !replicaConnection)
         {
             socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
         }
