@@ -1,5 +1,4 @@
 ﻿using System.Net.Sockets;
-using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Commands;
 using codecrafters_redis.Enums;
@@ -10,11 +9,6 @@ public class Receiver
 {
     public void Receive(Socket socket, string commandString)
     {
-        if (string.IsNullOrEmpty(commandString))
-        {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
-        }
-        
         commandString = commandString.Replace("\r\n", "\\r\\n");
         var respDataType = commandString.GetRespDataType();
 
