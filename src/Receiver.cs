@@ -110,7 +110,7 @@ public class Receiver
                     }
                 }
                 
-                //command.Execute(replicaSocket.Value, commandCount, commandParts, replicaConnection: true);
+                command.Execute(replicaSocket.Value, commandCount, commandParts, replicaConnection: true);
             }
         }
 
