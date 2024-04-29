@@ -36,9 +36,5 @@ public class Replconf : Base
         {
             socket.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
         }
-        else
-        {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
-        }
     }
 }
