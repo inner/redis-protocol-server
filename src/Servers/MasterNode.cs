@@ -16,7 +16,7 @@ public class MasterNode : NodeBase
 
     protected override void LogOnStart()
     {
-        Console.WriteLine($"Starting Redis 'master' server on port '{port}'");
+        Console.WriteLine($"starting Redis 'master' server on port '{port}'");
     }
     
     protected override string NodeName => "master-node";

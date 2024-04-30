@@ -86,12 +86,12 @@ public class Receiver
 
         if (ServerInfo.IsMaster && command.IsPropagated)
         {
-            foreach (var replicaSocket in ServerInfo.ReplicaSockets.Where(x => x.Value.Connected))
+            foreach (var replica in ServerInfo.Replicas.Where(x => x.Value.Connected))
             {
-                Console.WriteLine($"Propagating command '{commandString}' to replica '{replicaSocket.Key}'.");
-                command.Execute(replicaSocket.Value, commandCount, commandParts, replicaConnection: true);
-
-                replicaSocket.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
+                Console.WriteLine($"propagating command '{commandString}' to replica '{replica.Key}'.");
+                replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
+                
+                // command.Execute(replica.Value, commandCount, commandParts, replicaConnection: true);
             }
         }
 
