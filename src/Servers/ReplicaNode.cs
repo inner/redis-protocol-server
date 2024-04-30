@@ -21,7 +21,7 @@ public class ReplicaNode : NodeBase
         Console.WriteLine($"Starting Redis 'replica' server on port '{port}'");
     }
 
-    protected override string NodeName => "replica-node";
+    protected override string NodeName => $"replica-node-{port}";
 
     public ReplicaNode Handshake()
     {
@@ -52,7 +52,8 @@ public class ReplicaNode : NodeBase
     
     private void SendReplconfListeningPort(NetworkStream stream)
     {
-        const string replconfListeningPort = "*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n$4\r\n6380\r\n";
+        var listeningPortString = port.ToString();
+        var replconfListeningPort = $"*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n${listeningPortString.Length}\r\n{listeningPortString}\r\n";
         StreamWrite(stream, replconfListeningPort);
         
         if (StreamRead(stream) != Constants.OkResponse)

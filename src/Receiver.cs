@@ -84,7 +84,7 @@ public class Receiver
 
         var command = (Base)Activator.CreateInstance(type)!;
 
-        if (ServerInfo.IsMaster)
+        if (ServerInfo.IsMaster && command.IsPropagated)
         {
             foreach (var replicaSocket in ServerInfo.ReplicaSockets.Where(x => x.Value.Connected))
             {
