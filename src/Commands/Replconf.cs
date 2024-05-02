@@ -5,7 +5,7 @@ namespace codecrafters_redis.Commands;
 
 public class Replconf : Base
 {
-    public override bool CanBePropagated => false;
+    public override bool CanBePropagated => true;
 
     protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
@@ -25,7 +25,7 @@ public class Replconf : Base
             return;
         }
         
-        if (replicaConnection && string.Equals(commandParts[4], "getack",
+        if (/* replicaConnection && */ string.Equals(commandParts[4], "getack",
                 StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(commandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
         {
