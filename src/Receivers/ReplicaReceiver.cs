@@ -7,12 +7,12 @@ public class ReplicaReceiver : ReceiverBase
 {
     public override void Receive(Socket socket, string commandString)
     {
-        base.Receive(socket, commandString);
-        
         if (!ServerInfo.ReplicaHandshakeCompleted)
         {
             return;
         }
+        
+        base.Receive(socket, commandString);
         
         var currentBytesRead = Encoding.UTF8.GetBytes(commandString).Length;
         ServerInfo.BytesReceived += currentBytesRead;
