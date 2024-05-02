@@ -7,7 +7,42 @@ public class Set : Base
 {
     public override bool CanBePropagated => true;
 
-    public override void Execute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+        bool replicaConnection = false)
+    {
+        var cacheKey = commandParts[4];
+        var cacheValue = commandParts[6];
+
+        if (commandParts.Length < 9)
+        {
+            DataCache.Set(cacheKey, cacheValue);
+
+            if (!replicaConnection)
+            {
+                socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+            }
+
+            return;
+        }
+
+        const string expiryCommandConstant = "PX";
+
+        var expiryCommand = commandParts[8];
+        if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new AggregateException($"Unrecognized command used for '{nameof(Set)}': '{expiryCommand}'.");
+        }
+
+        var expiry = int.Parse(commandParts[10]);
+        DataCache.Set(cacheKey, cacheValue, expiry);
+
+        if (!replicaConnection)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+        }
+    }
+
+    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
         bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];
@@ -36,7 +71,7 @@ public class Set : Base
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
 
-        if (ServerInfo.IsMaster && !replicaConnection)
+        if (!replicaConnection)
         {
             socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
         }

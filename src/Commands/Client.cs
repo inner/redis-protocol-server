@@ -7,8 +7,19 @@ public class Client : Base
 {
     public override bool CanBePropagated => false;
 
-    public override void Execute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
         bool replicaConnection = false)
+    {
+        GenerateCommonResponse(socket, replicaConnection);
+    }
+
+    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+        bool replicaConnection = false)
+    {
+        GenerateCommonResponse(socket, replicaConnection);
+    }
+
+    private static void GenerateCommonResponse(Socket socket, bool replicaConnection)
     {
         if (!replicaConnection)
         {

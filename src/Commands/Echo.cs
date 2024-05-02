@@ -7,8 +7,19 @@ public class Echo : Base
 {
     public override bool CanBePropagated => false;
 
-    public override void Execute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
         bool replicaConnection = false)
+    {
+        GenerateCommonResponse(socket, commandCount, commandParts, replicaConnection);
+    }
+
+    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+        bool replicaConnection = false)
+    {
+        GenerateCommonResponse(socket, commandCount, commandParts, replicaConnection);
+    }
+
+    private static void GenerateCommonResponse(Socket socket, int commandCount, string[] commandParts, bool replicaConnection)
     {
         var response = commandCount switch
         {

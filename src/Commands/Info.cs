@@ -6,14 +6,39 @@ namespace codecrafters_redis.Commands;
 public class Info : Base
 {
     public override bool CanBePropagated => false;
-    
-    public override void Execute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+
+    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
         bool replicaConnection = false)
     {
         var infoValues = new Dictionary<string, string?>
         {
-            { "role", ServerInfo.IsMaster ? "master" : "slave" },
-            { "master_replid", ServerInfo.IsMaster ? ServerInfo.MasterReplId : string.Empty },
+            { "role", "master" },
+            { "master_replid", ServerInfo.MasterReplId },
+            { "master_repl_offset", "0" },
+            { "connected_slaves", "0" },
+            { "second_repl_offset", "-1" },
+            { "repl_backlog_active", "0" },
+            { "repl_backlog_size", "1048576" },
+            { "repl_backlog_first_byte_offset", "0" },
+            { "repl_backlog_histlen", string.Empty }
+        };
+        
+        var value = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
+        var response = $"${value.Length}\r\n{value}\r\n";
+
+        if (!replicaConnection)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(response));
+        }
+    }
+
+    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+        bool replicaConnection = false)
+    {
+        var infoValues = new Dictionary<string, string?>
+        {
+            { "role", "slave" },
+            { "master_replid", string.Empty },
             { "master_repl_offset", "0" },
             { "connected_slaves", "0" },
             { "second_repl_offset", "-1" },

@@ -85,6 +85,11 @@ public class ReplicaNode : NodeBase
         {
             ThrowHandshakeFailed();
         }
+        
+        if (!StreamRead(stream).Contains("REDIS"))
+        {
+            ThrowHandshakeFailed();
+        }
     }
 
     private static void ThrowHandshakeFailed()

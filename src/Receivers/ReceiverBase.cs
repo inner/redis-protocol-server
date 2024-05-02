@@ -10,10 +10,11 @@ public abstract class ReceiverBase
 {
     public virtual void Receive(Socket socket, string commandString)
     {
-        var bytesReceived = ServerInfo.ReplicaHandshakeCompleted
-            ? Encoding.UTF8.GetBytes(commandString).Length
-            : 0;
-        
+        // var bytesReceived = ServerInfo.ReplicaHandshakeCompleted
+        //     ? Encoding.UTF8.GetBytes(commandString).Length
+        //     : 0;
+
+        var bytesReceived = 0;
         commandString = commandString.Replace("\r\n", "\\r\\n");
         var respDataType = commandString.GetRespDataType();
 
@@ -94,6 +95,8 @@ public abstract class ReceiverBase
             {
                 Console.WriteLine($"propagating command '{commandString}' to replica '{replica.Key}'.");
                 replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
+                
+                // replica.Value.Send(Encoding.UTF8.GetBytes("*1\r\n$4\r\nPING\r\n*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n"));
             }
         }
 

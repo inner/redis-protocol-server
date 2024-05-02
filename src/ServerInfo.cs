@@ -10,5 +10,5 @@ public static class ServerInfo
     public static int MasterReplOffset  { get; set; }
     public static readonly ConcurrentDictionary<string, Socket> Replicas = new();
     public static bool ReplicaHandshakeCompleted { get; set; }
-    public static int BytesRead { get; set; }
+    public static int BytesReceived { get; set; }
 }
