@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Servers;
 
@@ -9,9 +10,9 @@ public abstract class NodeBase
     private readonly IPAddress localAddress;
     private readonly int port;
 
-    private readonly Receiver receiver;
+    private readonly ReceiverBase receiver;
 
-    protected NodeBase(IPAddress localAddress, int port, Receiver receiver)
+    protected NodeBase(IPAddress localAddress, int port, ReceiverBase receiver)
     {
         this.localAddress = localAddress;
         this.port = port;

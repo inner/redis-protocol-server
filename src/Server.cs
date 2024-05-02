@@ -1,5 +1,6 @@
 using System.Net;
 using codecrafters_redis;
+using codecrafters_redis.Receivers;
 using codecrafters_redis.Servers;
 
 var port = args.Length > 0 && (args[0] == "--port" || args[0] == "-p")
@@ -16,16 +17,14 @@ int? masterPort = args.Length > 2 && args[2] == "--replicaof"
 
 ServerInfo.IsMaster = masterHost == null;
 
-var receiver = new Receiver();
-
 if (ServerInfo.IsMaster)
 {
-    new MasterNode(IPAddress.Any, port, receiver)
+    new MasterNode(IPAddress.Any, port, new MasterReceiver())
         .Start();
 }
 else
 {
-    new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, receiver)
+    new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, new ReplicaReceiver())
         .Handshake()
         .Start();
 }

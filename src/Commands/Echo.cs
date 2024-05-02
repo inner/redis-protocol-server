@@ -5,9 +5,10 @@ namespace codecrafters_redis.Commands;
 
 public class Echo : Base
 {
-    public override bool IsPropagated => false;
+    public override bool CanBePropagated => false;
 
-    public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+        bool replicaConnection = false)
     {
         var response = commandCount switch
         {

@@ -5,9 +5,10 @@ namespace codecrafters_redis.Commands;
 
 public class Get : Base
 {
-    public override bool IsPropagated => false;
+    public override bool CanBePropagated => false;
 
-    public override void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
+    public override void Execute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+        bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];
         var cacheItem = DataCache.Get(cacheKey);

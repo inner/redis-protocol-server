@@ -4,19 +4,23 @@ using System.Text.RegularExpressions;
 using codecrafters_redis.Commands;
 using codecrafters_redis.Enums;
 
-namespace codecrafters_redis;
+namespace codecrafters_redis.Receivers;
 
-public class Receiver
+public abstract class ReceiverBase
 {
-    public void Receive(Socket socket, string commandString)
+    public virtual void Receive(Socket socket, string commandString)
     {
+        var bytesReceived = ServerInfo.ReplicaHandshakeCompleted
+            ? Encoding.UTF8.GetBytes(commandString).Length
+            : 0;
+        
         commandString = commandString.Replace("\r\n", "\\r\\n");
         var respDataType = commandString.GetRespDataType();
 
         switch (respDataType)
         {
             case DataType.Array:
-                ExecuteAsArrayMultiCommand(socket, commandString);
+                ExecuteAsArrayMultiCommand(socket, commandString, bytesReceived);
                 break;
             case DataType.SimpleString:
                 ExecuteSimpleString();
@@ -35,7 +39,7 @@ public class Receiver
         }
     }
 
-    private void ExecuteAsArrayMultiCommand(Socket socket, string commandString)
+    private void ExecuteAsArrayMultiCommand(Socket socket, string commandString, int bytesReceived)
     {
         var multiCommandSplit = Regex.Split(commandString, @"(\*\d+\\r\\n)")
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -58,21 +62,21 @@ public class Receiver
 
         foreach (var commandToExecute in commandsToExecute)
         {
-            ExecuteArray(socket, commandToExecute);
+            ExecuteArray(socket, commandToExecute, bytesReceived);
         }
     }
 
-    private void ExecuteArray(Socket socket, string commandString)
+    private void ExecuteArray(Socket socket, string commandString, int bytesReceived)
     {
         var commandParts = commandString.Split("\\r\\n");
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
         var commandType = commandParts[2].ToCommandType();
 
-        ExecuteCommand(socket, commandString, commandType, commandCount, commandParts);
+        ExecuteCommand(socket, commandString, commandType, commandCount, commandParts, bytesReceived);
     }
 
     private void ExecuteCommand(Socket socket, string commandString, CommandType commandType, int commandCount,
-        string[] commandParts)
+        string[] commandParts, int bytesReceived)
     {
         var className = $"codecrafters_redis.Commands.{commandType}";
         var type = Type.GetType(className);
@@ -84,18 +88,16 @@ public class Receiver
 
         var command = (Base)Activator.CreateInstance(type)!;
 
-        if (ServerInfo.IsMaster && command.IsPropagated)
+        if (ServerInfo.IsMaster && command.CanBePropagated)
         {
             foreach (var replica in ServerInfo.Replicas.Where(x => x.Value.Connected))
             {
                 Console.WriteLine($"propagating command '{commandString}' to replica '{replica.Key}'.");
                 replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
-                
-                // command.Execute(replica.Value, commandCount, commandParts, replicaConnection: true);
             }
         }
 
-        command.Execute(socket, commandCount, commandParts);
+        command.Execute(socket, commandCount, commandParts, bytesReceived);
     }
 
     private void ExecuteBulkString(Socket socket, string commandString)

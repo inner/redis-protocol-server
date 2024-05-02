@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Servers;
 
@@ -6,8 +7,8 @@ public class MasterNode : NodeBase
 {
     private readonly int port;
 
-    public MasterNode(IPAddress localAddress, int port, Receiver receiver)
-        : base(localAddress, port, receiver)
+    public MasterNode(IPAddress localAddress, int port, MasterReceiver masterReceiver)
+        : base(localAddress, port, masterReceiver)
     {
         SetServerInfo();
         

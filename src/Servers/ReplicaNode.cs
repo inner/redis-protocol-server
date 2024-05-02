@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Servers;
 
@@ -9,7 +10,8 @@ public class ReplicaNode : NodeBase
     private readonly int port;
     private readonly TcpClient tcpClient;
 
-    public ReplicaNode(IPAddress localAddress, int port, string masterNode, int masterPort, Receiver receiver)
+    public ReplicaNode(IPAddress localAddress, int port, string masterNode, int masterPort,
+        ReceiverBase receiver)
         : base(localAddress, port, receiver)
     {
         this.port = port;
@@ -33,9 +35,9 @@ public class ReplicaNode : NodeBase
         SendPsync(stream);
 
         ServerInfo.ReplicaHandshakeCompleted = true;
-        
+
         Task.Run(() => HandleConnection(tcpClient.Client));
-        
+
         return this;
     }
 
@@ -49,35 +51,36 @@ public class ReplicaNode : NodeBase
             ThrowHandshakeFailed();
         }
     }
-    
+
     private void SendReplconfListeningPort(NetworkStream stream)
     {
         var listeningPortString = port.ToString();
-        var replconfListeningPort = $"*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n${listeningPortString.Length}\r\n{listeningPortString}\r\n";
+        var replconfListeningPort =
+            $"*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n${listeningPortString.Length}\r\n{listeningPortString}\r\n";
         StreamWrite(stream, replconfListeningPort);
-        
+
         if (StreamRead(stream) != Constants.OkResponse)
         {
             ThrowHandshakeFailed();
         }
     }
-    
+
     private void SendReplconfCapaPsync2(NetworkStream stream)
     {
         const string replconfCapa = "*3\r\n$8\r\nREPLCONF\r\n$4\r\ncapa\r\n$6\r\npsync2\r\n";
         StreamWrite(stream, replconfCapa);
-        
+
         if (StreamRead(stream) != Constants.OkResponse)
         {
             ThrowHandshakeFailed();
         }
     }
-    
+
     private void SendPsync(NetworkStream stream)
     {
         const string replconfPsync = "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n";
         StreamWrite(stream, replconfPsync);
-        
+
         if (!StreamRead(stream).Contains("FULLRESYNC"))
         {
             ThrowHandshakeFailed();
