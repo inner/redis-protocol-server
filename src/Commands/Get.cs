@@ -7,13 +7,13 @@ public class Get : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         GenerateCommonResponse(socket, commandParts, replicaConnection);
     }
 
-    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         GenerateCommonResponse(socket, commandParts, replicaConnection);

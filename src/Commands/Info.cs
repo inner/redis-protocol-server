@@ -7,7 +7,7 @@ public class Info : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         var infoValues = new Dictionary<string, string?>
@@ -32,7 +32,7 @@ public class Info : Base
         }
     }
 
-    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         var infoValues = new Dictionary<string, string?>

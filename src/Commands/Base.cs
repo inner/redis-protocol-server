@@ -6,22 +6,21 @@ public abstract class Base
 {
     public abstract bool CanBePropagated { get; }
 
-    protected abstract void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected abstract void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false);
 
-    protected abstract void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected abstract void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false);
 
-    public void Execute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
-        bool replicaConnection = false)
+    public void Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
         if (ServerInfo.IsMaster)
         {
-            OnMasterNodeExecute(socket, commandCount, commandParts, bytesReceived, replicaConnection);
+            OnMasterNodeExecute(socket, commandCount, commandParts, replicaConnection);
         }
         else
         {
-            OnReplicaNodeExecute(socket, commandCount, commandParts, bytesReceived, replicaConnection);
+            OnReplicaNodeExecute(socket, commandCount, commandParts, replicaConnection);
         }
     }
 }

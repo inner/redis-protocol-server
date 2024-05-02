@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "codecrafters-redis": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 6380 --replicaof localhost 6379",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:15072;http://localhost:15073"
+    }
+  }
+}

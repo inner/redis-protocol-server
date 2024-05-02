@@ -7,7 +7,7 @@ public class Set : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];
@@ -42,7 +42,7 @@ public class Set : Base
         }
     }
 
-    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts, int bytesReceived,
+    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];

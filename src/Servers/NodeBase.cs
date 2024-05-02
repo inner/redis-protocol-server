@@ -53,8 +53,7 @@ public abstract class NodeBase
             logMessage += '\n';
         }
 
-        Console.Write($"[{NodeName}] Received command: {logMessage}.");
-        Console.WriteLine($"[{Encoding.UTF8.GetBytes(s).Length} bytes]");
+        Console.WriteLine($"[{NodeName}] [{Encoding.UTF8.GetBytes(s).Length} bytes] Received command: {logMessage[..^1]}.");
     }
 
     protected void HandleConnection(Socket socket)
