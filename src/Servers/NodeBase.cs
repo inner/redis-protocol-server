@@ -68,11 +68,11 @@ public abstract class NodeBase
 
                 while (true)
                 {
-                    var buffer = new byte[1024];
+                    var buffer = new byte[2048];
                     var bytesReceived = socket.Receive(buffer);
                     var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
 
-                    LogReceivedCommand(clientCommand);
+                    // LogReceivedCommand(clientCommand);
 
                     if (string.IsNullOrWhiteSpace(clientCommand))
                     {

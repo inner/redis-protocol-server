@@ -15,7 +15,7 @@ public class Psync : Base
         
         var emptyRdbFileBase64 = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
         var rdbFile = Convert.FromBase64String(emptyRdbFileBase64);
-        var rdbResynchronizationFileMsg = Encoding.ASCII.GetBytes($"${rdbFile.Length}\r\n")
+        var rdbResynchronizationFileMsg = Encoding.UTF8.GetBytes($"${rdbFile.Length}\r\n")
             .Concat(rdbFile)
             .ToArray();
         

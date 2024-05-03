@@ -7,6 +7,8 @@ public class ReplicaReceiver : ReceiverBase
 {
     public override void Receive(Socket socket, string commandString)
     {
+        Console.WriteLine($"Managed thread: {Thread.CurrentThread.ManagedThreadId}");
+        
         if (!ServerInfo.ReplicaHandshakeCompleted)
         {
             return;
@@ -14,7 +16,7 @@ public class ReplicaReceiver : ReceiverBase
         
         base.Receive(socket, commandString);
         
-        var currentBytesRead = Encoding.UTF8.GetBytes(commandString).Length;
-        ServerInfo.BytesReceived += currentBytesRead;
+        var currentBytesReceived = Encoding.UTF8.GetBytes(commandString).Length;
+        ServerInfo.IncrementBytesReceived(currentBytesReceived);
     }
 }
