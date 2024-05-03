@@ -17,10 +17,15 @@ public class Set : Base
         {
             DataCache.Set(cacheKey, cacheValue);
 
-            if (!replicaConnection)
+            if (ServerInfo.IsMaster)
             {
-                socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+                socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
             }
+            
+            // if (!replicaConnection)
+            // {
+            //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
+            // }
 
             return;
         }
@@ -36,10 +41,15 @@ public class Set : Base
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
 
-        if (!replicaConnection)
+        if (ServerInfo.IsMaster)
         {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+            socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
         }
+        
+        // if (!replicaConnection)
+        // {
+        //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
+        // }
     }
 
     protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
@@ -52,10 +62,15 @@ public class Set : Base
         {
             DataCache.Set(cacheKey, cacheValue);
 
-            if (ServerInfo.IsMaster && !replicaConnection)
+            if (ServerInfo.IsMaster)
             {
-                socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+                socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
             }
+            
+            // if (!replicaConnection)
+            // {
+            //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
+            // }
 
             return;
         }
@@ -71,9 +86,14 @@ public class Set : Base
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
 
-        if (!replicaConnection)
+        if (ServerInfo.IsMaster)
         {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+            socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
         }
+        
+        // if (!replicaConnection)
+        // {
+        //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
+        // }
     }
 }

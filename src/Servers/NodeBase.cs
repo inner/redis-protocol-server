@@ -33,8 +33,8 @@ public abstract class NodeBase
 
             while (true)
             {
-                var socket = server.AcceptSocket();
-                _ = Task.Run(() => HandleConnection(socket));
+                var client = server.AcceptTcpClient();
+                _ = Task.Run(() => HandleConnection(client));
             }
         }
         catch (Exception ex)
@@ -44,23 +44,23 @@ public abstract class NodeBase
         }
     }
 
-    private void LogReceivedCommand(string s)
+    private void LogReceivedCommand(string clientCommand)
     {
-        var logMessage = s.Replace("\r\n", "\\r\\n");
+        var logMessage = clientCommand.Replace("\r\n", "\\r\\n");
 
         if (!logMessage.EndsWith('\n'))
         {
             logMessage += '\n';
         }
 
-        Console.WriteLine($"[{NodeName}] [{Encoding.UTF8.GetBytes(s).Length} bytes] Received command: {logMessage[..^1]}.");
+        Console.WriteLine($"[{NodeName}] Received command: {logMessage[..^1]}.");
     }
 
-    protected void HandleConnection(Socket socket)
+    protected void HandleConnection(TcpClient client)
     {
-        var connectionId = $"{socket.LocalEndPoint}->{socket.RemoteEndPoint}";
+        var connectionId = $"{client.Client.LocalEndPoint}->{client.Client.RemoteEndPoint}";
 
-        while (socket.Connected)
+        while (client.Connected)
         {
             try
             {
@@ -68,19 +68,21 @@ public abstract class NodeBase
 
                 while (true)
                 {
-                    var buffer = new byte[2048];
-                    var bytesReceived = socket.Receive(buffer);
-                    var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
+                    var buffer = new byte[1024];
+                    var bytesRead = client.GetStream().Read(buffer, 0, buffer.Length);
+                    var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    
+                    //var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
 
-                    // LogReceivedCommand(clientCommand);
+                    LogReceivedCommand(clientCommand);
 
                     if (string.IsNullOrWhiteSpace(clientCommand))
                     {
-                        socket.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
+                        client.Client.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
                         continue;
                     }
-
-                    receiver.Receive(socket, clientCommand);
+                    
+                    receiver.Receive(client.Client, clientCommand);
                 }
             }
             catch (SocketException)
@@ -89,7 +91,7 @@ public abstract class NodeBase
             }
             finally
             {
-                CloseSocket(connectionId, socket);
+                CloseSocket(connectionId, client.Client);
             }
         }
     }
