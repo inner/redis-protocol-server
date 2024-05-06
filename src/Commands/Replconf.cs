@@ -25,7 +25,7 @@ public class Replconf : Base
             return;
         }
         
-        if (replicaConnection && string.Equals(commandParts[4], "getack",
+        if (/* replicaConnection && */ string.Equals(commandParts[4], "getack",
                 StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(commandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
         {
