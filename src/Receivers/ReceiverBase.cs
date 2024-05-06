@@ -47,6 +47,7 @@ public abstract class ReceiverBase
     {
         var multiCommandSplit = Regex.Split(commandString, @"(\*\d+\\r\\n)")
             .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => x.TrimEnd())
             .ToList();
 
         List<string> commandsToExecute = [];
@@ -92,21 +93,23 @@ public abstract class ReceiverBase
 
         var command = (Base)Activator.CreateInstance(type)!;
         command.Execute(socket, commandCount, commandParts);
-        
-        if (ServerInfo.IsMaster && command.CanBePropagated)
+
+        if (!ServerInfo.IsMaster || !command.CanBePropagated)
         {
-            foreach (var replica in ServerInfo.Replicas.Where(x => x.Value.Connected))
-            {
-                Console.WriteLine($"Propagating command '{commandString[..^1]}' to replica '{replica.Value.RemoteEndPoint}'.");
-                replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
-            }
+            return;
+        }
+        
+        foreach (var replica in ServerInfo.Replicas.Where(x => x.Value.Connected))
+        {
+            Console.WriteLine($"Propagating command '{commandString[..^1]}' to replica '{replica.Value.RemoteEndPoint}'.");
+            replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
         }
     }
 
     private void ExecuteBulkString(Socket socket, string commandString)
     {
-        var commandParts = commandString.Split("\\r\\n");
-        socket.Send(Encoding.UTF8.GetBytes("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"));
+        // var commandParts = commandString.Split("\\r\\n");
+        // socket.Send(Encoding.UTF8.GetBytes("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"));
     }
 
     private void ExecuteSimpleString()

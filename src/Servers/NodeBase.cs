@@ -71,8 +71,6 @@ public abstract class NodeBase
                     var buffer = new byte[1024];
                     var bytesRead = client.GetStream().Read(buffer, 0, buffer.Length);
                     var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    
-                    //var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesReceived);
 
                     LogReceivedCommand(clientCommand);
 
