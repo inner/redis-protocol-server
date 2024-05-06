@@ -19,7 +19,7 @@ public class Set : Base
 
             if (ServerInfo.IsMaster)
             {
-                socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
+                socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
             }
             
             // if (!replicaConnection)
@@ -43,7 +43,7 @@ public class Set : Base
 
         if (ServerInfo.IsMaster)
         {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
+            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
         }
         
         // if (!replicaConnection)
@@ -64,7 +64,7 @@ public class Set : Base
 
             if (ServerInfo.IsMaster)
             {
-                socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
+                socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
             }
             
             // if (!replicaConnection)
@@ -88,7 +88,7 @@ public class Set : Base
 
         if (ServerInfo.IsMaster)
         {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
+            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
         }
         
         // if (!replicaConnection)
