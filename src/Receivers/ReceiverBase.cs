@@ -108,8 +108,8 @@ public abstract class ReceiverBase
 
     private void ExecuteBulkString(Socket socket, string commandString)
     {
-        // var commandParts = commandString.Split("\\r\\n");
-        // socket.Send(Encoding.UTF8.GetBytes("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"));
+        var commandParts = commandString.Split("\\r\\n");
+        socket.Send(Encoding.UTF8.GetBytes("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"));
     }
 
     private void ExecuteSimpleString()
