@@ -15,6 +15,15 @@ public class ReplicaNode : NodeBase
         : base(localAddress, port, receiver)
     {
         this.port = port;
+
+        if (masterNode != null && masterPort == null)
+        {
+            Console.WriteLine($"[{NodeName}] Master node: {masterNode}:{masterPort}");
+        }
+        else if (masterNode == null && masterPort != null)
+        {
+            Console.WriteLine($"[{NodeName}] Master node: {masterNode}:{masterPort}");
+        }
         
         tcpClient = masterNode != null && masterPort != null
             ? new TcpClient(masterNode, masterPort.Value)
@@ -26,7 +35,7 @@ public class ReplicaNode : NodeBase
         Console.WriteLine($"starting Redis 'replica' server on port '{port}'");
     }
 
-    protected override string NodeName => $"replica-node-{port}";
+    protected sealed override string NodeName => $"replica-node-{port}";
 
     public ReplicaNode Handshake()
     {
