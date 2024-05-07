@@ -79,13 +79,17 @@ public abstract class NodeBase
                         client.Client.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
                         continue;
                     }
-                    
+
                     receiver.Receive(client.Client, clientCommand);
                 }
             }
             catch (SocketException)
             {
                 Console.WriteLine($"Closing TCP connection: [{connectionId}]");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}, stack: {ex.StackTrace}");
             }
             finally
             {
