@@ -76,7 +76,6 @@ public abstract class NodeBase
 
                     if (string.IsNullOrEmpty(clientCommand))
                     {
-                        Console.WriteLine("Empty command received");
                         client.Client.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
                         continue;
                     }

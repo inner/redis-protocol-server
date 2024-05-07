@@ -8,26 +8,17 @@ namespace codecrafters_redis.Servers;
 public class ReplicaNode : NodeBase
 {
     private readonly int port;
-    private readonly TcpClient? tcpClient;
+    private TcpClient? tcpClient;
+    private readonly string? masterNode;
+    private readonly int? masterPort;
 
     public ReplicaNode(IPAddress localAddress, int port, string? masterNode, int? masterPort,
         ReceiverBase receiver)
         : base(localAddress, port, receiver)
     {
         this.port = port;
-
-        if (masterNode != null && masterPort == null)
-        {
-            Console.WriteLine($"[{NodeName}] Master node: {masterNode}:{masterPort}");
-        }
-        else if (masterNode == null && masterPort != null)
-        {
-            Console.WriteLine($"[{NodeName}] Master node: {masterNode}:{masterPort}");
-        }
-        
-        tcpClient = masterNode != null && masterPort != null
-            ? new TcpClient(masterNode, masterPort.Value)
-            : null;
+        this.masterNode = masterNode;
+        this.masterPort = masterPort;
     }
 
     protected override void LogOnStart()
@@ -41,8 +32,15 @@ public class ReplicaNode : NodeBase
     {
         try
         {
+            Console.WriteLine($"[{NodeName}] Master node: {masterNode}:{masterPort}");
+            
+            tcpClient = masterNode == null || !masterPort.HasValue
+                ? null
+                : new TcpClient(masterNode, masterPort.Value);
+            
             if (tcpClient == null)
             {
+                Console.WriteLine("TCP client is null. Exiting...");
                 return this;
             }
             
