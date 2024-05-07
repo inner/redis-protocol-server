@@ -8,14 +8,17 @@ namespace codecrafters_redis.Servers;
 public class ReplicaNode : NodeBase
 {
     private readonly int port;
-    private readonly TcpClient tcpClient;
+    private readonly TcpClient? tcpClient;
 
-    public ReplicaNode(IPAddress localAddress, int port, string masterNode, int masterPort,
+    public ReplicaNode(IPAddress localAddress, int port, string? masterNode, int? masterPort,
         ReceiverBase receiver)
         : base(localAddress, port, receiver)
     {
         this.port = port;
-        tcpClient = new TcpClient(masterNode, masterPort);
+        
+        tcpClient = masterNode != null && masterPort != null
+            ? new TcpClient(masterNode, masterPort.Value)
+            : null;
     }
 
     protected override void LogOnStart()
@@ -29,6 +32,11 @@ public class ReplicaNode : NodeBase
     {
         try
         {
+            if (tcpClient == null)
+            {
+                return this;
+            }
+            
             var stream = tcpClient.GetStream();
 
             SendPing(stream);
@@ -46,7 +54,7 @@ public class ReplicaNode : NodeBase
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"{ex.Message}, stack: {ex.StackTrace}");
+            Console.WriteLine($"Handshake failed: {ex.Message}, stack: {ex.StackTrace}");
             throw;
         }
     }
@@ -64,6 +72,8 @@ public class ReplicaNode : NodeBase
 
     private void SendReplconfListeningPort(NetworkStream stream)
     {
+        Console.WriteLine($"[{NodeName}] Sending REPLCONF listening-port {port}");
+        
         var listeningPortString = port.ToString();
         var replconfListeningPort =
             $"*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n${listeningPortString.Length}\r\n{listeningPortString}\r\n";
