@@ -17,14 +17,22 @@ int? masterPort = args.Length > 2 && args[2] == "--replicaof"
 
 ServerInfo.IsMaster = masterHost == null;
 
-if (ServerInfo.IsMaster)
+try
 {
-    new MasterNode(IPAddress.Any, port, new MasterReceiver())
-        .Start();
+    if (ServerInfo.IsMaster)
+    {
+        new MasterNode(IPAddress.Any, port, new MasterReceiver())
+            .Start();
+    }
+    else
+    {
+        new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, new ReplicaReceiver())
+            .Handshake()
+            .Start();
+    }
 }
-else
+catch (Exception ex)
 {
-    new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, new ReplicaReceiver())
-        .Handshake()
-        .Start();
+    Console.WriteLine($"{ex.Message}, stack: {ex.StackTrace}");
+    throw;
 }

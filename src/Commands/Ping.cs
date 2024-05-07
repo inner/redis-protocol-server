@@ -5,7 +5,7 @@ namespace codecrafters_redis.Commands;
 
 public class Ping : Base
 {
-    public override bool CanBePropagated => true;
+    public override bool CanBePropagated => false;
 
     protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
@@ -17,12 +17,12 @@ public class Ping : Base
     protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        // if (!replicaConnection)
-        // {
-        //     return;
-        // }
-        //
-        // const string response = "*1\r\n$4\r\nPONG\r\n";
-        // socket.Send(Encoding.UTF8.GetBytes(response));
+        if (!replicaConnection)
+        {
+            return;
+        }
+        
+        const string response = "*1\r\n$4\r\nPONG\r\n";
+        socket.Send(Encoding.UTF8.GetBytes(response));
     }
 }

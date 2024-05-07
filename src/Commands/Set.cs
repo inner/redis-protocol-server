@@ -16,17 +16,7 @@ public class Set : Base
         if (commandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
-
-            if (ServerInfo.IsMaster)
-            {
-                socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
-            }
-            
-            // if (!replicaConnection)
-            // {
-            //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
-            // }
-
+            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
             return;
         }
 
@@ -40,16 +30,7 @@ public class Set : Base
 
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
-
-        if (ServerInfo.IsMaster)
-        {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
-        }
-        
-        // if (!replicaConnection)
-        // {
-        //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
-        // }
+        socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
     }
 
     protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
@@ -62,11 +43,6 @@ public class Set : Base
         {
             DataCache.Set(cacheKey, cacheValue);
 
-            if (ServerInfo.IsMaster)
-            {
-                socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
-            }
-            
             // if (!replicaConnection)
             // {
             //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
@@ -86,11 +62,6 @@ public class Set : Base
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
 
-        if (ServerInfo.IsMaster)
-        {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
-        }
-        
         // if (!replicaConnection)
         // {
         //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));

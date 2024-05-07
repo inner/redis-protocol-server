@@ -5,7 +5,7 @@ namespace codecrafters_redis.Commands;
 
 public class Replconf : Base
 {
-    public override bool CanBePropagated => true;
+    public override bool CanBePropagated => false;
 
     protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)

@@ -27,18 +27,26 @@ public class ReplicaNode : NodeBase
 
     public ReplicaNode Handshake()
     {
-        var stream = tcpClient.GetStream();
+        try
+        {
+            var stream = tcpClient.GetStream();
 
-        SendPing(stream);
-        SendReplconfListeningPort(stream);
-        SendReplconfCapaPsync2(stream);
-        SendPsync(stream);
+            SendPing(stream);
+            SendReplconfListeningPort(stream);
+            SendReplconfCapaPsync2(stream);
+            SendPsync(stream);
 
-        ServerInfo.ReplicaHandshakeCompleted = true;
+            ServerInfo.ReplicaHandshakeCompleted = true;
 
-        Task.Run(() => HandleConnection(tcpClient));
+            Task.Run(() => { HandleConnection(tcpClient); });
 
-        return this;
+            return this;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{ex.Message}, stack: {ex.StackTrace}");
+            throw;
+        }
     }
 
     private void SendPing(NetworkStream stream)
@@ -86,10 +94,10 @@ public class ReplicaNode : NodeBase
             ThrowHandshakeFailed();
         }
         
-        if (!StreamRead(stream).Contains("REDIS"))
-        {
-            ThrowHandshakeFailed();
-        }
+        // if (!StreamRead(stream).Contains("REDIS"))
+        // {
+        //     ThrowHandshakeFailed();
+        // }
     }
 
     private static void ThrowHandshakeFailed()
