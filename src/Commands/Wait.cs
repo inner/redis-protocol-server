@@ -10,7 +10,7 @@ public class Wait : Base
     protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        socket.Send(Encoding.UTF8.GetBytes("${1}\r\n0\r\n"));
+        socket.Send(Encoding.UTF8.GetBytes(":0\r\n"));
     }
 
     protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
