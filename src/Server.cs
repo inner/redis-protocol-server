@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using codecrafters_redis;
 using codecrafters_redis.Receivers;
 using codecrafters_redis.Servers;
@@ -17,20 +18,18 @@ int? masterPort = args.Length > 2 && args[2] == "--replicaof"
 
 ServerInfo.IsMaster = masterHost == null;
 
-MasterNode? masterNode = null;
-
 try
 {
     if (ServerInfo.IsMaster)
     {
-        masterNode = new MasterNode(IPAddress.Any, port, new MasterReceiver());
-        masterNode.Start();
+        new MasterNode(IPAddress.Any, port, new MasterReceiver())
+            .Start();
     }
     else
     {
-        if (masterNode == null)
+        if (!IsMasterNodePortOpen(masterHost!, masterPort!.Value))
         {
-            new MasterNode(IPAddress.Any, port, new MasterReceiver())
+            new MasterNode(IPAddress.Any, masterPort.Value, new MasterReceiver())
                 .Start();
         }
 
@@ -43,4 +42,18 @@ catch (Exception ex)
 {
     Console.WriteLine($"{ex.Message}, stack: {ex.StackTrace}");
     throw;
+}
+
+bool IsMasterNodePortOpen(string host, int portNumber)
+{
+    try
+    {
+        using var tcpClient = new TcpClient();
+        tcpClient.Connect(host, portNumber);
+        return true;
+    }
+    catch (SocketException)
+    {
+        return false;
+    }
 }
