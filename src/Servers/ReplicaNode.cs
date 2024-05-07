@@ -38,6 +38,8 @@ public class ReplicaNode : NodeBase
 
             ServerInfo.ReplicaHandshakeCompleted = true;
 
+            Console.WriteLine($"[{NodeName}] Handshake completed");
+
             Task.Run(() => { HandleConnection(tcpClient); });
 
             return this;
