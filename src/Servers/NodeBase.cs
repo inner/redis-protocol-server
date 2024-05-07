@@ -64,7 +64,7 @@ public abstract class NodeBase
         {
             try
             {
-                Console.WriteLine($"TCP Connection [{connectionId}] established");
+                Console.WriteLine($"[{NodeName}] TCP Connection [{connectionId}] established");
 
                 while (true)
                 {
