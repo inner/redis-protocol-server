@@ -21,4 +21,12 @@ public static class ServerInfo
             BytesReceived += bytesReceived;
         }
     }
+    
+    public static int GetConnectedReplicas()
+    {
+        lock (LockObject)
+        {
+            return Replicas.Count(x => x.Value.Connected);
+        }
+    }
 }
