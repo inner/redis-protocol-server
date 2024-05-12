@@ -10,7 +10,6 @@ public static class ServerInfo
     public static string? MasterReplId { get; set; }
     public static int MasterReplOffset  { get; set; }
     public static readonly ConcurrentDictionary<string, Socket> Replicas = new();
-    public static int ConnectedReplicas { get; set; } = Replicas.Count(x => x.Value.Connected);
     public static bool ReplicaHandshakeCompleted { get; set; }
     public static bool FirstByteReceived { get; set; }
     public static int BytesReceived { get; set; }
