@@ -16,8 +16,6 @@ public class Wait : Base
         var numberOfReplicasToWaitFor = commandParts[4];
         var msToWait = commandParts[6];
         
-        var acksReceivedBefore = ServerInfo.ReplicaAcksReceived;
-        
         var tasks = new List<Task>();
         foreach (var replica in ServerInfo.Replicas.Where(x => x.Value.Connected))
         {
@@ -34,10 +32,8 @@ public class Wait : Base
         
         while (sw.ElapsedMilliseconds < int.Parse(msToWait))
         {
-            var acks = ServerInfo.ReplicaAcksReceived - acksReceivedBefore;
-            if (acks >= int.Parse(numberOfReplicasToWaitFor))
+            if (ServerInfo.ReplicaAcksReceived >= int.Parse(numberOfReplicasToWaitFor))
             {
-                Console.WriteLine($"Waited for {sw.ElapsedMilliseconds}ms, received {acks} ACKs.");
                 break;
             }
         }
