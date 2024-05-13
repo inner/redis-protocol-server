@@ -10,7 +10,7 @@ public class Type : Base
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        var key = commandParts[1];
+        var key = commandParts[4];
         var cacheItem = DataCache.Get(key);
         
         socket.Send(cacheItem?.Value != null
