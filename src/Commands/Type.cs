@@ -14,7 +14,7 @@ public class Type : Base
         var cacheItem = DataCache.Get(key);
         
         socket.Send(cacheItem?.Value != null
-            ? Encoding.UTF8.GetBytes("+OK\r\n")
+            ? Encoding.UTF8.GetBytes("+string\r\n")
             : Encoding.UTF8.GetBytes("+none\r\n"));
 
         return Task.CompletedTask;
