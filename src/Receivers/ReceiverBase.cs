@@ -84,7 +84,7 @@ public abstract class ReceiverBase
         string[] commandParts)
     {
         var className = $"codecrafters_redis.Commands.{commandType}";
-        var type = Type.GetType(className);
+        var type = System.Type.GetType(className);
 
         if (type == null)
         {

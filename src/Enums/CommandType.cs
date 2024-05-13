@@ -11,5 +11,6 @@ public enum CommandType
     Replconf,
     Psync,
     Client,
-    Wait
+    Wait,
+    Type
 }
