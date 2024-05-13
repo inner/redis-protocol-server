@@ -56,7 +56,7 @@ public abstract class NodeBase
         Console.WriteLine($"[{NodeName}] Received command: {logMessage[..^1]}.");
     }
 
-    protected void HandleConnection(TcpClient client)
+    protected async Task HandleConnection(TcpClient client)
     {
         var connectionId = $"{client.Client.LocalEndPoint}->{client.Client.RemoteEndPoint}";
 
@@ -80,7 +80,7 @@ public abstract class NodeBase
                         continue;
                     }
 
-                    receiver.Receive(client.Client, clientCommand);
+                    await receiver.Receive(client.Client, clientCommand);
                 }
             }
             catch (SocketException)

@@ -7,7 +7,7 @@ public class Info : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         var infoValues = new Dictionary<string, string?>
@@ -30,9 +30,11 @@ public class Info : Base
         {
             socket.Send(Encoding.UTF8.GetBytes(response));
         }
+        
+        return Task.CompletedTask;
     }
 
-    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         var infoValues = new Dictionary<string, string?>
@@ -55,5 +57,7 @@ public class Info : Base
         {
             socket.Send(Encoding.UTF8.GetBytes(response));
         }
+        
+        return Task.CompletedTask;
     }
 }

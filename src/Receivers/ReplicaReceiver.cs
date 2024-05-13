@@ -5,17 +5,17 @@ namespace codecrafters_redis.Receivers;
 
 public class ReplicaReceiver : ReceiverBase
 {
-    public override void Receive(Socket socket, string commandString)
+    public override async Task Receive(Socket socket, string commandString)
     {
         if (!ServerInfo.ReplicaHandshakeCompleted)
         {
             return;
         }
         
-        if (!ServerInfo.FirstByteReceived || commandString.Contains("$3\r\nACK\r\n"))
+        if (!ServerInfo.ReplicaFirstByteReceived || commandString.Contains("$3\r\nACK\r\n"))
         {
-            ServerInfo.FirstByteReceived = true;
-            base.Receive(socket, commandString);
+            ServerInfo.ReplicaFirstByteReceived = true;
+            await base.Receive(socket, commandString);
             return;
         }
         
@@ -25,9 +25,9 @@ public class ReplicaReceiver : ReceiverBase
         }
         
         var currentBytesReceived = Encoding.UTF8.GetBytes(commandString).Length;
-        Console.WriteLine($"Total bytes received: {ServerInfo.BytesReceived}. Incrementing bytes received by {currentBytesReceived}");
-        ServerInfo.IncrementBytesReceived(currentBytesReceived);
+        Console.WriteLine($"Total bytes received: {ServerInfo.ReplicaBytesReceived}. Incrementing bytes received by {currentBytesReceived}");
+        ServerInfo.IncrementReplicaBytesReceived(currentBytesReceived);
         
-        base.Receive(socket, commandString);
+        await base.Receive(socket, commandString);
     }
 }

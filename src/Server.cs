@@ -11,9 +11,20 @@ var masterHost = args.Length > 2 && args[2] == "--replicaof"
     ? args[3]
     : null;
 
-int? masterPort = args.Length > 2 && args[2] == "--replicaof"
-    ? int.Parse(args[4])
-    : null;
+int? masterPort;
+
+if (args.Length == 4)
+{
+    var masterHostParts = masterHost!.Replace("\"", string.Empty).Split(' ');
+    masterHost = masterHostParts[0];
+    masterPort = int.Parse(masterHostParts[1]);
+}
+else
+{
+    masterPort = args.Length > 2 && args[2] == "--replicaof"
+        ? int.Parse(args[4])
+        : null;
+}
 
 ServerInfo.IsMaster = masterHost == null;
 

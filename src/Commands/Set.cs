@@ -7,7 +7,7 @@ public class Set : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];
@@ -17,7 +17,7 @@ public class Set : Base
         {
             DataCache.Set(cacheKey, cacheValue);
             socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
-            return;
+            return Task.CompletedTask;
         }
 
         const string expiryCommandConstant = "PX";
@@ -31,9 +31,10 @@ public class Set : Base
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, expiry);
         socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+        return Task.CompletedTask;
     }
 
-    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];
@@ -48,7 +49,7 @@ public class Set : Base
             //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
             // }
 
-            return;
+            return Task.CompletedTask;
         }
 
         const string expiryCommandConstant = "PX";
@@ -66,5 +67,7 @@ public class Set : Base
         // {
         //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
         // }
+        
+        return Task.CompletedTask;
     }
 }

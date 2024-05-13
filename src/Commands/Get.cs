@@ -7,16 +7,18 @@ public class Get : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return Task.CompletedTask;
     }
 
-    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return Task.CompletedTask;
     }
 
     private static void GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection)

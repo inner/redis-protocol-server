@@ -7,7 +7,7 @@ public class Psync : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override void OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
         var response = $"+FULLRESYNC {ServerInfo.MasterReplId} 0\r\n";
@@ -20,11 +20,13 @@ public class Psync : Base
             .ToArray();
         
         socket.Send(rdbResynchronizationFileMsg);
-        
         ServerInfo.Replicas.TryAdd(socket.RemoteEndPoint!.ToString()!, socket);
+        return Task.CompletedTask;
     }
 
-    protected override void OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
-    { }
+    {
+        return Task.CompletedTask;
+    }
 }

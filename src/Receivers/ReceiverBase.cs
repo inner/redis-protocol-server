@@ -8,7 +8,7 @@ namespace codecrafters_redis.Receivers;
 
 public abstract class ReceiverBase
 {
-    public virtual void Receive(Socket socket, string commandString)
+    public virtual async Task Receive(Socket socket, string commandString)
     {
         try
         {
@@ -18,7 +18,7 @@ public abstract class ReceiverBase
             switch (respDataType)
             {
                 case DataType.Array:
-                    ExecuteAsArrayMultiCommand(socket, commandString);
+                    await ExecuteAsArrayMultiCommand(socket, commandString);
                     break;
                 case DataType.SimpleString:
                     ExecuteSimpleString();
@@ -43,7 +43,7 @@ public abstract class ReceiverBase
         }
     }
 
-    private void ExecuteAsArrayMultiCommand(Socket socket, string commandString)
+    private async Task ExecuteAsArrayMultiCommand(Socket socket, string commandString)
     {
         var multiCommandSplit = Regex.Split(commandString, @"(\*\d+\\r\\n)")
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -67,20 +67,20 @@ public abstract class ReceiverBase
 
         foreach (var commandToExecute in commandsToExecute)
         {
-            ExecuteArray(socket, commandToExecute);
+            await ExecuteArray(socket, commandToExecute);
         }
     }
 
-    private void ExecuteArray(Socket socket, string commandString)
+    private async Task ExecuteArray(Socket socket, string commandString)
     {
         var commandParts = commandString.Split("\\r\\n");
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
         var commandType = commandParts[2].ToCommandType();
 
-        ExecuteCommand(socket, commandString, commandType, commandCount, commandParts);
+        await ExecuteCommand(socket, commandString, commandType, commandCount, commandParts);
     }
 
-    private void ExecuteCommand(Socket socket, string commandString, CommandType commandType, int commandCount,
+    private async Task ExecuteCommand(Socket socket, string commandString, CommandType commandType, int commandCount,
         string[] commandParts)
     {
         var className = $"codecrafters_redis.Commands.{commandType}";
@@ -92,7 +92,7 @@ public abstract class ReceiverBase
         }
 
         var command = (Base)Activator.CreateInstance(type)!;
-        command.Execute(socket, commandCount, commandParts);
+        await command.Execute(socket, commandCount, commandParts);
 
         if (!ServerInfo.IsMaster || !command.CanBePropagated || commandString.Contains("$3\r\nACK\r\n"))
         {

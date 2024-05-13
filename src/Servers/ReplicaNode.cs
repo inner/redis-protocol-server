@@ -32,8 +32,6 @@ public class ReplicaNode : NodeBase
     {
         try
         {
-            Console.WriteLine($"[{NodeName}] Master node: {masterNode}:{masterPort}");
-            
             tcpClient = masterNode == null || !masterPort.HasValue
                 ? null
                 : new TcpClient(masterNode, masterPort.Value);
@@ -55,7 +53,7 @@ public class ReplicaNode : NodeBase
 
             Console.WriteLine($"[{NodeName}] Handshake completed");
 
-            Task.Run(() => { HandleConnection(tcpClient); });
+            Task.Run(() => { _ = HandleConnection(tcpClient); });
 
             return this;
         }
@@ -73,7 +71,7 @@ public class ReplicaNode : NodeBase
         
         if (StreamRead(stream) != Constants.PongResponse)
         {
-            ThrowHandshakeFailed();
+            ThrowHandshakeFailed(nameof(SendPing));
         }
     }
 
@@ -88,7 +86,7 @@ public class ReplicaNode : NodeBase
 
         if (StreamRead(stream) != Constants.OkResponse)
         {
-            ThrowHandshakeFailed();
+            ThrowHandshakeFailed(nameof(SendReplconfListeningPort));
         }
     }
 
@@ -99,7 +97,7 @@ public class ReplicaNode : NodeBase
 
         if (StreamRead(stream) != Constants.OkResponse)
         {
-            ThrowHandshakeFailed();
+            ThrowHandshakeFailed(nameof(SendReplconfCapaPsync2));
         }
     }
 
@@ -110,18 +108,13 @@ public class ReplicaNode : NodeBase
 
         if (!StreamRead(stream).Contains("FULLRESYNC"))
         {
-            ThrowHandshakeFailed();
+            ThrowHandshakeFailed(nameof(SendPsync));
         }
-        
-        // if (!StreamRead(stream).Contains("REDIS"))
-        // {
-        //     ThrowHandshakeFailed();
-        // }
     }
 
-    private static void ThrowHandshakeFailed()
+    private static void ThrowHandshakeFailed(string failedMethodName)
     {
-        throw new Exception("Handshake failed");
+        throw new Exception($"Handshake failed on step: {failedMethodName}");
     }
 
     private static string StreamRead(NetworkStream stream)

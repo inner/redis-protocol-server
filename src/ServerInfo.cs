@@ -8,19 +8,30 @@ public static class ServerInfo
     private static readonly object LockObject = new();
     public static bool IsMaster { get; set; } = true;
     public static string? MasterReplId { get; set; }
-    public static int MasterReplOffset  { get; set; }
+    public static int MasterReplOffset { get; set; }
     public static readonly ConcurrentDictionary<string, Socket> Replicas = new();
     public static bool ReplicaHandshakeCompleted { get; set; }
-    public static bool FirstByteReceived { get; set; }
-    public static int BytesReceived { get; set; }
-    public static void IncrementBytesReceived(int bytesReceived)
+    public static bool ReplicaFirstByteReceived { get; set; }
+    public static int ReplicaBytesReceived { get; set; }
+    
+    public static int ReplicaAcksReceived { get; set; }
+    
+    public static void IncrementReplicaAcksReceived()
     {
         lock (LockObject)
         {
-            BytesReceived += bytesReceived;
+            ReplicaAcksReceived += 1;
         }
     }
-    
+
+    public static void IncrementReplicaBytesReceived(int bytesReceived)
+    {
+        lock (LockObject)
+        {
+            ReplicaBytesReceived += bytesReceived;
+        }
+    }
+
     public static int GetConnectedReplicas()
     {
         lock (LockObject)
