@@ -11,7 +11,6 @@ public static class DataCache
     {
         var basicCacheItem = new BasicCacheItem
         {
-            Type = nameof(BasicCacheItem),
             Value = value,
             Expiry = expiry.HasValue
                 ? DateTime.Now.AddMilliseconds(expiry.Value)
@@ -45,13 +44,41 @@ public static class DataCache
             ? null
             : basicCacheItem;
     }
+    
+    public static string Xadd(string key, IDictionary<string, string> value)
+    {
+        var id = value.Single(x => x.Key == "Id").Value;
+        
+        var streamCacheItem = new StreamCacheItem
+        {
+            Key = key,
+            Value = value
+        };
+
+        var serialized = JsonSerializer.Serialize(streamCacheItem);
+        Cache[key] = serialized;
+        return id;
+    }
+
+    public static string? Fetch(string key)
+    {
+        Cache.TryGetValue(key, out var value);
+        return value;
+    }
 }
 
 public class BasicCacheItem : ICacheItemBase, IExpiredCacheItem
 {
     public required string Value { get; set; }
-    public required string Type { get; set; }
+    public string Type => nameof(BasicCacheItem);
     public DateTime? Expiry { get; set; }
+}
+
+public class StreamCacheItem : ICacheItemBase
+{
+    public required string Key { get; set; }
+    public required IDictionary<string, string> Value { get; set; }
+    public string Type => nameof(StreamCacheItem);
 }
 
 public interface IExpiredCacheItem
@@ -61,6 +88,5 @@ public interface IExpiredCacheItem
 
 public interface ICacheItemBase
 {
-    public string Value { get; set; }
-    public string Type { get; set; }
+    public string Type { get; }
 }

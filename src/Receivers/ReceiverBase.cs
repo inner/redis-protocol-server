@@ -73,7 +73,10 @@ public abstract class ReceiverBase
 
     private async Task ExecuteArray(Socket socket, string commandString)
     {
-        var commandParts = commandString.Split("\\r\\n");
+        var commandParts = commandString.Split("\\r\\n")
+            .Where(x => !string.IsNullOrEmpty(x))
+            .ToArray();
+        
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
         var commandType = commandParts[2].ToCommandType();
 

@@ -12,5 +12,6 @@ public enum CommandType
     Psync,
     Client,
     Wait,
-    Type
+    Type,
+    Xadd
 }

@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 
 namespace codecrafters_redis.Commands;
 
@@ -11,12 +12,28 @@ public class Type : Base
         bool replicaConnection = false)
     {
         var key = commandParts[4];
-        var cacheItem = DataCache.Get(key);
-        
-        socket.Send(cacheItem?.Value != null
-            ? Encoding.UTF8.GetBytes("+string\r\n")
-            : Encoding.UTF8.GetBytes("+none\r\n"));
+        var fetchItem = DataCache.Fetch(key);
 
+        if (fetchItem != null)
+        {
+            var basicCacheItem = Deserialize<BasicCacheItem>(fetchItem);
+            if (basicCacheItem != null && string.Equals(basicCacheItem.Type, nameof(BasicCacheItem),
+                    StringComparison.InvariantCultureIgnoreCase))
+            {
+                socket.Send(Encoding.UTF8.GetBytes("+string\r\n"));
+                return Task.CompletedTask;
+            }
+
+            var streamCacheItem = Deserialize<StreamCacheItem>(fetchItem);
+            if (streamCacheItem != null && string.Equals(streamCacheItem.Type, nameof(StreamCacheItem),
+                    StringComparison.InvariantCultureIgnoreCase))
+            {
+                socket.Send(Encoding.UTF8.GetBytes("+stream\r\n"));
+                return Task.CompletedTask;
+            }
+        }
+
+        socket.Send(Encoding.UTF8.GetBytes("+none\r\n"));
         return Task.CompletedTask;
     }
 
@@ -24,5 +41,21 @@ public class Type : Base
         bool replicaConnection = false)
     {
         return Task.CompletedTask;
+    }
+
+    private static T? Deserialize<T>(string value)
+    {
+        T? result = default;
+
+        try
+        {
+            result = JsonSerializer.Deserialize<T>(value);
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+
+        return result;
     }
 }
