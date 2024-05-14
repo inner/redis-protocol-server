@@ -1,36 +1,58 @@
 ﻿using System.Collections.Concurrent;
+using System.Text.Json;
 
 namespace codecrafters_redis;
 
 public static class DataCache
 {
-    private static ConcurrentDictionary<string, CacheItem> Cache { get; } = new();
-    
+    private static ConcurrentDictionary<string, string> Cache { get; } = new();
+
     public static void Set(string key, string value, int? expiry = null)
     {
-        Cache[key] = new CacheItem
+        var basicCacheItem = new BasicCacheItem
         {
-            Key = key,
             Value = value,
             Expiry = expiry.HasValue
                 ? DateTime.Now.AddMilliseconds(expiry.Value)
                 : null
         };
+
+        var serialized = JsonSerializer.Serialize(basicCacheItem);
+        Cache[key] = serialized;
     }
-    
-    public static CacheItem? Get(string key)
+
+    public static BasicCacheItem? Get(string key)
     {
-        return Cache.TryGetValue(key, out var cacheItem)
-            ? cacheItem.Expiry.HasValue && cacheItem.Expiry.Value < DateTime.Now
-                ? null
-                : cacheItem
-            : null;
+        BasicCacheItem? basicCacheItem = null;
+        if (!Cache.TryGetValue(key, out var basicCacheItemSerialized))
+        {
+            return basicCacheItem;
+        }
+
+        basicCacheItem = JsonSerializer.Deserialize<BasicCacheItem>(basicCacheItemSerialized);
+        if (basicCacheItem == null)
+        {
+            return null;
+        }
+
+        if (!basicCacheItem.Expiry.HasValue)
+        {
+            return basicCacheItem;
+        }
+
+        return basicCacheItem.Expiry.Value < DateTime.Now
+            ? null
+            : basicCacheItem;
     }
 }
 
-public class CacheItem
+public class BasicCacheItem : IExpiredCacheItem
 {
-    public required string Key { get; set; }
     public string? Value { get; set; }
+    public DateTime? Expiry { get; set; }
+}
+
+public interface IExpiredCacheItem
+{
     public DateTime? Expiry { get; set; }
 }
