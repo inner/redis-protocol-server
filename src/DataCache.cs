@@ -11,6 +11,7 @@ public static class DataCache
     {
         var basicCacheItem = new BasicCacheItem
         {
+            Type = nameof(BasicCacheItem),
             Value = value,
             Expiry = expiry.HasValue
                 ? DateTime.Now.AddMilliseconds(expiry.Value)
@@ -46,13 +47,20 @@ public static class DataCache
     }
 }
 
-public class BasicCacheItem : IExpiredCacheItem
+public class BasicCacheItem : ICacheItemBase, IExpiredCacheItem
 {
-    public string? Value { get; set; }
+    public required string Value { get; set; }
+    public required string Type { get; set; }
     public DateTime? Expiry { get; set; }
 }
 
 public interface IExpiredCacheItem
 {
     public DateTime? Expiry { get; set; }
+}
+
+public interface ICacheItemBase
+{
+    public string Value { get; set; }
+    public string Type { get; set; }
 }
