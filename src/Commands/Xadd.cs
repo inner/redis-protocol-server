@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Collections.Specialized;
+using System.Net.Sockets;
 using System.Text;
 
 namespace codecrafters_redis.Commands;
@@ -36,6 +37,16 @@ public class Xadd : Base
         // Explicit ("1526919030474-0") (This stage)
         // Auto-generate only sequence number ("1526919030474-*") (Next stages)
         // Auto-generate time part and sequence number ("*") (Next stages)
+        
+        // In C#, if you need to maintain the order of items as they are added,
+        // you can use the OrderedDictionary class from the System.Collections.Specialized namespace.
+        // However, this class is non-generic. If you want a generic version, you can use
+        // Dictionary<TKey, TValue> in combination with List<T> to maintain the order of items.
+
+        // var od = new OrderedDictionary
+        // {
+        //     { "Id", entryId }
+        // };
 
         if (!string.Equals(entryId, "*") && !entryId.Contains('-'))
         {
