@@ -1,4 +1,5 @@
-﻿using codecrafters_redis.Enums;
+﻿using System.Text.Json;
+using codecrafters_redis.Enums;
 
 namespace codecrafters_redis;
 
@@ -35,5 +36,21 @@ public static class StringExtensions
         }
 
         throw new ArgumentException($"Unknown client command: {respCommandTypeString}");
+    }
+    
+    public static T? Deserialize<T>(this string value)
+    {
+        T? result = default;
+
+        try
+        {
+            result = JsonSerializer.Deserialize<T>(value);
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+
+        return result;
     }
 }

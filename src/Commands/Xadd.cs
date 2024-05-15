@@ -11,11 +11,64 @@ public class Xadd : Base
         bool replicaConnection = false)
     {
         var key = commandParts[4];
-        
-        var value = new Dictionary<string, string>
+        var entryId = commandParts[6];
+
+        Dictionary<string, string> value;
+
+        try
         {
-            { "Id", commandParts[6] }
-        };
+            value = BuildEntryValue(key, entryId, commandParts);
+        }
+        catch (Exception ex)
+        {
+            socket.Send(Encoding.UTF8.GetBytes($"-ERR {ex.Message}\r\n"));
+            return Task.CompletedTask;
+        }
+
+        var newOrExistingEntryId = DataCache.Xadd(key, value);
+        socket.Send(Encoding.UTF8.GetBytes($"+{newOrExistingEntryId}\r\n"));
+
+        return Task.CompletedTask;
+    }
+
+    private Dictionary<string, string> BuildEntryValue(string key, string entryId, string[] commandParts)
+    {
+        // Explicit ("1526919030474-0") (This stage)
+        // Auto-generate only sequence number ("1526919030474-*") (Next stages)
+        // Auto-generate time part and sequence number ("*") (Next stages)
+
+        if (!string.Equals(entryId, "*") && !entryId.Contains('-'))
+        {
+            throw new Exception("wrong ID argument for 'XADD' command");
+        }
+
+        string? entryIdTimestampValue = null;
+        string? entryIdSequenceValue = null;
+
+        if (entryId.Contains('-'))
+        {
+            entryIdTimestampValue = entryId.Split('-')[0];
+            entryIdSequenceValue = entryId.Split('-')[1];
+        }
+
+        Dictionary<string, string> value = new();
+        const string idConst = "Id";
+
+        var fetchItem = DataCache.Fetch(key);
+        string? existingEntryId = null;
+
+        if (!string.IsNullOrEmpty(fetchItem))
+        {
+            existingEntryId = fetchItem.Deserialize<StreamCacheItem>()!.Value
+                .Last(x => x.Key == idConst).Value;
+        }
+
+        if (string.Equals(existingEntryId, entryId, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new Exception("the ID specified in XADD is equal to the last ID in the stream.");
+        }
+
+        value.Add(idConst, entryId);
 
         for (var i = 8; i < commandParts.Length; i += 2)
         {
@@ -27,11 +80,8 @@ public class Xadd : Base
                 break;
             }
         }
-        
-        var entryId = DataCache.Xadd(key, value);
-        socket.Send(Encoding.UTF8.GetBytes($"+{entryId}\r\n"));
-        
-        return Task.CompletedTask;
+
+        return value;
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,

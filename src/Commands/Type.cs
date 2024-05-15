@@ -16,7 +16,7 @@ public class Type : Base
 
         if (fetchItem != null)
         {
-            var basicCacheItem = Deserialize<BasicCacheItem>(fetchItem);
+            var basicCacheItem = fetchItem.Deserialize<BasicCacheItem>();
             if (basicCacheItem != null && string.Equals(basicCacheItem.Type, nameof(BasicCacheItem),
                     StringComparison.InvariantCultureIgnoreCase))
             {
@@ -24,7 +24,7 @@ public class Type : Base
                 return Task.CompletedTask;
             }
 
-            var streamCacheItem = Deserialize<StreamCacheItem>(fetchItem);
+            var streamCacheItem = fetchItem.Deserialize<StreamCacheItem>();
             if (streamCacheItem != null && string.Equals(streamCacheItem.Type, nameof(StreamCacheItem),
                     StringComparison.InvariantCultureIgnoreCase))
             {
@@ -41,21 +41,5 @@ public class Type : Base
         bool replicaConnection = false)
     {
         return Task.CompletedTask;
-    }
-
-    private static T? Deserialize<T>(string value)
-    {
-        T? result = default;
-
-        try
-        {
-            result = JsonSerializer.Deserialize<T>(value);
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-
-        return result;
     }
 }
