@@ -132,14 +132,16 @@ public class Xadd : Base
             {
                 throw new Exception("The ID specified in XADD is equal or smaller than the target stream top item");
             }
-
-            var newSequence = existingLastEntryIdSequence + 1;
+            
+            var newSequence = existingLastEntryIdTimestamp < entryIdTimestamp
+                ? 0
+                : existingLastEntryIdSequence + 1;
+            
             value.Id = $"{entryIdTimestamp}-{newSequence}";
         }
         else if (existingEntryId == null)
         {
-            var newTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            value.Id = $"{newTimestamp}-0";
+            value.Id = $"{entryIdTimestamp}-1";
         }
 
         return value;
@@ -183,12 +185,12 @@ public class Xadd : Base
 
         if (Regex.IsMatch(entryId, @"^\d+-\d+$"))
         {
-            InitialEntryIdValidation(entryId);
+            InitialPresetEntryIdValidation(entryId);
             entryIdType = EntryIdType.Preset;
         }
         else if (Regex.IsMatch(entryId, @"^\d+-\*$"))
         {
-            InitialEntryIdValidation(entryId);
+            InitialAutoSequenceEntryIdValidation(entryId);
             entryIdType = EntryIdType.AutoSequence;
         }
         else if (entryId == "*")
@@ -203,7 +205,7 @@ public class Xadd : Base
         return entryIdType;
     }
 
-    private static void InitialEntryIdValidation(string entryId)
+    private static void InitialPresetEntryIdValidation(string entryId)
     {
         var errorMessage = "The ID specified in XADD must be greater than 0-0";
 
@@ -214,6 +216,19 @@ public class Xadd : Base
             case < 0 when long.Parse(entryIdParts[1]) < 0:
                 throw new Exception(errorMessage);
             case 0 when long.Parse(entryIdParts[1]) < 1:
+                throw new Exception(errorMessage);
+        }
+    }
+    
+    private static void InitialAutoSequenceEntryIdValidation(string entryId)
+    {
+        var errorMessage = "The ID specified in XADD must be greater than 0-0";
+
+        var entryIdParts = entryId.Split('-');
+
+        switch (long.Parse(entryIdParts[0]))
+        {
+            case < 0:
                 throw new Exception(errorMessage);
         }
     }
