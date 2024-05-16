@@ -5,7 +5,7 @@ namespace codecrafters_redis;
 
 public static class DataCache
 {
-    public static ConcurrentDictionary<string, string> Cache { get; } = new();
+    private static ConcurrentDictionary<string, string> Cache { get; } = new();
 
     public static void Set(string key, string value, int? expiry = null)
     {

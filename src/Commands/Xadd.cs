@@ -8,7 +8,6 @@ namespace codecrafters_redis.Commands;
 public class Xadd : Base
 {
     public override bool CanBePropagated => true;
-    private const string IdConst = "Id";
 
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
@@ -20,9 +19,6 @@ public class Xadd : Base
         {
             var values = BuildEntryValue(key, entryId, commandParts);
             var newOrExistingEntryId = DataCache.Xadd(key, values);
-
-            var cache = DataCache.Cache;
-
             socket.Send(Encoding.UTF8.GetBytes($"+{newOrExistingEntryId}\r\n"));
             return Task.CompletedTask;
         }
@@ -66,7 +62,6 @@ public class Xadd : Base
         for (var i = 8; i < commandParts.Length; i += 2)
         {
             var valueIndex = i + 2;
-            // value.Add(new StreamCacheItemValueItem { Key = commandParts[i], Value = commandParts[valueIndex] });
             value.Key = commandParts[i];
             value.Value = commandParts[valueIndex];
             i += 2;
