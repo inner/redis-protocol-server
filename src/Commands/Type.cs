@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Cache;
 
 namespace codecrafters_redis.Commands;
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
 
-namespace codecrafters_redis;
+namespace codecrafters_redis.Cache;
 
 public static class DataCache
 {
@@ -78,34 +78,4 @@ public static class DataCache
         Cache.TryGetValue(key, out var value);
         return value;
     }
-}
-
-public class BasicCacheItem : ICacheItemBase, IExpiredCacheItem
-{
-    public required string Value { get; set; }
-    public string Type => nameof(BasicCacheItem);
-    public DateTime? Expiry { get; set; }
-}
-
-public class StreamCacheItem : ICacheItemBase
-{
-    public required List<StreamCacheItemValueItem> Value { get; set; }
-    public string Type => nameof(StreamCacheItem);
-}
-
-public class StreamCacheItemValueItem
-{
-    public string Id { get; set; } = null!;
-    public string Key { get; set; } = null!;
-    public string Value { get; set; } = null!;
-}
-
-public interface IExpiredCacheItem
-{
-    public DateTime? Expiry { get; set; }
-}
-
-public interface ICacheItemBase
-{
-    public string Type { get; }
 }

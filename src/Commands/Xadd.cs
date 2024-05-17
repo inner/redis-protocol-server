@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
+using codecrafters_redis.Cache;
 using codecrafters_redis.Enums;
 
 namespace codecrafters_redis.Commands;
