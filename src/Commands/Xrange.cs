@@ -88,7 +88,7 @@ public class Xrange : Base
         {
             sb.Append($"*{streamEntry.Value.Count}\r\n");
             sb.Append($"${streamEntry.Id.Length}\r\n{streamEntry.Id}\r\n");
-            sb.Append($"{streamEntry.Value.Count * 2}\r\n");
+            sb.Append($"*{streamEntry.Value.Count * 2}\r\n");
             foreach (var cacheItemValueItemValue in streamEntry.Value)
             {
                 sb.Append($"${cacheItemValueItemValue.Key.Length}\r\n{cacheItemValueItemValue.Key}\r\n");

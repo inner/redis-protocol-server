@@ -46,6 +46,11 @@ public abstract class NodeBase
 
     private void LogReceivedCommand(string clientCommand)
     {
+        if (string.IsNullOrEmpty(clientCommand))
+        {
+            return;
+        }
+        
         var logMessage = clientCommand.Replace("\r\n", "\\r\\n");
 
         if (!logMessage.EndsWith('\n'))
@@ -80,7 +85,7 @@ public abstract class NodeBase
                         continue;
                     }
 
-                    await receiver.Receive(client.Client, clientCommand);
+                    await receiver.Receive(client.Client, clientCommand.Replace("\"", string.Empty));
                 }
             }
             catch (SocketException)

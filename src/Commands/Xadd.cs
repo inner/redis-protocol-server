@@ -63,7 +63,7 @@ public class Xadd : Base
         var values = new List<StreamCacheItemValueItemValue>();
         for (var i = 8; i < commandParts.Length; i += 2)
         {
-            var valueIndex = i + 2;
+            var valueIndex = commandParts[i].Contains(' ') ? i : i + 2;
             values.Add(new StreamCacheItemValueItemValue
             {
                 Key = commandParts[i],
