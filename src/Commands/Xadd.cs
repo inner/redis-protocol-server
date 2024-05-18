@@ -60,11 +60,16 @@ public class Xadd : Base
             _ => throw new Exception("invalid stream ID specified")
         };
 
+        var values = new List<StreamCacheItemValueItemValue>();
         for (var i = 8; i < commandParts.Length; i += 2)
         {
             var valueIndex = i + 2;
-            value.Key = commandParts[i];
-            value.Value = commandParts[valueIndex];
+            values.Add(new StreamCacheItemValueItemValue
+            {
+                Key = commandParts[i],
+                Value = commandParts[valueIndex]
+            });
+            value.Value = values;
             i += 2;
             if (valueIndex + 2 >= commandParts.Length - 1)
             {
