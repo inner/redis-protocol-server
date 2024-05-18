@@ -13,5 +13,6 @@ public enum CommandType
     Client,
     Wait,
     Type,
-    Xadd
+    Xadd,
+    Xrange
 }
