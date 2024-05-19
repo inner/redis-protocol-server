@@ -70,9 +70,9 @@ public class Xadd : Base
 
         var value = entryIdType switch
         {
-            EntryIdType.Preset => GetEntryIdValueForPreset(entryId, existingEntryId),
-            EntryIdType.AutoSequence => GetEntryIdValueForAutoSequence(entryId, existingEntryId),
-            EntryIdType.Auto => GetEntryIdValueForAuto(existingEntryId),
+            EntryIdTypes.Preset => GetEntryIdValueForPreset(entryId, existingEntryId),
+            EntryIdTypes.AutoSequence => GetEntryIdValueForAutoSequence(entryId, existingEntryId),
+            EntryIdTypes.Auto => GetEntryIdValueForAuto(existingEntryId),
             _ => throw new Exception("invalid stream ID specified")
         };
 
@@ -196,30 +196,30 @@ public class Xadd : Base
         return value;
     }
 
-    private static EntryIdType GetEntryIdType(string entryId)
+    private static EntryIdTypes GetEntryIdType(string entryId)
     {
-        EntryIdType entryIdType;
+        EntryIdTypes entryIdTypes;
 
         if (Regex.IsMatch(entryId, @"^\d+-\d+$"))
         {
             InitialPresetEntryIdValidation(entryId);
-            entryIdType = EntryIdType.Preset;
+            entryIdTypes = EntryIdTypes.Preset;
         }
         else if (Regex.IsMatch(entryId, @"^\d+-\*$"))
         {
             InitialAutoSequenceEntryIdValidation(entryId);
-            entryIdType = EntryIdType.AutoSequence;
+            entryIdTypes = EntryIdTypes.AutoSequence;
         }
         else if (entryId == "*")
         {
-            entryIdType = EntryIdType.Auto;
+            entryIdTypes = EntryIdTypes.Auto;
         }
         else
         {
             throw new Exception("invalid stream ID specified");
         }
 
-        return entryIdType;
+        return entryIdTypes;
     }
 
     private static void InitialPresetEntryIdValidation(string entryId)

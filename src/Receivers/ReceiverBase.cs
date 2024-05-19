@@ -17,19 +17,19 @@ public abstract class ReceiverBase
 
             switch (respDataType)
             {
-                case DataType.Array:
+                case DataTypes.Array:
                     await ExecuteAsArrayMultiCommand(socket, commandString);
                     break;
-                case DataType.SimpleString:
+                case DataTypes.SimpleString:
                     ExecuteSimpleString();
                     break;
-                case DataType.SimpleError:
+                case DataTypes.SimpleError:
                     ExecuteSimpleError();
                     break;
-                case DataType.Integer:
+                case DataTypes.Integer:
                     ExecuteInteger();
                     break;
-                case DataType.BulkString:
+                case DataTypes.BulkString:
                     ExecuteBulkString(socket, commandString);
                     break;
                 default:
@@ -83,10 +83,10 @@ public abstract class ReceiverBase
         await ExecuteCommand(socket, commandString, commandType, commandCount, commandParts);
     }
 
-    private async Task ExecuteCommand(Socket socket, string commandString, CommandType commandType, int commandCount,
+    private async Task ExecuteCommand(Socket socket, string commandString, CommandTypes commandTypes, int commandCount,
         string[] commandParts)
     {
-        var className = $"codecrafters_redis.Commands.{commandType}";
+        var className = $"codecrafters_redis.Commands.{commandTypes}";
         var type = System.Type.GetType(className);
 
         if (type == null)

@@ -13,7 +13,6 @@ public static class ServerInfo
     public static bool ReplicaHandshakeCompleted { get; set; }
     public static bool ReplicaFirstByteReceived { get; set; }
     public static int ReplicaBytesReceived { get; set; }
-    
     public static int ReplicaAcksReceived { get; set; }
     
     public static void IncrementReplicaAcksReceived()

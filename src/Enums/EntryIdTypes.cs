@@ -1,6 +1,6 @@
 ﻿namespace codecrafters_redis.Enums;
 
-public enum EntryIdType
+public enum EntryIdTypes
 {
     Preset,
     AutoSequence,
