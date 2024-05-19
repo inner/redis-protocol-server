@@ -14,5 +14,6 @@ public enum CommandType
     Wait,
     Type,
     Xadd,
-    Xrange
+    Xrange,
+    Xread
 }

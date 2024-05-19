@@ -42,11 +42,19 @@ public class Xrange : Base
             startTimestamp = long.Parse(startEntryId.Split('-')[0]);
             startSequence = long.Parse(startEntryId.Split('-')[1]);
         }
+        else if (long.TryParse(startEntryId, out var startEntryIdNumber))
+        {
+            startTimestamp = startEntryIdNumber;
+        }
 
         if (Regex.IsMatch(endEntryId, @"^\d+-\d+$"))
         {
             endTimestamp = long.Parse(endEntryId.Split('-')[0]);
             endSequence = long.Parse(endEntryId.Split('-')[1]);
+        }
+        else if (long.TryParse(endEntryId, out var endEntryIdNumber))
+        {
+            endTimestamp = endEntryIdNumber;
         }
 
         var streamEntries = streamCacheItem.Value
@@ -60,6 +68,13 @@ public class Xrange : Base
                     }
 
                     if (x.IdTimestamp == startTimestamp.Value && x.IdSequence < startSequence.Value)
+                    {
+                        return false;
+                    }
+                }
+                else if (startTimestamp.HasValue && !startSequence.HasValue)
+                {
+                    if (x.IdTimestamp < startTimestamp.Value)
                     {
                         return false;
                     }
