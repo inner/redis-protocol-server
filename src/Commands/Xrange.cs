@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using codecrafters_redis.Cache;
 
 namespace codecrafters_redis.Commands;
@@ -36,13 +37,13 @@ public class Xrange : Base
         long? endTimestamp = null;
         long? endSequence = null;
 
-        if (startEntryId.Contains("-"))
+        if (Regex.IsMatch(startEntryId, @"^\d+-\d+$"))
         {
             startTimestamp = long.Parse(startEntryId.Split('-')[0]);
             startSequence = long.Parse(startEntryId.Split('-')[1]);
         }
 
-        if (endEntryId.Contains("-"))
+        if (Regex.IsMatch(endEntryId, @"^\d+-\d+$"))
         {
             endTimestamp = long.Parse(endEntryId.Split('-')[0]);
             endSequence = long.Parse(endEntryId.Split('-')[1]);
