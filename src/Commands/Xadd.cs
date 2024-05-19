@@ -13,6 +13,17 @@ public class Xadd : Base
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
+        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+    }
+    
+    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+        bool replicaConnection = false)
+    {
+        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+    }
+
+    private Task GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
+    {
         var key = commandParts[4];
         var entryId = commandParts[6];
 
@@ -20,7 +31,12 @@ public class Xadd : Base
         {
             var values = BuildEntryValue(key, entryId, commandParts);
             var newOrExistingEntryId = DataCache.Xadd(key, values);
-            socket.Send(Encoding.UTF8.GetBytes($"+{newOrExistingEntryId}\r\n"));
+            
+            if (!replicaConnection)
+            {
+                socket.Send(Encoding.UTF8.GetBytes($"+{newOrExistingEntryId}\r\n"));
+            }
+
             return Task.CompletedTask;
         }
         catch (Exception ex)
@@ -133,11 +149,11 @@ public class Xadd : Base
             {
                 throw new Exception("The ID specified in XADD is equal or smaller than the target stream top item");
             }
-            
+
             var newSequence = existingLastEntryIdTimestamp < entryIdTimestamp
                 ? 0
                 : existingLastEntryIdSequence + 1;
-            
+
             value.Id = $"{entryIdTimestamp}-{newSequence}";
         }
         else if (existingEntryId == null)
@@ -220,7 +236,7 @@ public class Xadd : Base
                 throw new Exception(errorMessage);
         }
     }
-    
+
     private static void InitialAutoSequenceEntryIdValidation(string entryId)
     {
         var errorMessage = "The ID specified in XADD must be greater than 0-0";
@@ -232,11 +248,5 @@ public class Xadd : Base
             case < 0:
                 throw new Exception(errorMessage);
         }
-    }
-
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        bool replicaConnection = false)
-    {
-        throw new NotImplementedException();
     }
 }

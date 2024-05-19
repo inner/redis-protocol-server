@@ -23,7 +23,7 @@ public class ReplicaNode : NodeBase
 
     protected override void LogOnStart()
     {
-        Console.WriteLine($"starting Redis 'replica' server on port '{port}'");
+        Console.WriteLine($"starting Redis '{NodeName}' server on port '{port}'");
     }
 
     protected sealed override string NodeName => $"replica-node-{port}";

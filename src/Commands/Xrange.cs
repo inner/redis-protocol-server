@@ -12,6 +12,17 @@ public class Xrange : Base
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
+        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+    }
+
+    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+        bool replicaConnection = false)
+    {
+        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+    }
+    
+    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
+    {
         var key = commandParts[4];
 
         var fetchItem = DataCache.Fetch(key);
@@ -112,14 +123,13 @@ public class Xrange : Base
             }
         }
 
-        var str = sb.ToString();
-        socket.Send(Encoding.UTF8.GetBytes(str));
+        var response = sb.ToString();
+        
+        if (!replicaConnection)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(response));   
+        }
+        
         return Task.CompletedTask;
-    }
-
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        bool replicaConnection = false)
-    {
-        throw new NotImplementedException();
     }
 }

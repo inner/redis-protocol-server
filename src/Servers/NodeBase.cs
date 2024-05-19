@@ -46,11 +46,6 @@ public abstract class NodeBase
 
     private void LogReceivedCommand(string clientCommand)
     {
-        if (string.IsNullOrEmpty(clientCommand))
-        {
-            return;
-        }
-        
         var logMessage = clientCommand.Replace("\r\n", "\\r\\n");
 
         if (!logMessage.EndsWith('\n'))
@@ -77,14 +72,14 @@ public abstract class NodeBase
                     var bytesRead = client.GetStream().Read(buffer, 0, buffer.Length);
                     var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                    LogReceivedCommand(clientCommand);
-
                     if (string.IsNullOrEmpty(clientCommand))
                     {
                         client.Client.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
                         continue;
                     }
 
+                    LogReceivedCommand(clientCommand);
+                    
                     await receiver.Receive(client.Client, clientCommand.Replace("\"", string.Empty));
                 }
             }
