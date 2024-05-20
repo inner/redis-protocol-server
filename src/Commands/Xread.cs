@@ -9,39 +9,53 @@ public class Xread : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override async Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        var blockIndex = Array.IndexOf(commandParts, "block") + 1;
+        if (blockIndex != -1 && int.TryParse(commandParts[blockIndex + 1], out var blockTime))
+        {
+            await Task.Delay(blockTime);
+        }
+
+        await GenerateCommonResponse(socket, commandParts, replicaConnection);
     }
-    
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+
+    protected override async Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        var blockIndex = Array.IndexOf(commandParts, "block") + 1;
+        if (blockIndex != -1 && int.TryParse(commandParts[blockIndex + 1], out var blockTime))
+        {
+            await Task.Delay(blockTime);
+        }
+
+        await GenerateCommonResponse(socket, commandParts, replicaConnection);
     }
 
     private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
     {
-        var streamKeys = GetStreamKeys(commandParts);
+        var isBlocking = Array.IndexOf(commandParts, "block") != -1;
+
+        var streamKeys = GetStreamKeys(commandParts, isBlocking);
         if (streamKeys.Count == 0)
         {
             if (!replicaConnection)
             {
-                socket.Send(Encoding.UTF8.GetBytes("*0\r\n"));   
+                socket.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
             }
-            
+
             return Task.CompletedTask;
         }
 
         var streamEntries = BuildStreamEntries(streamKeys);
-        if (streamKeys.Count == 0)
+        if (streamEntries.Count == 0)
         {
             if (!replicaConnection)
             {
-                socket.Send(Encoding.UTF8.GetBytes("*0\r\n"));   
+                socket.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
             }
-            
+
             return Task.CompletedTask;
         }
 
@@ -56,7 +70,7 @@ public class Xread : Base
             sb.Append("*2\r\n");
             sb.Append($"${streamEntry.Id.Length}\r\n{streamEntry.Id}\r\n");
             sb.Append($"*{streamEntry.Value.Count}\r\n");
-            
+
             foreach (var cacheItemValueItemValue in streamEntry.Value)
             {
                 sb.Append($"${cacheItemValueItemValue.Key.Length}\r\n{cacheItemValueItemValue.Key}\r\n");
@@ -65,10 +79,10 @@ public class Xread : Base
         }
 
         var response = sb.ToString();
-        
+
         if (!replicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(response));   
+            socket.Send(Encoding.UTF8.GetBytes(response));
         }
 
         return Task.CompletedTask;
@@ -123,7 +137,7 @@ public class Xread : Base
                     }
                     else if (startTimestamp.HasValue && !startSequence.HasValue)
                     {
-                        if (x.Timestamp <= startTimestamp.Value)
+                        if (x.Timestamp < startTimestamp.Value)
                         {
                             return false;
                         }
@@ -136,17 +150,17 @@ public class Xread : Base
         return streamEntries;
     }
 
-    private static List<StreamKeyWithEntryId> GetStreamKeys(string[] commandParts)
+    private static List<StreamKeyWithEntryId> GetStreamKeys(string[] commandParts, bool isBlocking)
     {
         var streamKeys = new List<string>();
         var streamKeysWithEntryIds = new List<StreamKeyWithEntryId>();
 
-        if (!string.Equals(commandParts[4], "streams", StringComparison.InvariantCultureIgnoreCase))
+        if (!string.Equals(commandParts[isBlocking ? 8 : 4], "streams", StringComparison.InvariantCultureIgnoreCase))
         {
             return streamKeysWithEntryIds;
         }
 
-        streamKeys.AddRange(commandParts.Skip(5)
+        streamKeys.AddRange(commandParts.Skip(isBlocking ? 9 : 5)
             .Where(x => !Regex.IsMatch(x, @"^\$\d+$") && !Regex.IsMatch(x, @"^\d+-\d+$")));
 
         var streamKeyEntryIds = new List<string>();
