@@ -85,6 +85,7 @@ public class Xadd : Base
                 Key = commandParts[i],
                 Value = commandParts[valueIndex]
             });
+            value.Key = key;
             value.Value = values;
             i += 2;
             if (valueIndex + 2 >= commandParts.Length - 1)

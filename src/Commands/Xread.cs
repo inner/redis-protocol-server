@@ -12,17 +12,36 @@ public class Xread : Base
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
+        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+    }
+    
+    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+        bool replicaConnection = false)
+    {
+        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+    }
+
+    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
+    {
         var streamKeys = GetStreamKeys(commandParts);
         if (streamKeys.Count == 0)
         {
-            socket.Send(Encoding.UTF8.GetBytes("*0\r\n"));
+            if (!replicaConnection)
+            {
+                socket.Send(Encoding.UTF8.GetBytes("*0\r\n"));   
+            }
+            
             return Task.CompletedTask;
         }
 
         var streamEntries = BuildStreamEntries(streamKeys);
         if (streamKeys.Count == 0)
         {
-            socket.Send(Encoding.UTF8.GetBytes("*0\r\n"));
+            if (!replicaConnection)
+            {
+                socket.Send(Encoding.UTF8.GetBytes("*0\r\n"));   
+            }
+            
             return Task.CompletedTask;
         }
 
@@ -31,9 +50,13 @@ public class Xread : Base
         sb.Append($"*{streamEntries.Count}\r\n");
         foreach (var streamEntry in streamEntries)
         {
-            sb.Append($"*{streamEntry.Value.Count}\r\n");
+            sb.Append("*2\r\n");
+            sb.Append($"${streamEntry.Key.Length}\r\n{streamEntry.Key}\r\n");
+            sb.Append("*1\r\n");
+            sb.Append("*2\r\n");
             sb.Append($"${streamEntry.Id.Length}\r\n{streamEntry.Id}\r\n");
-            sb.Append($"*{streamEntry.Value.Count * 2}\r\n");
+            sb.Append($"*{streamEntry.Value.Count}\r\n");
+            
             foreach (var cacheItemValueItemValue in streamEntry.Value)
             {
                 sb.Append($"${cacheItemValueItemValue.Key.Length}\r\n{cacheItemValueItemValue.Key}\r\n");
@@ -42,7 +65,11 @@ public class Xread : Base
         }
 
         var response = sb.ToString();
-        socket.Send(Encoding.UTF8.GetBytes(response));
+        
+        if (!replicaConnection)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(response));   
+        }
 
         return Task.CompletedTask;
     }
@@ -84,19 +111,19 @@ public class Xread : Base
                 {
                     if (startTimestamp.HasValue && startSequence.HasValue)
                     {
-                        if (x.Timestamp == startTimestamp.Value && x.Sequence < startSequence.Value)
+                        if (x.Timestamp < startTimestamp.Value)
                         {
                             return false;
                         }
-                        
-                        if (x.Timestamp < startTimestamp.Value)
+
+                        if (x.Timestamp == startTimestamp.Value && x.Sequence <= startSequence.Value)
                         {
                             return false;
                         }
                     }
                     else if (startTimestamp.HasValue && !startSequence.HasValue)
                     {
-                        if (x.Timestamp < startTimestamp.Value)
+                        if (x.Timestamp <= startTimestamp.Value)
                         {
                             return false;
                         }
@@ -141,12 +168,6 @@ public class Xread : Base
         }
 
         return streamKeysWithEntryIds;
-    }
-
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        bool replicaConnection = false)
-    {
-        return Task.CompletedTask;
     }
 }
 
