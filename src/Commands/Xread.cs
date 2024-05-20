@@ -5,6 +5,8 @@ using codecrafters_redis.Cache;
 
 namespace codecrafters_redis.Commands;
 
+public record StreamKeyWithEntryId(string Key, string EntryId);
+
 public class Xread : Base
 {
     public override bool CanBePropagated => false;
@@ -18,7 +20,14 @@ public class Xread : Base
             await Task.Delay(blockTime);
         }
 
-        await GenerateCommonResponse(socket, commandParts, replicaConnection);
+        if (blockIndex != -1 && (commandParts[6] == "\\x00" || commandParts[6] == "0"))
+        {
+            await GenerateCommonResponse(socket, commandParts, noWaitTimeout: true, replicaConnection);
+        }
+        else
+        {
+            await GenerateCommonResponse(socket, commandParts, replicaConnection);
+        }
     }
 
     protected override async Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
@@ -30,25 +39,51 @@ public class Xread : Base
             await Task.Delay(blockTime);
         }
 
-        await GenerateCommonResponse(socket, commandParts, replicaConnection);
+        if (blockIndex != -1 && (commandParts[6] == "\\x00" || commandParts[6] == "0"))
+        {
+            await GenerateCommonResponse(socket, commandParts, noWaitTimeout: true, replicaConnection);
+        }
+        else
+        {
+            await GenerateCommonResponse(socket, commandParts, replicaConnection);
+        }
     }
 
-    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
+    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool noWaitTimeout = false,
+        bool replicaConnection = false)
     {
         var isBlocking = Array.IndexOf(commandParts, "block") != -1;
+        List<StreamCacheItemValueItem> streamEntries = [];
 
-        var streamKeys = GetStreamKeys(commandParts, isBlocking);
-        if (streamKeys.Count == 0)
+        if (noWaitTimeout)
         {
-            if (!replicaConnection)
+            while (!streamEntries.Any())
             {
-                socket.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
+                var streamKeys = GetStreamKeys(commandParts, isBlocking);
+                if (streamKeys.Count == 0)
+                {
+                    continue;
+                }
+                
+                streamEntries.AddRange(BuildStreamEntries(streamKeys));
             }
-
-            return Task.CompletedTask;
         }
-
-        var streamEntries = BuildStreamEntries(streamKeys);
+        else
+        {
+            var streamKeys = GetStreamKeys(commandParts, isBlocking);
+            if (streamKeys.Count == 0)
+            {
+                if (!replicaConnection)
+                {
+                    socket.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
+                }
+        
+                return Task.CompletedTask;
+            }
+            
+            streamEntries.AddRange(BuildStreamEntries(streamKeys));
+        }
+        
         if (streamEntries.Count == 0)
         {
             if (!replicaConnection)
@@ -184,5 +219,3 @@ public class Xread : Base
         return streamKeysWithEntryIds;
     }
 }
-
-public record StreamKeyWithEntryId(string Key, string EntryId);
