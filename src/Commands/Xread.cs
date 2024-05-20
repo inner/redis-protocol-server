@@ -84,19 +84,19 @@ public class Xread : Base
                 {
                     if (startTimestamp.HasValue && startSequence.HasValue)
                     {
-                        if (x.Timestamp <= startTimestamp.Value)
+                        if (x.Timestamp == startTimestamp.Value && x.Sequence < startSequence.Value)
                         {
                             return false;
                         }
-
-                        if (x.Timestamp == startTimestamp.Value && x.Sequence <= startSequence.Value)
+                        
+                        if (x.Timestamp < startTimestamp.Value)
                         {
                             return false;
                         }
                     }
                     else if (startTimestamp.HasValue && !startSequence.HasValue)
                     {
-                        if (x.Timestamp <= startTimestamp.Value)
+                        if (x.Timestamp < startTimestamp.Value)
                         {
                             return false;
                         }
