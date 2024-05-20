@@ -59,7 +59,7 @@ public class Xread : Base
         {
             while (!streamEntries.Any())
             {
-                var streamKeys = GetStreamKeys(commandParts, isBlocking);
+                var streamKeys = GetStreamKeysFromCommand(commandParts, isBlocking);
                 if (streamKeys.Count == 0)
                 {
                     continue;
@@ -70,7 +70,7 @@ public class Xread : Base
         }
         else
         {
-            var streamKeys = GetStreamKeys(commandParts, isBlocking);
+            var streamKeys = GetStreamKeysFromCommand(commandParts, isBlocking);
             if (streamKeys.Count == 0)
             {
                 if (!replicaConnection)
@@ -185,7 +185,7 @@ public class Xread : Base
         return streamEntries;
     }
 
-    private static List<StreamKeyWithEntryId> GetStreamKeys(string[] commandParts, bool isBlocking)
+    private static List<StreamKeyWithEntryId> GetStreamKeysFromCommand(string[] commandParts, bool isBlocking)
     {
         var streamKeys = new List<string>();
         var streamKeysWithEntryIds = new List<StreamKeyWithEntryId>();
