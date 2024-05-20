@@ -73,19 +73,19 @@ public class Xrange : Base
             {
                 if (startTimestamp.HasValue && startSequence.HasValue)
                 {
-                    if (x.IdTimestamp < startTimestamp.Value)
+                    if (x.Timestamp < startTimestamp.Value)
                     {
                         return false;
                     }
 
-                    if (x.IdTimestamp == startTimestamp.Value && x.IdSequence < startSequence.Value)
+                    if (x.Timestamp == startTimestamp.Value && x.Sequence < startSequence.Value)
                     {
                         return false;
                     }
                 }
                 else if (startTimestamp.HasValue && !startSequence.HasValue)
                 {
-                    if (x.IdTimestamp < startTimestamp.Value)
+                    if (x.Timestamp < startTimestamp.Value)
                     {
                         return false;
                     }
@@ -93,12 +93,12 @@ public class Xrange : Base
 
                 if (endTimestamp.HasValue && endSequence.HasValue)
                 {
-                    if (x.IdTimestamp > endTimestamp.Value)
+                    if (x.Timestamp > endTimestamp.Value)
                     {
                         return false;
                     }
 
-                    if (x.IdTimestamp == endTimestamp.Value && x.IdSequence > endSequence.Value)
+                    if (x.Timestamp == endTimestamp.Value && x.Sequence > endSequence.Value)
                     {
                         return false;
                     }
