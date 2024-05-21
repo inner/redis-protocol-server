@@ -22,7 +22,7 @@ public class Xread : Base
 
         if (blockIndex != -1 && (commandParts[6] == "\\x00" || commandParts[6] == "0"))
         {
-            await GenerateCommonResponse(socket, commandParts, noWaitTimeout: true, replicaConnection);
+            await GenerateCommonResponse(socket, commandParts, noTimeout: true, replicaConnection);
         }
         else
         {
@@ -41,7 +41,7 @@ public class Xread : Base
 
         if (blockIndex != -1 && (commandParts[6] == "\\x00" || commandParts[6] == "0"))
         {
-            await GenerateCommonResponse(socket, commandParts, noWaitTimeout: true, replicaConnection);
+            await GenerateCommonResponse(socket, commandParts, noTimeout: true, replicaConnection);
         }
         else
         {
@@ -49,23 +49,43 @@ public class Xread : Base
         }
     }
 
-    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool noWaitTimeout = false,
+    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool noTimeout = false,
         bool replicaConnection = false)
     {
         var isBlocking = Array.IndexOf(commandParts, "block") != -1;
         List<StreamCacheItemValueItem> streamEntries = [];
 
-        if (noWaitTimeout)
+        if (noTimeout)
         {
-            while (!streamEntries.Any())
+            if (commandParts.Last() != "$")
             {
-                var streamKeys = GetStreamKeysFromCommand(commandParts, isBlocking);
-                if (streamKeys.Count == 0)
+                while (!streamEntries.Any())
                 {
-                    continue;
+                    var streamKeys = GetStreamKeysFromCommand(commandParts, isBlocking);
+                    if (streamKeys.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    streamEntries.AddRange(BuildStreamEntries(streamKeys));
                 }
-                
-                streamEntries.AddRange(BuildStreamEntries(streamKeys));
+            }
+            else
+            {
+                var key = commandParts[^3];
+
+                string? maxEntryId = null;
+                var maxExistingEntryId = DataCache.Fetch(key);
+                if (!string.IsNullOrEmpty(maxExistingEntryId))
+                {
+                    var existingEntryId = maxExistingEntryId.Deserialize<StreamCacheItem>()!;
+                    maxEntryId = existingEntryId.Value.Max(x => x.Id)!;
+                }
+
+                while (!streamEntries.Any())
+                {
+                    streamEntries.AddRange(BuildStreamEntries([new StreamKeyWithEntryId(key, maxEntryId ?? "0-0")]));
+                }
             }
         }
         else
@@ -77,13 +97,13 @@ public class Xread : Base
                 {
                     socket.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
                 }
-        
+
                 return Task.CompletedTask;
             }
-            
+
             streamEntries.AddRange(BuildStreamEntries(streamKeys));
         }
-        
+
         if (streamEntries.Count == 0)
         {
             if (!replicaConnection)
