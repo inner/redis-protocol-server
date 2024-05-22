@@ -49,7 +49,7 @@ public class ReplicaNode : NodeBase
             SendReplconfCapaPsync2(stream);
             SendPsync(stream);
 
-            ServerInfo.ReplicaHandshakeCompleted = true;
+            ServerInfo.Replication.ReplicaHandshakeCompleted = true;
 
             Console.WriteLine($"[{NodeName}] Handshake completed");
 

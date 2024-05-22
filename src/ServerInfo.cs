@@ -3,19 +3,35 @@ using System.Net.Sockets;
 
 namespace codecrafters_redis;
 
-public static class ServerInfo
+public class ServerRuntimeContext
 {
     private static readonly object LockObject = new();
-    public static bool IsMaster { get; set; } = true;
-    public static string? MasterReplId { get; set; }
-    public static int MasterReplOffset { get; set; }
-    public static readonly ConcurrentDictionary<string, Socket> Replicas = new();
-    public static bool ReplicaHandshakeCompleted { get; set; }
-    public static bool ReplicaFirstByteReceived { get; set; }
-    public static int ReplicaBytesReceived { get; set; }
-    public static int ReplicaAcksReceived { get; set; }
     
-    public static void IncrementReplicaAcksReceived()
+    public bool IsMaster { get; set; } = true;
+    public string? MasterReplId { get; set; }
+    public int MasterReplOffset { get; set; }
+    public readonly ConcurrentDictionary<string, Socket> Replicas = new();
+    public string DataDir { get; set; } = null!;
+    public string DbFilename { get; set; } = null!;
+    
+    public int GetConnectedReplicas()
+    {
+        lock (LockObject)
+        {
+            return Replicas.Count(x => x.Value.Connected);
+        }
+    }
+}
+
+public class Replication
+{
+    private static readonly object LockObject = new();
+    public bool ReplicaHandshakeCompleted { get; set; }
+    public bool ReplicaFirstByteReceived { get; set; }
+    public int ReplicaBytesReceived { get; set; }
+    public int ReplicaAcksReceived { get; set; }
+    
+    public void IncrementReplicaAcksReceived()
     {
         lock (LockObject)
         {
@@ -23,19 +39,17 @@ public static class ServerInfo
         }
     }
 
-    public static void IncrementReplicaBytesReceived(int bytesReceived)
+    public void IncrementReplicaBytesReceived(int bytesReceived)
     {
         lock (LockObject)
         {
             ReplicaBytesReceived += bytesReceived;
         }
     }
+}
 
-    public static int GetConnectedReplicas()
-    {
-        lock (LockObject)
-        {
-            return Replicas.Count(x => x.Value.Connected);
-        }
-    }
+public static class ServerInfo
+{
+    public static ServerRuntimeContext ServerRuntimeContext = new();
+    public static Replication Replication { get; set; } = new();
 }

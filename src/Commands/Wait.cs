@@ -11,13 +11,13 @@ public class Wait : Base
     protected override async Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        ServerInfo.ReplicaAcksReceived = 0;
+        ServerInfo.Replication.ReplicaAcksReceived = 0;
         
         var numberOfReplicasToWaitFor = commandParts[4];
         var msToWait = commandParts[6];
         
         var tasks = new List<Task>();
-        foreach (var replica in ServerInfo.Replicas.Where(x => x.Value.Connected))
+        foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
         {
             tasks.Add(Task.Run(() =>
             {
@@ -32,7 +32,7 @@ public class Wait : Base
         
         while (sw.ElapsedMilliseconds < int.Parse(msToWait))
         {
-            if (ServerInfo.ReplicaAcksReceived >= int.Parse(numberOfReplicasToWaitFor))
+            if (ServerInfo.Replication.ReplicaAcksReceived >= int.Parse(numberOfReplicasToWaitFor))
             {
                 break;
             }
@@ -40,9 +40,9 @@ public class Wait : Base
         
         sw.Stop();
 
-        var acksReceived = ServerInfo.ReplicaAcksReceived == 0
-            ? ServerInfo.GetConnectedReplicas()
-            : ServerInfo.ReplicaAcksReceived;
+        var acksReceived = ServerInfo.Replication.ReplicaAcksReceived == 0
+            ? ServerInfo.ServerRuntimeContext.GetConnectedReplicas()
+            : ServerInfo.Replication.ReplicaAcksReceived;
         
         socket.Send(Encoding.UTF8.GetBytes($":{acksReceived}\r\n"));
     }

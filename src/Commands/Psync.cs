@@ -10,7 +10,7 @@ public class Psync : Base
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        var response = $"+FULLRESYNC {ServerInfo.MasterReplId} 0\r\n";
+        var response = $"+FULLRESYNC {ServerInfo.ServerRuntimeContext.MasterReplId} 0\r\n";
         socket.Send(Encoding.UTF8.GetBytes(response));
         
         var emptyRdbFileBase64 = "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3RpbWXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==";
@@ -20,7 +20,7 @@ public class Psync : Base
             .ToArray();
         
         socket.Send(rdbResynchronizationFileMsg);
-        ServerInfo.Replicas.TryAdd(socket.RemoteEndPoint!.ToString()!, socket);
+        ServerInfo.ServerRuntimeContext.Replicas.TryAdd(socket.RemoteEndPoint!.ToString()!, socket);
         return Task.CompletedTask;
     }
 

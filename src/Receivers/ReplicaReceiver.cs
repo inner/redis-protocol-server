@@ -7,14 +7,14 @@ public class ReplicaReceiver : ReceiverBase
 {
     public override async Task Receive(Socket socket, string commandString)
     {
-        if (!ServerInfo.ReplicaHandshakeCompleted)
+        if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
         {
             return;
         }
         
-        if (!ServerInfo.ReplicaFirstByteReceived || commandString.Contains("$3\r\nACK\r\n"))
+        if (!ServerInfo.Replication.ReplicaFirstByteReceived || commandString.Contains("$3\r\nACK\r\n"))
         {
-            ServerInfo.ReplicaFirstByteReceived = true;
+            ServerInfo.Replication.ReplicaFirstByteReceived = true;
             await base.Receive(socket, commandString);
             return;
         }
@@ -25,8 +25,8 @@ public class ReplicaReceiver : ReceiverBase
         }
         
         var currentBytesReceived = Encoding.UTF8.GetBytes(commandString).Length;
-        Console.WriteLine($"Total bytes received: {ServerInfo.ReplicaBytesReceived}. Incrementing bytes received by {currentBytesReceived}");
-        ServerInfo.IncrementReplicaBytesReceived(currentBytesReceived);
+        Console.WriteLine($"Total bytes received: {ServerInfo.Replication.ReplicaBytesReceived}. Incrementing bytes received by {currentBytesReceived}");
+        ServerInfo.Replication.IncrementReplicaBytesReceived(currentBytesReceived);
         
         await base.Receive(socket, commandString);
     }

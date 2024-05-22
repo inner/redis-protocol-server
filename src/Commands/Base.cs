@@ -14,7 +14,7 @@ public abstract class Base
 
     public async Task Execute(Socket socket, int commandCount, string[] commandParts, bool replicaConnection = false)
     {
-        if (ServerInfo.IsMaster)
+        if (ServerInfo.ServerRuntimeContext.IsMaster)
         {
             await OnMasterNodeExecute(socket, commandCount, commandParts, replicaConnection);
         }

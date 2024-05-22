@@ -1,36 +1,112 @@
 using System.Net;
+using System.Runtime.InteropServices;
 using codecrafters_redis;
 using codecrafters_redis.Receivers;
 using codecrafters_redis.Servers;
 
-var port = args.Length > 0 && (args[0] == "--port" || args[0] == "-p")
-    ? int.Parse(args[1])
-    : Constants.DefaultRedisPort;
+var programArgs = args
+    .Select(x => x.Replace("\"", string.Empty))
+    .ToArray();
 
-var masterHost = args.Length > 2 && args[2] == "--replicaof"
-    ? args[3]
+var port = Array.IndexOf(programArgs, "--port") != -1
+    ? int.Parse(programArgs[Array.IndexOf(programArgs, "--port") + 1])
+    : Array.IndexOf(programArgs, "-p") != -1
+        ? int.Parse(programArgs[Array.IndexOf(programArgs, "-p") + 1])
+        : Constants.DefaultRedisPort;
+
+var masterHostString = Array.IndexOf(programArgs, "--replicaof") != -1
+    ? programArgs[Array.IndexOf(programArgs, "--replicaof") + 1]
     : null;
 
-int? masterPort;
+string? masterHost = null;
+int? masterPort = null;
 
-if (args.Length == 4)
+if (!string.IsNullOrEmpty(masterHostString))
 {
-    var masterHostParts = masterHost!.Replace("\"", string.Empty).Split(' ');
+    var masterHostParts = masterHostString.Split(' ');
     masterHost = masterHostParts[0];
-    masterPort = int.Parse(masterHostParts[1]);
+    masterPort = masterHostParts.Length > 1
+        ? int.Parse(masterHostParts[1])
+        : Constants.DefaultRedisPort;
+}
+
+ServerInfo.ServerRuntimeContext.IsMaster = masterHost == null;
+
+var osType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+    ? OSPlatform.Windows
+    : OSPlatform.Linux;
+
+if (Array.IndexOf(programArgs, "--dir") != -1)
+{
+    var dirIndex = Array.IndexOf(programArgs, "--dir");
+    var dir = programArgs[dirIndex + 1];
+
+    if (!Directory.Exists(dir))
+    {
+        Directory.CreateDirectory(dir);
+    }
+
+    ServerInfo.ServerRuntimeContext.DataDir = dir;
+    
+    var dbFilenameIndex = Array.IndexOf(programArgs, "--dbfilename");
+    var dbFilename = programArgs[dbFilenameIndex + 1];
+    ServerInfo.ServerRuntimeContext.DbFilename = dbFilename;
 }
 else
 {
-    masterPort = args.Length > 2 && args[2] == "--replicaof"
-        ? int.Parse(args[4])
-        : null;
+    var windowsMasterDir = "C:\\redis-rdb";
+    var windowsReplicaDir = "C:\\redis-rdb\\replica";
+    var linuxMasterDir = "//tmp//redis-rdb";
+    var linuxReplicaDir = "//tmp//redis-rdb//replica";
+
+    if (osType == OSPlatform.Windows)
+    {
+        if (!Directory.Exists(windowsMasterDir))
+        {
+            Directory.CreateDirectory(windowsMasterDir);
+        }
+
+        if (!Directory.Exists(windowsReplicaDir))
+        {
+            Directory.CreateDirectory(windowsReplicaDir);
+        }
+    }
+    else
+    {
+        if (!Directory.Exists(linuxMasterDir))
+        {
+            Directory.CreateDirectory(linuxMasterDir);
+        }
+
+        if (!Directory.Exists(linuxReplicaDir))
+        {
+            Directory.CreateDirectory(linuxReplicaDir);
+        }
+    }
+
+    ServerInfo.ServerRuntimeContext.DataDir = osType == OSPlatform.Windows
+        ? ServerInfo.ServerRuntimeContext.IsMaster
+            ? windowsMasterDir
+            : windowsReplicaDir
+        : ServerInfo.ServerRuntimeContext.IsMaster
+            ? linuxMasterDir
+            : linuxReplicaDir;
+
+    ServerInfo.ServerRuntimeContext.DbFilename = ServerInfo.ServerRuntimeContext.IsMaster
+        ? $"master{(port != 0 ? port : Constants.DefaultRedisPort)}.rdb"
+        : $"replica{port}.rdb";
 }
 
-ServerInfo.IsMaster = masterHost == null;
+if (Array.IndexOf(programArgs, "--dbfilename") != -1)
+{
+    var dbFilenameIndex = Array.IndexOf(programArgs, "--dbfilename");
+    var dbFilename = programArgs[dbFilenameIndex + 1];
+    ServerInfo.ServerRuntimeContext.DbFilename = dbFilename;
+}
 
 try
 {
-    if (ServerInfo.IsMaster)
+    if (ServerInfo.ServerRuntimeContext.IsMaster)
     {
         new MasterNode(IPAddress.Any, port, new MasterReceiver())
             .Start();

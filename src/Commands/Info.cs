@@ -13,7 +13,7 @@ public class Info : Base
         var infoValues = new Dictionary<string, string?>
         {
             { "role", "master" },
-            { "master_replid", ServerInfo.MasterReplId },
+            { "master_replid", ServerInfo.ServerRuntimeContext.MasterReplId },
             { "master_repl_offset", "0" },
             { "connected_slaves", "0" },
             { "second_repl_offset", "-1" },

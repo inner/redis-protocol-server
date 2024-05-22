@@ -97,12 +97,12 @@ public abstract class ReceiverBase
         var command = (Base)Activator.CreateInstance(type)!;
         await command.Execute(socket, commandCount, commandParts);
 
-        if (!ServerInfo.IsMaster || !command.CanBePropagated || commandString.Contains("$3\r\nACK\r\n"))
+        if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated || commandString.Contains("$3\r\nACK\r\n"))
         {
             return;
         }
         
-        foreach (var replica in ServerInfo.Replicas.Where(x => x.Value.Connected))
+        foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
         {
             Console.WriteLine($"Propagating command '{commandString[..^1]}' to replica '{replica.Value.RemoteEndPoint}'.");
             replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));

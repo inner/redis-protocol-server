@@ -18,9 +18,9 @@ public class Replconf : Base
         
         if (string.Equals(commandParts[4], "ack", StringComparison.InvariantCultureIgnoreCase))
         {
-            ServerInfo.IncrementReplicaAcksReceived();
+            ServerInfo.Replication.IncrementReplicaAcksReceived();
             Console.WriteLine($"Received ACK from replica '{socket.RemoteEndPoint}', bytes received: {commandParts[6]}.");
-            Console.WriteLine($"Replica ACKs received: {ServerInfo.ReplicaAcksReceived}.");
+            Console.WriteLine($"Replica ACKs received: {ServerInfo.Replication.ReplicaAcksReceived}.");
         }
         
         return Task.CompletedTask;
@@ -29,7 +29,7 @@ public class Replconf : Base
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        if (!ServerInfo.ReplicaHandshakeCompleted)
+        if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
         {
             return Task.CompletedTask;
         }
@@ -38,7 +38,7 @@ public class Replconf : Base
                 StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(commandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
         {
-            socket.Send(Encoding.UTF8.GetBytes($"*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n${ServerInfo.ReplicaBytesReceived.ToString().Length}\r\n{ServerInfo.ReplicaBytesReceived}\r\n"));
+            socket.Send(Encoding.UTF8.GetBytes($"*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n${ServerInfo.Replication.ReplicaBytesReceived.ToString().Length}\r\n{ServerInfo.Replication.ReplicaBytesReceived}\r\n"));
         }
         
         return Task.CompletedTask;
