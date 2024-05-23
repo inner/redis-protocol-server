@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Rdb;
 using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Servers;
@@ -30,6 +31,18 @@ public abstract class NodeBase
         {
             var server = new TcpListener(localAddress, port);
             server.Start();
+            
+            var rdbReader = new RdbReader();
+            
+            var keys = rdbReader.ReadRdb(
+                Path.Combine(
+                    ServerInfo.ServerRuntimeContext.DataDir,
+                    ServerInfo.ServerRuntimeContext.DbFilename));
+            
+            // RedisRdbParser.ParseRdbFile(
+            //     Path.Combine(
+            //         ServerInfo.ServerRuntimeContext.DataDir,
+            //         ServerInfo.ServerRuntimeContext.DbFilename));
 
             while (true)
             {

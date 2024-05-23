@@ -5,8 +5,7 @@ namespace codecrafters_redis;
 
 public class ServerRuntimeContext
 {
-    private static readonly object LockObject = new();
-    
+    private static readonly object ReplicasLockObject = new();
     public bool IsMaster { get; set; } = true;
     public string? MasterReplId { get; set; }
     public int MasterReplOffset { get; set; }
@@ -16,7 +15,7 @@ public class ServerRuntimeContext
     
     public int GetConnectedReplicas()
     {
-        lock (LockObject)
+        lock (ReplicasLockObject)
         {
             return Replicas.Count(x => x.Value.Connected);
         }
@@ -25,7 +24,8 @@ public class ServerRuntimeContext
 
 public class Replication
 {
-    private static readonly object LockObject = new();
+    private static readonly object ReplicaAcksReceivedLockObject = new();
+    private static readonly object ReplicaBytesReceivedLockObject = new();
     public bool ReplicaHandshakeCompleted { get; set; }
     public bool ReplicaFirstByteReceived { get; set; }
     public int ReplicaBytesReceived { get; set; }
@@ -33,7 +33,7 @@ public class Replication
     
     public void IncrementReplicaAcksReceived()
     {
-        lock (LockObject)
+        lock (ReplicaAcksReceivedLockObject)
         {
             ReplicaAcksReceived += 1;
         }
@@ -41,7 +41,7 @@ public class Replication
 
     public void IncrementReplicaBytesReceived(int bytesReceived)
     {
-        lock (LockObject)
+        lock (ReplicaBytesReceivedLockObject)
         {
             ReplicaBytesReceived += bytesReceived;
         }

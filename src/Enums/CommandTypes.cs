@@ -16,5 +16,6 @@ public enum CommandTypes
     Xadd,
     Xrange,
     Xread,
-    Config
+    Config,
+    Keys
 }
