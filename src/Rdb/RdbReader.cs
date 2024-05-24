@@ -47,7 +47,6 @@ public class RdbReader
                 var key1 = reader.ReadBytes(val3);
                 var keyStr = Encoding.UTF8.GetString(key1);
                 
-                
                 var val4 = reader.ReadByte();
                 var val4Hex = val4.ToString("X2");
                 var val5 = reader.ReadByte();
