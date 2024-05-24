@@ -186,8 +186,8 @@ public class RdbReader
         byte[] bytes = reader.ReadBytes(length);
         return Encoding.UTF8.GetString(bytes);
     }
-    
-    public static int ReadLength(BinaryReader stream)
+
+    private static int ReadLength(BinaryReader stream)
     {
         int length = 0;
         
