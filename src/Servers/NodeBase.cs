@@ -100,6 +100,10 @@ public abstract class NodeBase
             {
                 Console.WriteLine($"Closing TCP connection: [{connectionId}]");
             }
+            catch (IOException)
+            {
+                Console.WriteLine($"Client closed connection (I/O): [{connectionId}]");
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}, stack: {ex.StackTrace}");
