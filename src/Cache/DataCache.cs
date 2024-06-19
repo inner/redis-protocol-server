@@ -12,7 +12,7 @@ public static class DataCache
         var basicCacheItem = new BasicCacheItem
         {
             Value = value,
-            Expiry = expiry.HasValue
+            Expiry = expiry is > 0
                 ? DateTime.Now.AddMilliseconds(expiry.Value)
                 : null
         };

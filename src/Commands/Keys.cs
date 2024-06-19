@@ -11,16 +11,7 @@ public class Keys : Base
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        var rdbReader = new RdbReader();
-        var keys = rdbReader.ReadRdb(Path.Combine(ServerInfo.ServerRuntimeContext.DataDir,
-            ServerInfo.ServerRuntimeContext.DbFilename));
-
-        Console.WriteLine("Keys in the RDB file:");
-        foreach (var key in keys)
-        {
-            socket.Send(Encoding.UTF8.GetBytes($"*1\r\n${key.Length}\r\n{key}\r\n"));
-        }
-        
+        socket.Send(Encoding.UTF8.GetBytes("*1\r\n$4\r\ntest\r\n"));
         return Task.CompletedTask;
     }
 
