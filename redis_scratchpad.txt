@@ -1,0 +1,122 @@
+*1\r\n$4\r\nping\r\n
+
+*2\r\n$4\r\nping\r\n$5\r\nworld\r\n
+
+*2\r\n$4\r\necho\r\n$10\r\nstrawberry\r\n
+
+*2\r\n$4\r\necho\r\n$12\r\n"grape pear"\r\n
+
+*3\r\n$3\r\nset\r\n$9\r\nraspberry\r\n$9\r\npineapple\r\n
+*2\r\n$3\r\nget\r\n$9\r\nraspberry\r\n
+
+*3\r\n$3\r\nset\r\n$4\r\npear\r\n$9\r\npineapple\r\n
+*2\r\n$3\r\nget\r\n$4\r\npear\r\n
+
+*3\r\n$3\r\nset\r\n$6\r\norange\r\n$9\r\npineapple\r\n
+*5\r\n$3\r\nset\r\n$5\r\napple\r\n$6\r\norange\r\n$2\r\npx\r\n$3\r\n100\r\n
+
+*3\r\n$6\r\nclient\r\n$7\r\nsetname\r\n$14\r\n127.0.0.1@6379\r\n
+*3\r\n$6\r\nconfig\r\n$3\r\nget\r\n$9\r\ndatabases\r\n
+*6\r\n$4\r\nscan\r\n$1\r\n0\r\n$5\r\nMATCH\r\n$1\r\n
+*\r\n$5\r\nCOUNT\r\n$3\r\n500\r\n
+*1\r\n$4\r\ninfo\r\n
+
+*2\r\n$4\r\nINFO\r\n$11\r\nreplication\r\n
+
+*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\n123\r\n*3\r\n$3\r\nSET\r\n$3\r\nbar\r\n$3\r\n456\r\n*3\r\n$3\r\nSET\r\n$3\r\nbaz\r\n$3\r\n789\r\n
+
+*3\r\n$3\r\nSET\r\n$3\r\nfoo\r\n$3\r\n123\r\n
+*3\r\n$3\r\nSET\r\n$3\r\nbar\r\n$3\r\n456\r\n
+*3\r\n$3\r\nSET\r\n$3\r\nbaz\r\n$3\r\n789\r\n
+
+*2\r\n$3\r\nGET\r\n$3\r\nfoo\r\n
+*2\r\n$3\r\nGET\r\n$3\r\nbar\r\n
+*2\r\n$3\r\nGET\r\n$3\r\nbaz\r\n
+
+*3\r\n$6\r\nCONFIG\r\n$3\r\nGET\r\n$9\r\ndatabases\r\n*2\r\n$4\r\nINFO\r\n$8\r\nkeyspace\r\n*4\r\n$4\r\nSCAN\r\n$1\r\n0\r\n$5\r\nMATCH\r\n$1\r\n*\r\n
+
+*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n
+*1\r\n$4\r\nPING\r\n
+*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n
+*3\r\n$3\r\nSET\r\n$9\r\nblueberry\r\n$9\r\nraspberry\r\n
+*3\r\n$3\r\nSET\r\n$6\r\norange\r\n$4\r\npear\r\n
+*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n
+
+*2\r\n$4\r\nTYPE\r\n$3\r\nfoo\r\n
+
+redis-cli xadd "pineapple" "0-1" "foo bar"
+*5\r\n$4\r\nxadd\r\n$9\r\npineapple\r\n$3\r\n1-1\r\n$3\r\nfoo\r\n$3\r\nbar\r\n
+*5\r\n$4\r\nxadd\r\n$9\r\npineapple\r\n$3\r\n1-2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n
+
+redis-cli xadd "pineapple" "0-1" "foo bar" "foo1 bar1"
+*7\r\n$4\r\nxadd\r\n$9\r\npineapple\r\n$3\r\n0-1\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$4\r\nfoo1\r\n$4\r\nbar1\r\n
+*4\r\n$6\r\nxrange\r\n$9\r\npineapple\r\n$3\r\n0-2\r\n$3\r\n0-4\r\n
+
+*5\r\n$4\r\nxadd\r\n$5\r\napple\r\n$3\r\n0-1\r\n$3\r\nfoo\r\n$3\r\nbar\r\n
+*2\r\n$4\r\ntype\r\n$5\r\napple\r\n
+
+*5\r\n$4\r\nxadd\r\n$6\r\nbanana\r\n$3\r\n0-1\r\n$3\r\nfoo\r\n$3\r\nbar\r\n
+*5\r\n$4\r\nxadd\r\n$6\r\nbanana\r\n$3\r\n0-1\r\n$3\r\nfoa\r\n$3\r\nbae\r\n
+*5\r\n$4\r\nxadd\r\n$6\r\nbanana\r\n$3\r\n0-3\r\n$3\r\nfoo\r\n$3\r\nbar\r\n
+*5\r\n$4\r\nxadd\r\n$6\r\nbanana\r\n$3\r\n0-4\r\n$3\r\nfoo\r\n$3\r\nbar\r\n
+*4\r\n$6\r\nxrange\r\n$6\r\nbanana\r\n$3\r\n0-2\r\n$3\r\n0-4\r\n
+
+redis-cli XADD some_key 1526985054069-0 temperature 36 humidity 95
+redis-cli XADD some_key 1526985054079-0 temperature 37 humidity 94
+redis-cli XRANGE some_key 1526985054069 1526985054079
+
+redis-cli xadd "strawberry" "0-2" "foo bar"
+redis-cli xadd "strawberry" "0-3" "foo bar"
+redis-cli xadd "strawberry" "0-4" "foo bar"
+redis-cli xrange "strawberry" 0-2 "0-4"
+
+redis-cli xadd "strawberry" "0-2" foo bar
+redis-cli xadd "strawberry" "0-3" foo bar
+redis-cli xadd "strawberry" "0-4" foo bar
+redis-cli xrange "strawberry" 0-2 0-4
+
+redis-cli XADD some_key 1526985054069-0 temperature 36 humidity 95
+redis-cli XADD some_key 1526985054079-0 temperature 37 humidity 94
+redis-cli XREAD streams some_key 1526985054069-0
+
+
+redis-cli XADD stream_key 0-1 temperature 95
+redis-cli XADD other_stream_key 0-2 humidity 97
+redis-cli XREAD streams stream_key other_stream_key 0-0 0-1
+
+*5\r\n$4\r\nxadd\r\n$5\r\npear\r\n$3\r\n0-1\r\n$11\r\ntemperature\r\n$2\r\n37\r\n
+*4\r\n$5\r\nxread\r\n$7\r\nstreams\r\n$5\r\ngrape\r\n$3\r\n0-0\r\n
+
+redis-cli XREAD streams banana 0-0
+
+redis-cli xadd "apple" "0-1" "temperature 33"
+redis-cli xread streams "apple 0-0"
+
+
+redis-cli XADD stream_key 0-1 temperature 96
+redis-cli XREAD block 1000 streams stream_key 0-1
+
+*6\r\n$5\r\nxread\r\n$7\r\nstreams\r\n$9\r\nraspberry\r\n$3\r\n0-1\r\n
+*6\r\n$5\r\nxread\r\n$5\r\nblock\r\n$4\r\n3000\r\n$7\r\nstreams\r\n$9\r\nraspberry\r\n$3\r\n0-1\r\n
+*5\r\n$4\r\nxadd\r\n$9\r\nraspberry\r\n$3\r\n0-2\r\n$11\r\ntemperature\r\n$2\r\n46\r\n
+
+*5\r\n$4\r\nxadd\r\n$9\r\nraspberry\r\n$3\r\n0-1\r\n$11\r\ntemperature\r\n$2\r\n38\r\n
+*6\r\n$5\r\nxread\r\n$5\r\nblock\r\n$1\r\n0\r\n$7\r\nstreams\r\n$9\r\nraspberry\r\n$3\r\n0-2\r\n
+*5\r\n$4\r\nxadd\r\n$9\r\nraspberry\r\n$3\r\n0-2\r\n$11\r\ntemperature\r\n$2\r\n38\r\n
+
+
+redis-cli XADD mystream "*" name Anna
+redis-cli XADD mystream "*" name Bert
+redis-cli XADD mystream "*" name Cathy
+
+redis-cli XADD stream_key 0-1 temperature 96
+redis-cli XADD stream_key 0-2 temperature 96
+redis-cli XADD stream_key 0-3 temperature 96
+redis-cli XREAD block 0 streams stream_key $
+
+redis-cli XADD stream_key 0-4 temperature 96
+
+
+cd /mnt/d/projects/codecrafters-redis-csharp/
+codecrafters test
+codecrafters submit
