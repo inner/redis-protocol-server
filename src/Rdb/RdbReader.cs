@@ -1,8 +1,9 @@
 ﻿using System.Text;
+using codecrafters_redis.Cache;
 
 namespace codecrafters_redis.Rdb;
 
-public class RdbReader
+public static class RdbReader
 {
     public static void ReadRdb(string filePath)
     {
@@ -75,7 +76,8 @@ public class RdbReader
             {
                 var keyBytes = binaryReader.ReadStr();
                 var valueBytes = binaryReader.ReadStr();
-                Console.WriteLine($"Set: {Encoding.UTF8.GetString(keyBytes)} - {Encoding.UTF8.GetString(valueBytes)} - {expiry}");
+                // Console.WriteLine($"Set: {Encoding.UTF8.GetString(keyBytes)} - {Encoding.UTF8.GetString(valueBytes)} - {expiry}");
+                DataCache.Set(Encoding.UTF8.GetString(keyBytes), Encoding.UTF8.GetString(valueBytes), expiry);
             }
         }
     }

@@ -40,17 +40,17 @@ if (Array.IndexOf(programArgs, "--dir") != -1)
 {
     var dirIndex = Array.IndexOf(programArgs, "--dir");
     var dir = programArgs[dirIndex + 1];
-
-    if (!Directory.Exists(dir))
-    {
-        Directory.CreateDirectory(dir);
-    }
-
     ServerInfo.ServerRuntimeContext.DataDir = dir;
-    
+
     var dbFilenameIndex = Array.IndexOf(programArgs, "--dbfilename");
     var dbFilename = programArgs[dbFilenameIndex + 1];
     ServerInfo.ServerRuntimeContext.DbFilename = dbFilename;
+
+    var pathToDbFile = Path.Combine(dir, dbFilename);
+    if (File.Exists(pathToDbFile))
+    {
+        ServerInfo.ServerRuntimeContext.DbFileExists = true;
+    }
 }
 else
 {

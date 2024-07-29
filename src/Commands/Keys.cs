@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Text;
-using codecrafters_redis.Rdb;
+using codecrafters_redis.Cache;
 
 namespace codecrafters_redis.Commands;
 
@@ -11,13 +11,38 @@ public class Keys : Base
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        socket.Send(Encoding.UTF8.GetBytes("*1\r\n$4\r\ntest\r\n"));
+        GenerateCommonResponse(socket, commandParts, replicaConnection);
         return Task.CompletedTask;
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        throw new NotImplementedException();
+        GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return Task.CompletedTask;
+    }
+    
+    private static void GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection)
+    {
+        var keys = DataCache.GetKeys(commandParts[4]);
+        if (keys.Count == 0)
+        {
+            socket.Send("*0"u8.ToArray());
+        }
+        
+        var sb = new StringBuilder();
+        sb.Append($"*{keys.Count}\r\n");
+        
+        foreach (var key in keys)
+        {
+            sb.Append($"${key.Length}\r\n{key}\r\n");
+        }
+
+        var response = sb.ToString();
+
+        if (!replicaConnection)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(response));
+        }
     }
 }

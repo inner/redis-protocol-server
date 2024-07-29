@@ -12,6 +12,7 @@ public class ServerRuntimeContext
     public readonly ConcurrentDictionary<string, Socket> Replicas = new();
     public string DataDir { get; set; } = null!;
     public string DbFilename { get; set; } = null!;
+    public bool DbFileExists { get; set; } = false;
     
     public int GetConnectedReplicas()
     {

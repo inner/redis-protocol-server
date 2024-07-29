@@ -34,7 +34,7 @@ public class Xadd : Base
             
             if (!replicaConnection)
             {
-                socket.Send(Encoding.UTF8.GetBytes($"+{newOrExistingEntryId}\r\n"));
+                socket.Send(Encoding.UTF8.GetBytes($"${newOrExistingEntryId.Length}\r\n{newOrExistingEntryId}\r\n"));
             }
 
             return Task.CompletedTask;

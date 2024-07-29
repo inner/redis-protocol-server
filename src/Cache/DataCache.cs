@@ -7,7 +7,7 @@ public static class DataCache
 {
     private static ConcurrentDictionary<string, string> Cache { get; } = new();
 
-    public static void Set(string key, string value, int? expiry = null)
+    public static void Set(string key, string value, long? expiry = null)
     {
         var basicCacheItem = new BasicCacheItem
         {
@@ -45,6 +45,21 @@ public static class DataCache
             : basicCacheItem;
     }
 
+    public static IList<string> GetKeys(string? pattern = null)
+    {
+        if (pattern is null)
+        {
+            return Cache.Select(x => x.Key).ToList();
+        }
+
+        pattern = pattern.Replace("*", string.Empty);
+
+        return Cache
+            .Where(x => x.Key.StartsWith(pattern))
+            .Select(x => x.Key)
+            .ToList();
+    }
+
     public static string Xadd(string key, StreamCacheItemValueItem value)
     {
         var entryId = value.Id;
@@ -57,7 +72,7 @@ public static class DataCache
             {
                 existingStreamCacheItem.Value.Add(value);
             }
-            
+
             Cache[key] = JsonSerializer.Serialize(existingStreamCacheItem);
         }
         else
@@ -66,7 +81,7 @@ public static class DataCache
             {
                 Value = [value]
             };
-            
+
             Cache[key] = JsonSerializer.Serialize(streamCacheItem);
         }
 
