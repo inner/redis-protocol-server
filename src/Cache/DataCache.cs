@@ -35,8 +35,6 @@ public static class DataCache
             return null;
         }
 
-        Console.WriteLine($"cache item expiry: {basicCacheItem.Expiry} - current: {DateTimeOffset.Now.ToUnixTimeMilliseconds()}");
-
         return basicCacheItem.Expiry < DateTimeOffset.Now.ToUnixTimeMilliseconds()
             ? null
             : basicCacheItem;

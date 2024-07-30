@@ -28,7 +28,7 @@ public class ReplicaNode : NodeBase
 
     protected sealed override string NodeName => $"replica-node-{port}";
 
-    public async Task<ReplicaNode> Handshake()
+    public ReplicaNode Handshake()
     {
         try
         {
@@ -50,11 +50,12 @@ public class ReplicaNode : NodeBase
             SendPsync(stream);
 
             ServerInfo.Replication.ReplicaHandshakeCompleted = true;
-            await Task.Delay(1000);
+            Console.WriteLine("waiting");
+            Task.Delay(2000).Wait();
 
             Console.WriteLine($"[{NodeName}] Handshake completed");
 
-            await Task.Run(() => { _ = HandleConnection(tcpClient); });
+            Task.Run(() => { _ = HandleConnection(tcpClient); });
 
             return this;
         }
