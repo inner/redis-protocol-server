@@ -97,10 +97,10 @@ public abstract class ReceiverBase
         var command = (Base)Activator.CreateInstance(type)!;
         await command.Execute(socket, commandCount, commandParts);
 
-        // if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated || commandString.Contains("$3\r\nACK\r\n"))
-        // {
-        //     return;
-        // }
+        if (commandString.Contains("$3\r\nACK\r\n"))
+        {
+            return;
+        }
         
         foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
         {
