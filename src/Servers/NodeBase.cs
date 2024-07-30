@@ -80,6 +80,8 @@ public abstract class NodeBase
                 {
                     var buffer = new byte[1024];
                     var bytesRead = client.GetStream().Read(buffer, 0, buffer.Length);
+                    if (bytesRead == 0) continue;
+                    
                     var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
                     if (string.IsNullOrEmpty(clientCommand))
