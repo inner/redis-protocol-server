@@ -50,8 +50,6 @@ public class ReplicaNode : NodeBase
             SendPsync(stream);
 
             ServerInfo.Replication.ReplicaHandshakeCompleted = true;
-            Console.WriteLine("waiting");
-            Task.Delay(2000).Wait();
 
             Console.WriteLine($"[{NodeName}] Handshake completed");
 
