@@ -5,7 +5,7 @@ namespace codecrafters_redis.Commands;
 
 public class Ping : Base
 {
-    public override bool CanBePropagated => false;
+    public override bool CanBePropagated => true;
 
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
