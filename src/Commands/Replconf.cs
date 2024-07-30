@@ -29,11 +29,8 @@ public class Replconf : Base
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        Console.WriteLine($"ReplicaHandshakeCompleted1: {ServerInfo.Replication.ReplicaHandshakeCompleted}");
-        
         if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
         {
-            Console.WriteLine($"ReplicaHandshakeCompleted2: {ServerInfo.Replication.ReplicaHandshakeCompleted}");
             return Task.CompletedTask;
         }
         
@@ -41,7 +38,6 @@ public class Replconf : Base
                 StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(commandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
         {
-            Console.WriteLine($"ReplicaHandshakeCompleted3: {ServerInfo.Replication.ReplicaHandshakeCompleted}");
             socket.Send(Encoding.UTF8.GetBytes($"*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n${ServerInfo.Replication.ReplicaBytesReceived.ToString().Length}\r\n{ServerInfo.Replication.ReplicaBytesReceived}\r\n"));
         }
         
