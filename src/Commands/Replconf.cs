@@ -36,11 +36,11 @@ public class Replconf : Base
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
-        {
-            Console.WriteLine($"ReplicaHandshakeCompleted: {ServerInfo.Replication.ReplicaHandshakeCompleted}");
-            return Task.CompletedTask;
-        }
+        // if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
+        // {
+        //     Console.WriteLine($"ReplicaHandshakeCompleted: {ServerInfo.Replication.ReplicaHandshakeCompleted}");
+        //     return Task.CompletedTask;
+        // }
         
         if (string.Equals(commandParts[4], "getack",
                 StringComparison.InvariantCultureIgnoreCase) &&
