@@ -18,5 +18,6 @@ public enum CommandTypes
     Xread,
     Config,
     Keys,
-    Incr
+    Incr,
+    Multi
 }
