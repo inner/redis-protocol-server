@@ -36,6 +36,7 @@ public class Incr : Base
 
         if (!long.TryParse(cacheItem.Value, out var longValue))
         {
+            socket.Send("-ERR value is not an integer or out of range\r\n"u8.ToArray());
             return;
         }
         

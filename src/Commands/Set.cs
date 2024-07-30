@@ -46,12 +46,6 @@ public class Set : Base
         if (commandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
-
-            // if (!replicaConnection)
-            // {
-            //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
-            // }
-
             return Task.CompletedTask;
         }
 
@@ -65,11 +59,6 @@ public class Set : Base
 
         var expiry = int.Parse(commandParts[10]);
         DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
-
-        // if (!replicaConnection)
-        // {
-        //     socket.Send(Encoding.UTF8.GetBytes(Constants.OkArrayResponse));
-        // }
         
         return Task.CompletedTask;
     }
