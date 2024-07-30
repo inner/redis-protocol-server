@@ -97,7 +97,7 @@ public abstract class ReceiverBase
         var command = (Base)Activator.CreateInstance(type)!;
         await command.Execute(socket, commandCount, commandParts);
 
-        if (commandString.Contains("$3\r\nACK\r\n"))
+        if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated || commandString.Contains("$3\r\nACK\r\n"))
         {
             return;
         }
