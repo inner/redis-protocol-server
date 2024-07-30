@@ -28,20 +28,20 @@ public class ReplicaNode : NodeBase
 
     protected sealed override string NodeName => $"replica-node-{port}";
 
-    public ReplicaNode Handshake()
+    public async Task<ReplicaNode> Handshake()
     {
         try
         {
             tcpClient = masterNode == null || !masterPort.HasValue
                 ? null
                 : new TcpClient(masterNode, masterPort.Value);
-            
+
             if (tcpClient == null)
             {
                 Console.WriteLine("TCP client is null. Exiting...");
                 return this;
             }
-            
+
             var stream = tcpClient.GetStream();
 
             SendPing(stream);
@@ -50,10 +50,11 @@ public class ReplicaNode : NodeBase
             SendPsync(stream);
 
             ServerInfo.Replication.ReplicaHandshakeCompleted = true;
+            await Task.Delay(1000);
 
             Console.WriteLine($"[{NodeName}] Handshake completed");
 
-            Task.Run(() => { _ = HandleConnection(tcpClient); });
+            await Task.Run(() => { _ = HandleConnection(tcpClient); });
 
             return this;
         }
@@ -68,7 +69,7 @@ public class ReplicaNode : NodeBase
     {
         const string ping = "*1\r\n$4\r\nPING\r\n";
         StreamWrite(stream, ping);
-        
+
         if (StreamRead(stream) != Constants.PongResponse)
         {
             ThrowHandshakeFailed(nameof(SendPing));
@@ -78,7 +79,7 @@ public class ReplicaNode : NodeBase
     private void SendReplconfListeningPort(NetworkStream stream)
     {
         Console.WriteLine($"[{NodeName}] Sending REPLCONF listening-port {port}");
-        
+
         var listeningPortString = port.ToString();
         var replconfListeningPort =
             $"*3\r\n$8\r\nREPLCONF\r\n$14\r\nlistening-port\r\n${listeningPortString.Length}\r\n{listeningPortString}\r\n";
@@ -122,7 +123,7 @@ public class ReplicaNode : NodeBase
         var buffer = new byte[1024];
         var bytesRead = stream.Read(buffer, 0, buffer.Length);
         var response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-        
+
         return response;
     }
 

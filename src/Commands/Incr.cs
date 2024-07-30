@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis.Cache;
 
@@ -31,7 +30,7 @@ public class Incr : Base
         if (cacheItem == null)
         {
             DataCache.Set(key, "1");
-            socket.Send(Encoding.UTF8.GetBytes(":1\r\n"));
+            socket.Send(":1\r\n"u8.ToArray());
             return;
         }
 

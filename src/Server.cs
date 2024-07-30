@@ -113,9 +113,9 @@ try
     }
     else
     {
-        new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, new ReplicaReceiver())
-            .Handshake()
-            .Start();
+        var replica = new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, new ReplicaReceiver());
+        await replica.Handshake();
+        replica.Start();
     }
 }
 catch (Exception ex)
