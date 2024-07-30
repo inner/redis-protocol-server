@@ -47,7 +47,7 @@ public class ReplicaNode : NodeBase
             SendPing(stream);
             SendReplconfListeningPort(stream);
             SendReplconfCapaPsync2(stream);
-            SendPsync(stream);
+            SendPsync(stream).Wait();
 
             ServerInfo.Replication.ReplicaHandshakeCompleted = true;
 
@@ -101,15 +101,80 @@ public class ReplicaNode : NodeBase
         }
     }
 
-    private void SendPsync(NetworkStream stream)
+    private async Task SendPsync(NetworkStream stream)
     {
         const string replconfPsync = "*3\r\n$5\r\nPSYNC\r\n$1\r\n?\r\n$2\r\n-1\r\n";
         StreamWrite(stream, replconfPsync);
 
-        if (!StreamRead(stream).Contains("FULLRESYNC"))
+        // if (!StreamRead(stream).Contains("FULLRESYNC"))
+        // {
+        //     ThrowHandshakeFailed(nameof(SendPsync));
+        // }
+
+        // Send REPLICA command or similar to initiate replication (if needed)
+        // await networkStream.WriteAsync(...);
+
+        // Read FULLRESYNC response
+        string fullResyncResponse = await ReadLineAsync(stream);
+        Console.WriteLine("Received: " + fullResyncResponse);
+
+        if (fullResyncResponse.StartsWith("+FULLRESYNC"))
         {
-            ThrowHandshakeFailed(nameof(SendPsync));
+            // Read the RDB length
+            string rdbLengthStr = await ReadLineAsync(stream);
+            if (rdbLengthStr.StartsWith("$"))
+            {
+                int rdbLength = int.Parse(rdbLengthStr.Substring(1));
+                byte[] rdbFile = new byte[rdbLength];
+
+                // Read the RDB file
+                int bytesRead = 0;
+                while (bytesRead < rdbLength)
+                {
+                    int read = await stream.ReadAsync(rdbFile, bytesRead, rdbLength - bytesRead);
+                    if (read == 0)
+                    {
+                        throw new Exception("Unexpected end of stream while reading RDB file.");
+                    }
+
+                    bytesRead += read;
+                }
+
+                Console.WriteLine("Received RDB file of length: " + rdbLength);
+                // Process the RDB file (e.g., save it, load it, etc.)
+            }
         }
+    }
+
+    static async Task<string> ReadLineAsync(NetworkStream stream)
+    {
+        var sb = new StringBuilder();
+        var buffer = new byte[1];
+        while (true)
+        {
+            int bytesRead = await stream.ReadAsync(buffer, 0, 1);
+            if (bytesRead == 0)
+            {
+                throw new Exception("Unexpected end of stream.");
+            }
+
+            char ch = (char)buffer[0];
+            if (ch == '\r')
+            {
+                // Expecting \n after \r
+                bytesRead = await stream.ReadAsync(buffer, 0, 1);
+                if (bytesRead == 0 || buffer[0] != '\n')
+                {
+                    throw new Exception("Malformed response.");
+                }
+
+                break;
+            }
+
+            sb.Append(ch);
+        }
+
+        return sb.ToString();
     }
 
     private static void ThrowHandshakeFailed(string failedMethodName)
