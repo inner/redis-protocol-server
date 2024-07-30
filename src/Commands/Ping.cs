@@ -18,13 +18,13 @@ public class Ping : Base
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
-        if (replicaConnection)
-        {
-            return Task.CompletedTask;
-        }
-        
-        const string response = "*1\r\n$4\r\nPONG\r\n";
-        socket.Send(Encoding.UTF8.GetBytes(response));
+        // if (replicaConnection)
+        // {
+        //     return Task.CompletedTask;
+        // }
+        //
+        // const string response = "*1\r\n$4\r\nPONG\r\n";
+        // socket.Send(Encoding.UTF8.GetBytes(response));
         return Task.CompletedTask;
     }
 }
