@@ -83,7 +83,6 @@ public abstract class NodeBase
                     if (bytesRead == 0) continue;
                     
                     var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
                     if (string.IsNullOrEmpty(clientCommand))
                     {
                         client.Client.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));

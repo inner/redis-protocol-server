@@ -23,6 +23,13 @@ public class Replconf : Base
             Console.WriteLine($"Replica ACKs received: {ServerInfo.Replication.ReplicaAcksReceived}.");
         }
         
+        if (string.Equals(commandParts[4], "getack",
+                StringComparison.InvariantCultureIgnoreCase) &&
+            string.Equals(commandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
+        {
+            socket.Send(Encoding.UTF8.GetBytes($"*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n${ServerInfo.Replication.ReplicaBytesReceived.ToString().Length}\r\n{ServerInfo.Replication.ReplicaBytesReceived}\r\n"));
+        }
+        
         return Task.CompletedTask;
     }
 
