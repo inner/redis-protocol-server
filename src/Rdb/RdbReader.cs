@@ -63,7 +63,7 @@ public static class RdbReader
 
             if (opCode == RdbConstants.OpCodes.ExpireTime)
             {
-                expiry = binaryReader.ReadInt32();
+                // expiry = binaryReader.ReadInt32();
                 // expireTime = binaryReader.ReadInt32().ToString();
                 opCode = binaryReader.ReadByte();
             }
@@ -77,9 +77,6 @@ public static class RdbReader
             {
                 var keyBytes = binaryReader.ReadStr();
                 var valueBytes = binaryReader.ReadStr();
-                
-                Console.WriteLine(
-                    $"Set: {Encoding.UTF8.GetString(keyBytes)} - {Encoding.UTF8.GetString(valueBytes)} - {expiry} - {DateTimeOffset.FromUnixTimeMilliseconds(expiry)}");
                 
                 DataCache.Set(
                     Encoding.UTF8.GetString(keyBytes),

@@ -76,7 +76,7 @@ public abstract class ReceiverBase
         var commandParts = commandString.Split("\\r\\n")
             .Where(x => !string.IsNullOrEmpty(x))
             .ToArray();
-        
+
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
         var commandType = commandParts[2].ToCommandType();
 
@@ -97,14 +97,17 @@ public abstract class ReceiverBase
         var command = (Base)Activator.CreateInstance(type)!;
         await command.Execute(socket, commandCount, commandParts);
 
-        if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated || commandString.Contains("$3\r\nACK\r\n"))
+        if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated ||
+            commandString.Contains("$3\r\nACK\r\n"))
         {
             return;
         }
-        
+
         foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
         {
-            Console.WriteLine($"Propagating command '{commandString[..^1]}' to replica '{replica.Value.RemoteEndPoint}'.");
+            Console.WriteLine(
+                $"Propagating command '{commandString[..^1]}' to replica '{replica.Value.RemoteEndPoint}'.");
+            
             replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
         }
     }

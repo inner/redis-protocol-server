@@ -29,6 +29,11 @@ public class Replconf : Base
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         bool replicaConnection = false)
     {
+        if (!replicaConnection)
+        {
+            return Task.CompletedTask;
+        }
+        
         Console.WriteLine($"ReplicaHandshakeCompleted1: {ServerInfo.Replication.ReplicaHandshakeCompleted}");
         
         if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
