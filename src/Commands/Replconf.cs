@@ -31,6 +31,7 @@ public class Replconf : Base
     {
         if (!replicaConnection)
         {
+            Console.WriteLine("AADASAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
             return Task.CompletedTask;
         }
         
