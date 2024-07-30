@@ -13,8 +13,8 @@ public static class DataCache
         {
             Value = value,
             Expiry = expiry is > 0
-                ? DateTime.Now.AddMilliseconds(expiry.Value)
-                : null
+                ? expiry.Value
+                : DateTimeOffset.MaxValue.ToUnixTimeMilliseconds()
         };
 
         var serialized = JsonSerializer.Serialize(basicCacheItem);
@@ -23,24 +23,21 @@ public static class DataCache
 
     public static BasicCacheItem? Get(string key)
     {
-        BasicCacheItem? basicCacheItem = null;
         if (!Cache.TryGetValue(key, out var basicCacheItemSerialized))
-        {
-            return basicCacheItem;
-        }
-
-        basicCacheItem = JsonSerializer.Deserialize<BasicCacheItem>(basicCacheItemSerialized);
-        if (basicCacheItem == null)
         {
             return null;
         }
 
-        if (!basicCacheItem.Expiry.HasValue)
+        var basicCacheItem = JsonSerializer.Deserialize<BasicCacheItem>(basicCacheItemSerialized);
+
+        if (basicCacheItem?.Expiry == null)
         {
-            return basicCacheItem;
+            return null;
         }
 
-        return basicCacheItem.Expiry.Value < DateTime.Now
+        Console.WriteLine($"cache item expiry: {basicCacheItem.Expiry} - current: {DateTimeOffset.Now.ToUnixTimeMilliseconds()}");
+
+        return basicCacheItem.Expiry < DateTimeOffset.Now.ToUnixTimeMilliseconds()
             ? null
             : basicCacheItem;
     }

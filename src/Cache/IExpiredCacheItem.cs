@@ -2,5 +2,5 @@
 
 public interface IExpiredCacheItem
 {
-    public DateTime? Expiry { get; set; }
+    public long Expiry { get; set; }
 }

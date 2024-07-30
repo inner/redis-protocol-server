@@ -26,12 +26,14 @@ public class Set : Base
         var expiryCommand = commandParts[8];
         if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
         {
-            throw new AggregateException($"Unrecognized command used for '{nameof(Set)}': '{expiryCommand}'.");
+            throw new Exception($"Unrecognized command used for '{nameof(Set)}': '{expiryCommand}'.");
         }
 
         var expiry = int.Parse(commandParts[10]);
-        DataCache.Set(cacheKey, cacheValue, expiry);
+        DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
+        
         socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+        
         return Task.CompletedTask;
     }
 
@@ -62,7 +64,7 @@ public class Set : Base
         }
 
         var expiry = int.Parse(commandParts[10]);
-        DataCache.Set(cacheKey, cacheValue, expiry);
+        DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
 
         // if (!replicaConnection)
         // {

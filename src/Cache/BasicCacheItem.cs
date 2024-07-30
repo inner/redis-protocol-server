@@ -4,5 +4,5 @@ public class BasicCacheItem : ICacheItemBase, IExpiredCacheItem
 {
     public required string Value { get; set; }
     public string Type => nameof(BasicCacheItem);
-    public DateTime? Expiry { get; set; }
+    public long Expiry { get; set; }
 }
