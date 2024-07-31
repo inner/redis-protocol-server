@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
-using System.Text;
 using codecrafters_redis.Enums;
 
 namespace codecrafters_redis.Commands;
@@ -25,7 +24,7 @@ public abstract class Base
         }
 
         if (TransactionStarted && (!string.Equals(commandParts[2], CommandTypes.Multi.ToString(),
-                StringComparison.InvariantCultureIgnoreCase) || !string.Equals(commandParts[2],
+                StringComparison.InvariantCultureIgnoreCase) && !string.Equals(commandParts[2],
                 CommandTypes.Exec.ToString(),
                 StringComparison.InvariantCultureIgnoreCase)))
         {
