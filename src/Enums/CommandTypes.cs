@@ -19,5 +19,6 @@ public enum CommandTypes
     Config,
     Keys,
     Incr,
-    Multi
+    Multi,
+    Exec
 }

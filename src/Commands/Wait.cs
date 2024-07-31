@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
 
@@ -9,7 +10,7 @@ public class Wait : Base
     public override bool CanBePropagated => false;
 
     protected override async Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        bool replicaConnection = false)
+        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
     {
         ServerInfo.Replication.ReplicaAcksReceived = 0;
         
@@ -48,7 +49,7 @@ public class Wait : Base
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        bool replicaConnection = false)
+        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
     {
         return Task.CompletedTask;
     }

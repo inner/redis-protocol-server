@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Collections.Concurrent;
+using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis.Cache;
 
@@ -9,14 +10,14 @@ public class Incr : Base
     public override bool CanBePropagated => true;
 
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        bool replicaConnection = false)
+        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
     {
         GenerateCommonResponse(socket, commandParts, replicaConnection);
         return Task.CompletedTask;
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        bool replicaConnection = false)
+        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
     {
         GenerateCommonResponse(socket, commandParts, replicaConnection);
         return Task.CompletedTask;

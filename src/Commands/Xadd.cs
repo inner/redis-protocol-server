@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Collections.Concurrent;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Cache;
@@ -11,13 +12,13 @@ public class Xadd : Base
     public override bool CanBePropagated => true;
 
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        bool replicaConnection = false)
+        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
     {
         return GenerateCommonResponse(socket, commandParts, replicaConnection);
     }
     
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        bool replicaConnection = false)
+        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
     {
         return GenerateCommonResponse(socket, commandParts, replicaConnection);
     }

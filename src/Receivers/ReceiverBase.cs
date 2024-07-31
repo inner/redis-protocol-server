@@ -1,4 +1,5 @@
-﻿using System.Net.Sockets;
+﻿using System.Collections.Concurrent;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Commands;
@@ -8,7 +9,7 @@ namespace codecrafters_redis.Receivers;
 
 public abstract class ReceiverBase
 {
-    public virtual async Task Receive(Socket socket, string commandString)
+    public virtual async Task Receive(Socket socket, string commandString, ConcurrentQueue<string> concurrentQueue)
     {
         try
         {
@@ -18,7 +19,7 @@ public abstract class ReceiverBase
             switch (respDataType)
             {
                 case DataTypes.Array:
-                    await ExecuteAsArrayMultiCommand(socket, commandString);
+                    await ExecuteAsArrayMultiCommand(socket, commandString, concurrentQueue);
                     break;
                 case DataTypes.SimpleString:
                     ExecuteSimpleString();
@@ -43,7 +44,8 @@ public abstract class ReceiverBase
         }
     }
 
-    private async Task ExecuteAsArrayMultiCommand(Socket socket, string commandString)
+    private async Task ExecuteAsArrayMultiCommand(Socket socket, string commandString,
+        ConcurrentQueue<string> concurrentQueue)
     {
         var multiCommandSplit = Regex.Split(commandString, @"(\*\d+\\r\\n)")
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -67,11 +69,11 @@ public abstract class ReceiverBase
 
         foreach (var commandToExecute in commandsToExecute)
         {
-            await ExecuteArray(socket, commandToExecute);
+            await ExecuteArray(socket, commandToExecute, concurrentQueue);
         }
     }
 
-    private async Task ExecuteArray(Socket socket, string commandString)
+    private async Task ExecuteArray(Socket socket, string commandString, ConcurrentQueue<string> concurrentQueue)
     {
         var commandParts = commandString.Split("\\r\\n")
             .Where(x => !string.IsNullOrEmpty(x))
@@ -80,11 +82,11 @@ public abstract class ReceiverBase
         var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
         var commandType = commandParts[2].ToCommandType();
 
-        await ExecuteCommand(socket, commandString, commandType, commandCount, commandParts);
+        await ExecuteCommand(socket, commandString, commandType, commandCount, commandParts, concurrentQueue);
     }
 
     private async Task ExecuteCommand(Socket socket, string commandString, CommandTypes commandTypes, int commandCount,
-        string[] commandParts)
+        string[] commandParts, ConcurrentQueue<string> concurrentQueue)
     {
         var className = $"codecrafters_redis.Commands.{commandTypes}";
         var type = System.Type.GetType(className);
@@ -95,7 +97,7 @@ public abstract class ReceiverBase
         }
 
         var command = (Base)Activator.CreateInstance(type)!;
-        await command.Execute(socket, commandCount, commandParts);
+        await command.Execute(socket, commandCount, commandParts, concurrentQueue);
 
         if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated ||
             commandString.Contains("$3\r\nACK\r\n"))
@@ -107,7 +109,7 @@ public abstract class ReceiverBase
         {
             Console.WriteLine(
                 $"Propagating command '{commandString[..^1]}' to replica '{replica.Value.RemoteEndPoint}'.");
-            
+
             replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
         }
     }
@@ -115,7 +117,7 @@ public abstract class ReceiverBase
     private void ExecuteBulkString(Socket socket, string commandString)
     {
         var commandParts = commandString.Split("\\r\\n");
-        socket.Send(Encoding.UTF8.GetBytes("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"));
+        socket.Send("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"u8.ToArray());
     }
 
     private void ExecuteSimpleString()
