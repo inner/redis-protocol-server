@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
-using System.Text;
 
 namespace codecrafters_redis.Commands;
 
