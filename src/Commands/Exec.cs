@@ -33,6 +33,7 @@ public class Exec : Base
             return;
         }
 
-        socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+        socket.Send("*0\r\n"u8.ToArray());
+        concurrentQueue.Clear();
     }
 }
