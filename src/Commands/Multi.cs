@@ -1,33 +1,38 @@
-﻿using System.Collections.Concurrent;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Enums;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
 public class Multi : Base
 {
-    public override bool CanBePropagated => false;
+    public override bool CanBePropagated => true;
 
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandParts, concurrentQueue, replicaConnection);
+        GenerateCommonResponse(socket, commandParts, commandQueue, replicaConnection);
         return Task.CompletedTask;
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandParts, concurrentQueue, replicaConnection);
+        GenerateCommonResponse(socket, commandParts, commandQueue, replicaConnection);
         return Task.CompletedTask;
     }
 
     private static void GenerateCommonResponse(Socket socket, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, bool replicaConnection = false)
     {
-        if (!concurrentQueue.Contains(nameof(Multi)))
+        if (commandQueue.All(x => x.CommandType != CommandTypes.Multi))
         {
-            concurrentQueue.Enqueue(nameof(Multi));
+            commandQueue.Add(new CommandQueueItem
+            {
+                CommandType = CommandTypes.Multi,
+                CommandString = string.Empty
+            });
         }
 
         socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));

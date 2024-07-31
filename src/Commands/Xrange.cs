@@ -1,8 +1,8 @@
-﻿using System.Collections.Concurrent;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Cache;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -11,13 +11,13 @@ public class Xrange : Base
     public override bool CanBePropagated => false;
 
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         return GenerateCommonResponse(socket, commandParts, replicaConnection);
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         return GenerateCommonResponse(socket, commandParts, replicaConnection);
     }

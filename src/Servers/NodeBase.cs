@@ -1,7 +1,7 @@
-﻿using System.Collections.Concurrent;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Commands;
 using codecrafters_redis.Rdb;
 using codecrafters_redis.Receivers;
 
@@ -69,7 +69,7 @@ public abstract class NodeBase
 
     protected async Task HandleConnection(TcpClient client)
     {
-        ConcurrentQueue<string> concurrentQueue = new();
+        List<CommandQueueItem> commandQueue = [];
         
         var connectionId = $"{client.Client.LocalEndPoint}->{client.Client.RemoteEndPoint}";
 
@@ -94,7 +94,7 @@ public abstract class NodeBase
 
                     LogReceivedCommand(clientCommand);
 
-                    await receiver.Receive(client.Client, clientCommand.Replace("\"", string.Empty), concurrentQueue);
+                    await receiver.Receive(client.Client, clientCommand.Replace("\"", string.Empty), commandQueue);
                 }
             }
             catch (SocketException)

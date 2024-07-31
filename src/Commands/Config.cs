@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -9,13 +9,13 @@ public class Config : Base
     public override bool CanBePropagated => false;
 
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         return GenerateCommonResponse(socket, commandParts, replicaConnection);
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         return GenerateCommonResponse(socket, commandParts, replicaConnection);
     }

@@ -1,5 +1,6 @@
-﻿using System.Collections.Concurrent;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
+using codecrafters_redis.Enums;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -7,32 +8,43 @@ public class Exec : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue,
-        bool replicaConnection = false)
+    protected override async Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandParts, concurrentQueue, replicaConnection);
-        return Task.CompletedTask;
+        await GenerateCommonResponse(socket, commandParts, commandQueue, receiver, replicaConnection);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue,
-        bool replicaConnection = false)
+    protected override async Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandParts, concurrentQueue, replicaConnection);
-        return Task.CompletedTask;
+        await GenerateCommonResponse(socket, commandParts, commandQueue, receiver, replicaConnection);
     }
 
-    private void GenerateCommonResponse(Socket socket, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+    private async Task GenerateCommonResponse(Socket socket, string[] commandParts,
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        if (!concurrentQueue.Contains(nameof(Multi)))
+        if (commandQueue.All(x => x.CommandType != CommandTypes.Multi))
         {
             socket.Send("-ERR EXEC without MULTI\r\n"u8.ToArray());
             return;
         }
 
-        socket.Send("*0\r\n"u8.ToArray());
-        concurrentQueue.Clear();
+        if (commandQueue.Count == 1 && commandQueue.Single().CommandType == CommandTypes.Multi)
+        {
+            socket.Send("*0\r\n"u8.ToArray());
+            return;
+        }
+
+        foreach (var commandInQueue in commandQueue)
+        {
+            if (commandInQueue.CommandType == CommandTypes.Multi)
+            {
+                continue;
+            }
+            
+            await receiver.Receive(socket, commandInQueue.CommandString, [], countBytes: false);
+        }
+        
+        commandQueue.Clear();
     }
 }

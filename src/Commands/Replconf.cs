@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -9,7 +9,7 @@ public class Replconf : Base
     public override bool CanBePropagated => false;
 
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         if (string.Equals(commandParts[4], "listening-port", StringComparison.InvariantCultureIgnoreCase) ||
             string.Equals(commandParts[4], "capa", StringComparison.InvariantCultureIgnoreCase))
@@ -28,7 +28,7 @@ public class Replconf : Base
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
         {

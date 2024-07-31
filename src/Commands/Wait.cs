@@ -1,7 +1,7 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -10,7 +10,7 @@ public class Wait : Base
     public override bool CanBePropagated => false;
 
     protected override async Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         ServerInfo.Replication.ReplicaAcksReceived = 0;
         
@@ -49,7 +49,7 @@ public class Wait : Base
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         return Task.CompletedTask;
     }

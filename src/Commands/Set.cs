@@ -1,7 +1,7 @@
-﻿using System.Collections.Concurrent;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis.Cache;
+using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -10,7 +10,7 @@ public class Set : Base
     public override bool CanBePropagated => true;
 
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];
         var cacheValue = commandParts[6];
@@ -39,7 +39,7 @@ public class Set : Base
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         var cacheKey = commandParts[4];
         var cacheValue = commandParts[6];
