@@ -22,8 +22,8 @@ public class Exec : Base
         GenerateCommonResponse(socket, commandParts, concurrentQueue, replicaConnection);
         return Task.CompletedTask;
     }
-    
-    private static void GenerateCommonResponse(Socket socket, string[] commandParts,
+
+    private void GenerateCommonResponse(Socket socket, string[] commandParts,
         ConcurrentQueue<string> concurrentQueue, bool replicaConnection = false)
     {
         if (!concurrentQueue.Contains(nameof(Multi)))
