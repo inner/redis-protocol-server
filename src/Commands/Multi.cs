@@ -12,19 +12,18 @@ public class Multi : Base
     protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandParts, commandQueue, replicaConnection);
+        GenerateCommonResponse(socket, commandQueue);
         return Task.CompletedTask;
     }
 
     protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandParts, commandQueue, replicaConnection);
+        GenerateCommonResponse(socket, commandQueue);
         return Task.CompletedTask;
     }
 
-    private static void GenerateCommonResponse(Socket socket, string[] commandParts,
-        List<CommandQueueItem> commandQueue, bool replicaConnection = false)
+    private static void GenerateCommonResponse(Socket socket, List<CommandQueueItem> commandQueue)
     {
         if (commandQueue.All(x => x.CommandType != CommandType.Multi))
         {

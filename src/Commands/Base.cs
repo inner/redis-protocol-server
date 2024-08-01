@@ -20,26 +20,8 @@ public abstract class Base
     public async Task Execute(Socket socket, int commandCount, string[] commandParts,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        if (!TransactionStarted)
+        if (TransactionEnabled(socket, commandParts, commandQueue))
         {
-            TransactionStarted = commandQueue.Count != 0;
-        }
-
-        if (TransactionStarted &&
-            !string.Equals(commandParts[2], CommandType.Multi.ToString(),
-                StringComparison.InvariantCultureIgnoreCase) &&
-            !string.Equals(commandParts[2], CommandType.Exec.ToString(), StringComparison.InvariantCultureIgnoreCase))
-        {
-            var commandString = string.Join("\r\n", commandParts);
-            var commandType = commandParts[2].ToCommandType();
-            
-            commandQueue.Add(new CommandQueueItem
-            {
-                CommandType = commandType,
-                CommandString = commandString
-            });
-            
-            socket.Send("+QUEUED\r\n"u8.ToArray());
             return;
         }
 
@@ -53,5 +35,39 @@ public abstract class Base
             await OnReplicaNodeExecute(socket, commandCount, commandParts, commandQueue, receiver,
                 replicaConnection);
         }
+    }
+
+    private bool TransactionEnabled(Socket socket, string[] commandParts, List<CommandQueueItem> commandQueue)
+    {
+        if (!TransactionStarted)
+        {
+            TransactionStarted = commandQueue.Count != 0;
+        }
+
+        if (!TransactionStarted)
+        {
+            return false;
+        }
+
+        if (string.Equals(commandParts[2], CommandType.Multi.ToString(),
+                StringComparison.InvariantCultureIgnoreCase) ||
+            string.Equals(commandParts[2], CommandType.Exec.ToString(),
+                StringComparison.InvariantCultureIgnoreCase))
+        {
+            return false;
+        }
+        
+        var commandString = string.Join("\r\n", commandParts);
+        var commandType = commandParts[2].ToCommandType();
+            
+        commandQueue.Add(new CommandQueueItem
+        {
+            CommandType = commandType,
+            CommandString = commandString
+        });
+            
+        socket.Send("+QUEUED\r\n"u8.ToArray());
+        return true;
+
     }
 }
