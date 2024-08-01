@@ -13,7 +13,7 @@ public class Xread : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         var blockIndex = Array.IndexOf(commandDetails.CommandParts, "block") + 1;
@@ -24,15 +24,13 @@ public class Xread : Base
 
         if (blockIndex != -1 && (commandDetails.CommandParts[6] == "\\x00" || commandDetails.CommandParts[6] == "0"))
         {
-            await GenerateCommonResponse(socket, commandDetails, noTimeout: true, replicaConnection);
+            return await GenerateCommonResponse(socket, commandDetails, noTimeout: true, replicaConnection);
         }
-        else
-        {
-            await GenerateCommonResponse(socket, commandDetails, replicaConnection);
-        }
+
+        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    protected override async Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         var blockIndex = Array.IndexOf(commandDetails.CommandParts, "block") + 1;
@@ -43,17 +41,17 @@ public class Xread : Base
 
         if (blockIndex != -1 && (commandDetails.CommandParts[6] == "\\x00" || commandDetails.CommandParts[6] == "0"))
         {
-            await GenerateCommonResponse(socket, commandDetails, noTimeout: true, replicaConnection);
+            return await GenerateCommonResponse(socket, commandDetails, noTimeout: true, replicaConnection);
         }
-        else
-        {
-            await GenerateCommonResponse(socket, commandDetails, replicaConnection);
-        }
+
+        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    private static Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool noTimeout = false,
+    private static Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
+        bool noTimeout = false,
         bool replicaConnection = false)
     {
+        string result;
         var isBlocking = Array.IndexOf(commandDetails.CommandParts, "block") != -1;
         List<StreamCacheItemValueItem> streamEntries = [];
 
@@ -95,12 +93,14 @@ public class Xread : Base
             var streamKeys = GetStreamKeysFromCommand(commandDetails, isBlocking);
             if (streamKeys.Count == 0)
             {
+                result = "$-1\r\n";
+                
                 if (!replicaConnection)
                 {
-                    socket.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
+                    socket.Send(Encoding.UTF8.GetBytes(result));
                 }
 
-                return Task.CompletedTask;
+                return Task.FromResult(result);
             }
 
             streamEntries.AddRange(BuildStreamEntries(streamKeys));
@@ -108,12 +108,14 @@ public class Xread : Base
 
         if (streamEntries.Count == 0)
         {
+            result = "$-1\r\n";
+            
             if (!replicaConnection)
             {
-                socket.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
+                socket.Send(Encoding.UTF8.GetBytes(result));
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(result);
         }
 
         var sb = new StringBuilder();
@@ -135,14 +137,14 @@ public class Xread : Base
             }
         }
 
-        var response = sb.ToString();
+        result = sb.ToString();
 
         if (!replicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(response));
+            socket.Send(Encoding.UTF8.GetBytes(result));
         }
 
-        return Task.CompletedTask;
+        return Task.FromResult(result);
     }
 
     private static List<StreamCacheItemValueItem> BuildStreamEntries(List<StreamKeyWithEntryId> streamKeys)
@@ -212,7 +214,8 @@ public class Xread : Base
         var streamKeys = new List<string>();
         var streamKeysWithEntryIds = new List<StreamKeyWithEntryId>();
 
-        if (!string.Equals(commandDetails.CommandParts[isBlocking ? 8 : 4], "streams", StringComparison.InvariantCultureIgnoreCase))
+        if (!string.Equals(commandDetails.CommandParts[isBlocking ? 8 : 4], "streams",
+                StringComparison.InvariantCultureIgnoreCase))
         {
             return streamKeysWithEntryIds;
         }

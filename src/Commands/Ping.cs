@@ -8,24 +8,27 @@ public class Ping : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        const string response = "+PONG\r\n";
-        socket.Send(Encoding.UTF8.GetBytes(response));
-        return Task.CompletedTask;
+        return await GenerateCommonResponse(socket, replicaConnection);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        // if (replicaConnection)
-        // {
-        //     return Task.CompletedTask;
-        // }
-        //
-        // const string response = "*1\r\n$4\r\nPONG\r\n";
-        // socket.Send(Encoding.UTF8.GetBytes(response));
-        return Task.CompletedTask;
+        return await GenerateCommonResponse(socket, replicaConnection);
+    }
+
+    private static Task<string> GenerateCommonResponse(Socket socket, bool replicaConnection)
+    {
+        const string response = "+PONG\r\n";
+        
+        if (!replicaConnection)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(response));
+        }
+
+        return Task.FromResult(response);
     }
 }

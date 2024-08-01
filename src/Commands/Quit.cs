@@ -9,25 +9,27 @@ public class Quit : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, replicaConnection);
-        return Task.CompletedTask;
+        return await GenerateCommonResponse(socket, replicaConnection);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, replicaConnection);
-        return Task.CompletedTask;
+        return await GenerateCommonResponse(socket, replicaConnection);
     }
 
-    private static void GenerateCommonResponse(Socket socket, bool replicaConnection)
+    private static Task<string> GenerateCommonResponse(Socket socket, bool replicaConnection)
     {
+        var result = Constants.OkResponse;
+
         if (!replicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+            socket.Send(Encoding.UTF8.GetBytes(result));
         }
+
+        return Task.FromResult(result);
     }
 }

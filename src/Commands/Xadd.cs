@@ -11,20 +11,21 @@ public class Xadd : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
     
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    private Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
+    private Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
     {
+        string result;
         var key = commandDetails.CommandParts[4];
         var entryId = commandDetails.CommandParts[6];
 
@@ -32,19 +33,23 @@ public class Xadd : Base
         {
             var values = BuildEntryValue(key, entryId, commandDetails);
             var newOrExistingEntryId = DataCache.Xadd(key, values);
+
+            result = $"${newOrExistingEntryId.Length}\r\n{newOrExistingEntryId}\r\n";
             
             if (!replicaConnection)
             {
-                socket.Send(Encoding.UTF8.GetBytes($"${newOrExistingEntryId.Length}\r\n{newOrExistingEntryId}\r\n"));
+                socket.Send(Encoding.UTF8.GetBytes(result));
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(result);
         }
         catch (Exception ex)
         {
-            socket.Send(Encoding.UTF8.GetBytes($"-ERR {ex.Message}\r\n"));
-            return Task.CompletedTask;
+            result = $"-ERR {ex.Message}\r\n";
+            socket.Send(Encoding.UTF8.GetBytes(result));
         }
+        
+        return Task.FromResult(result);
     }
 
     private StreamCacheItemValueItem BuildEntryValue(string key, string entryId, CommandDetails commandDetails)

@@ -9,40 +9,58 @@ public class Incr : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandDetails);
-        return Task.CompletedTask;
+        return await GenerateCommonResponse(socket, commandDetails);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandDetails);
-        return Task.CompletedTask;
+        return await GenerateCommonResponse(socket, commandDetails);
     }
 
-    private static void GenerateCommonResponse(Socket socket, CommandDetails commandDetails)
+    private Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails)
     {
+        string result;
         var key = commandDetails.CommandParts[4];
-        
+
         var cacheItem = DataCache.Get(key);
         if (cacheItem == null)
         {
             DataCache.Set(key, "1");
-            socket.Send(":1\r\n"u8.ToArray());
-            return;
+            result = ":1\r\n";
+
+            if (!commandDetails.FromTransaction)
+            {
+                socket.Send(Encoding.UTF8.GetBytes(result));
+            }
+
+            return Task.FromResult(result);
         }
 
         if (!long.TryParse(cacheItem.Value, out var longValue))
         {
-            socket.Send("-ERR value is not an integer or out of range\r\n"u8.ToArray());
-            return;
+            result = "-ERR value is not an integer or out of range\r\n";
+
+            if (!commandDetails.FromTransaction)
+            {
+                socket.Send(Encoding.UTF8.GetBytes(result));
+            }
+
+            return Task.FromResult(result);
         }
-        
+
         longValue++;
         DataCache.Set(key, longValue.ToString());
-        socket.Send(Encoding.UTF8.GetBytes($":{longValue}\r\n"));
+        result = $":{longValue}\r\n";
+
+        if (!commandDetails.FromTransaction)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(result));
+        }
+
+        return Task.FromResult(result);
     }
 }

@@ -8,7 +8,7 @@ public class Info : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         var infoValues = new Dictionary<string, string>
@@ -32,10 +32,10 @@ public class Info : Base
             socket.Send(Encoding.UTF8.GetBytes(response));
         }
         
-        return Task.CompletedTask;
+        return Task.FromResult(response);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         var infoValues = new Dictionary<string, string>
@@ -59,6 +59,6 @@ public class Info : Base
             socket.Send(Encoding.UTF8.GetBytes(response));
         }
         
-        return Task.CompletedTask;
+        return Task.FromResult(response);
     }
 }

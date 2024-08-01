@@ -10,35 +10,40 @@ public class CommandDetails
     public string[] CommandParts { get; set; }
     public string CommandString { get; set; }
     public CommandType CommandType { get; set; }
+    public bool FromTransaction { get; set; }
 }
 
 public abstract class Base
 {
     public abstract bool CanBePropagated { get; }
-    private bool TransactionStarted { get; set; }
+    protected bool TransactionStarted { get; set; }
 
-    protected abstract Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected abstract Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false);
 
-    protected abstract Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected abstract Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false);
 
-    public async Task Execute(Socket socket, CommandDetails commandDetails, List<CommandQueueItem> commandQueue,
+    public async Task<string> Execute(Socket socket, CommandDetails commandDetails, List<CommandQueueItem> commandQueue,
         ReceiverBase receiver, bool replicaConnection = false)
     {
+        string result;
+        
         if (TransactionEnabled(socket, commandDetails.CommandParts, commandQueue))
         {
-            return;
+            return string.Empty;
         }
 
         if (ServerInfo.ServerRuntimeContext.IsMaster)
         {
-            await OnMasterNodeExecute(socket, commandDetails, commandQueue, receiver, replicaConnection);
+            result = await OnMasterNodeExecute(socket, commandDetails, commandQueue, receiver, replicaConnection);
         }
         else
         {
-            await OnReplicaNodeExecute(socket, commandDetails, commandQueue, receiver, replicaConnection);
+            result = await OnReplicaNodeExecute(socket, commandDetails, commandQueue, receiver, replicaConnection);
         }
+
+        return result;
     }
 
     private bool TransactionEnabled(Socket socket, string[] commandParts, List<CommandQueueItem> commandQueue)

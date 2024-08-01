@@ -9,13 +9,15 @@ public class Replconf : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
+        var result = Constants.OkResponse;
+        
         if (string.Equals(commandDetails.CommandParts[4], "listening-port", StringComparison.InvariantCultureIgnoreCase) ||
             string.Equals(commandDetails.CommandParts[4], "capa", StringComparison.InvariantCultureIgnoreCase))
         {
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+            socket.Send(Encoding.UTF8.GetBytes(result));
         }
         
         if (string.Equals(commandDetails.CommandParts[4], "ack", StringComparison.InvariantCultureIgnoreCase))
@@ -28,24 +30,27 @@ public class Replconf : Base
             Console.WriteLine($"Replica ACKs received: {ServerInfo.Replication.ReplicaAcksReceived}.");
         }
         
-        return Task.CompletedTask;
+        return Task.FromResult(result);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
         {
-            return Task.CompletedTask;
+            return Task.FromResult(string.Empty);
         }
+
+        var result =
+            $"*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n${ServerInfo.Replication.ReplicaBytesReceived.ToString().Length}\r\n{ServerInfo.Replication.ReplicaBytesReceived}\r\n";
         
         if (string.Equals(commandDetails.CommandParts[4], "getack",
                 StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(commandDetails.CommandParts[6], "*", StringComparison.InvariantCultureIgnoreCase))
         {
-            socket.Send(Encoding.UTF8.GetBytes($"*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n${ServerInfo.Replication.ReplicaBytesReceived.ToString().Length}\r\n{ServerInfo.Replication.ReplicaBytesReceived}\r\n"));
+            socket.Send(Encoding.UTF8.GetBytes(result));
         }
         
-        return Task.CompletedTask;
+        return Task.FromResult(result);
     }
 }

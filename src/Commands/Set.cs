@@ -10,17 +10,24 @@ public class Set : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
+        var result = Constants.OkResponse;
+
         var cacheKey = commandDetails.CommandParts[4];
         var cacheValue = commandDetails.CommandParts[6];
 
         if (commandDetails.CommandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
-            socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
-            return Task.CompletedTask;
+            
+            if (!commandDetails.FromTransaction)
+            {
+                socket.Send(Encoding.UTF8.GetBytes(result));
+            }
+
+            return Task.FromResult(result);
         }
 
         const string expiryCommandConstant = "PX";
@@ -33,13 +40,16 @@ public class Set : Base
 
         var expiry = int.Parse(commandDetails.CommandParts[10]);
         DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
+
+        if (!commandDetails.FromTransaction)
+        {
+            socket.Send(Encoding.UTF8.GetBytes(result));
+        }
         
-        socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
-        
-        return Task.CompletedTask;
+        return Task.FromResult(result);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         var cacheKey = commandDetails.CommandParts[4];
@@ -48,7 +58,7 @@ public class Set : Base
         if (commandDetails.CommandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
-            return Task.CompletedTask;
+            return Task.FromResult(string.Empty);
         }
 
         const string expiryCommandConstant = "PX";
@@ -61,7 +71,7 @@ public class Set : Base
 
         var expiry = int.Parse(commandDetails.CommandParts[10]);
         DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
-        
-        return Task.CompletedTask;
+
+        return Task.FromResult(string.Empty);
     }
 }

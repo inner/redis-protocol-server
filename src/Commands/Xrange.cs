@@ -11,35 +11,38 @@ public class Xrange : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
     
-    private static Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
+    private static Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
     {
+        string result;
         var key = commandDetails.CommandParts[4];
 
         var fetchItem = DataCache.Fetch(key);
 
         if (string.IsNullOrEmpty(fetchItem))
         {
-            socket.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
-            return Task.CompletedTask;
+            result = "$-1\r\n";
+            socket.Send(Encoding.UTF8.GetBytes(result));
+            return Task.FromResult(result);
         }
 
         var streamCacheItem = fetchItem.Deserialize<StreamCacheItem>();
         if (streamCacheItem == null)
         {
-            socket.Send(Encoding.UTF8.GetBytes("$-1\r\n"));
-            return Task.CompletedTask;
+            result = "$-1\r\n";
+            socket.Send(Encoding.UTF8.GetBytes(result));
+            return Task.FromResult(result);
         }
 
         var startEntryId = commandDetails.CommandParts[6];
@@ -125,13 +128,13 @@ public class Xrange : Base
             }
         }
 
-        var response = sb.ToString();
+        result = sb.ToString();
         
         if (!replicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(response));   
+            socket.Send(Encoding.UTF8.GetBytes(result));   
         }
         
-        return Task.CompletedTask;
+        return Task.FromResult(result);
     }
 }

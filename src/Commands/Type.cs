@@ -10,20 +10,23 @@ public class Type : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
-    }
-    
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
-    {
-        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    private static Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
+        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+    }
+
+    private static Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
+        bool replicaConnection = false)
+    {
+        string result;
+
         var key = commandDetails.CommandParts[4];
         var fetchItem = DataCache.Fetch(key);
 
@@ -33,24 +36,27 @@ public class Type : Base
             if (basicCacheItem != null && string.Equals(basicCacheItem.Type, nameof(BasicCacheItem),
                     StringComparison.InvariantCultureIgnoreCase))
             {
-                socket.Send(Encoding.UTF8.GetBytes("+string\r\n"));
-                return Task.CompletedTask;
+                result = "+string\r\n";
+                socket.Send(Encoding.UTF8.GetBytes(result));
+                return Task.FromResult(result);
             }
 
             var streamCacheItem = fetchItem.Deserialize<StreamCacheItem>();
             if (streamCacheItem != null && string.Equals(streamCacheItem.Type, nameof(StreamCacheItem),
                     StringComparison.InvariantCultureIgnoreCase))
             {
+                result = "+stream\r\n";
                 if (!replicaConnection)
                 {
-                    socket.Send(Encoding.UTF8.GetBytes("+stream\r\n"));   
+                    socket.Send(Encoding.UTF8.GetBytes(result));
                 }
-                
-                return Task.CompletedTask;
+
+                return Task.FromResult(result);
             }
         }
 
-        socket.Send(Encoding.UTF8.GetBytes("+none\r\n"));
-        return Task.CompletedTask;
+        result = "+none\r\n";
+        socket.Send(Encoding.UTF8.GetBytes(result));
+        return Task.FromResult(result);
     }
 }

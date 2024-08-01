@@ -9,21 +9,19 @@ public class Multi : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandQueue);
-        return Task.CompletedTask;
+        return await GenerateCommonResponse(socket, commandQueue);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandQueue);
-        return Task.CompletedTask;
+        return await GenerateCommonResponse(socket, commandQueue);
     }
 
-    private static void GenerateCommonResponse(Socket socket, List<CommandQueueItem> commandQueue)
+    private static Task<string> GenerateCommonResponse(Socket socket, List<CommandQueueItem> commandQueue)
     {
         if (commandQueue.All(x => x.CommandType != CommandType.Multi))
         {
@@ -34,6 +32,8 @@ public class Multi : Base
             });
         }
 
-        socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+        var result = Constants.OkResponse;
+        socket.Send(Encoding.UTF8.GetBytes(result));
+        return Task.FromResult(result);
     }
 }

@@ -69,29 +69,13 @@ public abstract class ReceiverBase
 
         foreach (var commandToExecute in commandsToExecute)
         {
-            var commandDetails = BuildCommandDetails(commandString, commandToExecute);
+            var commandDetails = commandToExecute.BuildCommandDetails();
             await ExecuteCommand(socket, commandDetails, commandQueue);
         }
     }
 
-    private static CommandDetails BuildCommandDetails(string commandString, string commandToExecute)
-    {
-        var commandParts = commandString.Split("\\r\\n")
-            .Where(x => !string.IsNullOrEmpty(x))
-            .ToArray();
-
-        var commandDetails = new CommandDetails
-        {
-            CommandString = commandToExecute,
-            CommandParts = commandParts,
-            CommandCount = int.Parse(commandParts[0].Replace("*", string.Empty)),
-            CommandType = commandParts[2].ToCommandType()
-        };
-
-        return commandDetails;
-    }
-
-    public async Task ExecuteCommand(Socket socket, CommandDetails commandDetails, List<CommandQueueItem> commandQueue)
+    public async Task<string> ExecuteCommand(Socket socket, CommandDetails commandDetails,
+        List<CommandQueueItem> commandQueue)
     {
         var className = $"codecrafters_redis.Commands.{commandDetails.CommandType}";
         var type = System.Type.GetType(className);
@@ -102,18 +86,22 @@ public abstract class ReceiverBase
         }
 
         var command = (Base)Activator.CreateInstance(type)!;
-        await command.Execute(socket, commandDetails, commandQueue, this);
+        var result = await command.Execute(socket, commandDetails, commandQueue, this);
 
         if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated ||
             commandDetails.CommandString.Contains("$3\r\nACK\r\n"))
         {
-            return;
+            return commandDetails.FromTransaction
+                ? result
+                : string.Empty;
         }
 
-        SendToReplicas(commandDetails.CommandString);
+        ExecuteOnReplicas(commandDetails.CommandString);
+
+        return result;
     }
 
-    private static void SendToReplicas(string commandString)
+    private static void ExecuteOnReplicas(string commandString)
     {
         foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
         {
