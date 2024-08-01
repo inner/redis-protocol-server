@@ -5,7 +5,7 @@ namespace codecrafters_redis;
 
 public static class StringExtensions
 {
-    public static DataTypes GetRespDataType(this string respDataTypeString)
+    public static DataType GetRespDataType(this string respDataTypeString)
     {
         if (string.IsNullOrWhiteSpace(respDataTypeString))
         {
@@ -14,23 +14,23 @@ public static class StringExtensions
         
         return respDataTypeString.Substring(0, 1) switch
         {
-            "+" => DataTypes.SimpleString,
-            "-" => DataTypes.SimpleError,
-            ":" => DataTypes.Integer,
-            "$" => DataTypes.BulkString,
-            "*" => DataTypes.Array,
+            "+" => DataType.SimpleString,
+            "-" => DataType.SimpleError,
+            ":" => DataType.Integer,
+            "$" => DataType.BulkString,
+            "*" => DataType.Array,
             _ => throw new ArgumentException("Invalid RESP data type.")
         };
     }
     
-    public static CommandTypes ToCommandType(this string respCommandTypeString)
+    public static CommandType ToCommandType(this string respCommandTypeString)
     {
         if (string.IsNullOrWhiteSpace(respCommandTypeString))
         {
             throw new ArgumentException("Invalid RESP command type - empty or whitespace.");
         }
 
-        if (Enum.TryParse<CommandTypes>(respCommandTypeString, true, out var respCommandType))
+        if (Enum.TryParse<CommandType>(respCommandTypeString, true, out var respCommandType))
         {
             return respCommandType;
         }

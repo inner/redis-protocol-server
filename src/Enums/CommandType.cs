@@ -1,6 +1,6 @@
 ﻿namespace codecrafters_redis.Enums;
 
-public enum CommandTypes
+public enum CommandType
 {
     Ping,
     Echo,
@@ -20,5 +20,6 @@ public enum CommandTypes
     Keys,
     Incr,
     Multi,
-    Exec
+    Exec,
+    Command
 }

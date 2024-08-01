@@ -26,11 +26,11 @@ public class Multi : Base
     private static void GenerateCommonResponse(Socket socket, string[] commandParts,
         List<CommandQueueItem> commandQueue, bool replicaConnection = false)
     {
-        if (commandQueue.All(x => x.CommandType != CommandTypes.Multi))
+        if (commandQueue.All(x => x.CommandType != CommandType.Multi))
         {
             commandQueue.Add(new CommandQueueItem
             {
-                CommandType = CommandTypes.Multi,
+                CommandType = CommandType.Multi,
                 CommandString = string.Empty
             });
         }

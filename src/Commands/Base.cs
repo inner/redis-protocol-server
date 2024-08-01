@@ -26,9 +26,9 @@ public abstract class Base
         }
 
         if (TransactionStarted &&
-            !string.Equals(commandParts[2], CommandTypes.Multi.ToString(),
+            !string.Equals(commandParts[2], CommandType.Multi.ToString(),
                 StringComparison.InvariantCultureIgnoreCase) &&
-            !string.Equals(commandParts[2], CommandTypes.Exec.ToString(), StringComparison.InvariantCultureIgnoreCase))
+            !string.Equals(commandParts[2], CommandType.Exec.ToString(), StringComparison.InvariantCultureIgnoreCase))
         {
             var commandString = string.Join("\r\n", commandParts);
             var commandType = commandParts[2].ToCommandType();

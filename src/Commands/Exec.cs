@@ -23,13 +23,13 @@ public class Exec : Base
     private async Task GenerateCommonResponse(Socket socket, string[] commandParts,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        if (commandQueue.All(x => x.CommandType != CommandTypes.Multi))
+        if (commandQueue.All(x => x.CommandType != CommandType.Multi))
         {
             socket.Send("-ERR EXEC without MULTI\r\n"u8.ToArray());
             return;
         }
 
-        if (commandQueue.Count == 1 && commandQueue.Single().CommandType == CommandTypes.Multi)
+        if (commandQueue.Count == 1 && commandQueue.Single().CommandType == CommandType.Multi)
         {
             socket.Send("*0\r\n"u8.ToArray());
             return;
@@ -37,7 +37,7 @@ public class Exec : Base
 
         foreach (var commandInQueue in commandQueue)
         {
-            if (commandInQueue.CommandType == CommandTypes.Multi)
+            if (commandInQueue.CommandType == CommandType.Multi)
             {
                 continue;
             }
