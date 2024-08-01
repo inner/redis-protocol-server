@@ -8,10 +8,10 @@ public class Info : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        var infoValues = new Dictionary<string, string?>
+        var infoValues = new Dictionary<string, string>
         {
             { "role", "master" },
             { "master_replid", ServerInfo.ServerRuntimeContext.MasterReplId },
@@ -35,10 +35,10 @@ public class Info : Base
         return Task.CompletedTask;
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        var infoValues = new Dictionary<string, string?>
+        var infoValues = new Dictionary<string, string>
         {
             { "role", "slave" },
             { "master_replid", string.Empty },

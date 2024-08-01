@@ -7,7 +7,7 @@ public class ServerRuntimeContext
 {
     private static readonly object ReplicasLockObject = new();
     public bool IsMaster { get; set; } = true;
-    public string? MasterReplId { get; set; }
+    public string MasterReplId { get; set; } = string.Empty;
     public int MasterReplOffset { get; set; }
     public readonly ConcurrentDictionary<string, Socket> Replicas = new();
     public string DataDir { get; set; } = null!;

@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Cache;
+using codecrafters_redis.Common;
 using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
@@ -12,57 +13,57 @@ public class Xread : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override async Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        var blockIndex = Array.IndexOf(commandParts, "block") + 1;
-        if (blockIndex != -1 && int.TryParse(commandParts[blockIndex + 1], out var blockTime))
+        var blockIndex = Array.IndexOf(commandDetails.CommandParts, "block") + 1;
+        if (blockIndex != -1 && int.TryParse(commandDetails.CommandParts[blockIndex + 1], out var blockTime))
         {
             await Task.Delay(blockTime);
         }
 
-        if (blockIndex != -1 && (commandParts[6] == "\\x00" || commandParts[6] == "0"))
+        if (blockIndex != -1 && (commandDetails.CommandParts[6] == "\\x00" || commandDetails.CommandParts[6] == "0"))
         {
-            await GenerateCommonResponse(socket, commandParts, noTimeout: true, replicaConnection);
+            await GenerateCommonResponse(socket, commandDetails, noTimeout: true, replicaConnection);
         }
         else
         {
-            await GenerateCommonResponse(socket, commandParts, replicaConnection);
+            await GenerateCommonResponse(socket, commandDetails, replicaConnection);
         }
     }
 
-    protected override async Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override async Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        var blockIndex = Array.IndexOf(commandParts, "block") + 1;
-        if (blockIndex != -1 && int.TryParse(commandParts[blockIndex + 1], out var blockTime))
+        var blockIndex = Array.IndexOf(commandDetails.CommandParts, "block") + 1;
+        if (blockIndex != -1 && int.TryParse(commandDetails.CommandParts[blockIndex + 1], out var blockTime))
         {
             await Task.Delay(blockTime);
         }
 
-        if (blockIndex != -1 && (commandParts[6] == "\\x00" || commandParts[6] == "0"))
+        if (blockIndex != -1 && (commandDetails.CommandParts[6] == "\\x00" || commandDetails.CommandParts[6] == "0"))
         {
-            await GenerateCommonResponse(socket, commandParts, noTimeout: true, replicaConnection);
+            await GenerateCommonResponse(socket, commandDetails, noTimeout: true, replicaConnection);
         }
         else
         {
-            await GenerateCommonResponse(socket, commandParts, replicaConnection);
+            await GenerateCommonResponse(socket, commandDetails, replicaConnection);
         }
     }
 
-    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool noTimeout = false,
+    private static Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool noTimeout = false,
         bool replicaConnection = false)
     {
-        var isBlocking = Array.IndexOf(commandParts, "block") != -1;
+        var isBlocking = Array.IndexOf(commandDetails.CommandParts, "block") != -1;
         List<StreamCacheItemValueItem> streamEntries = [];
 
         if (noTimeout)
         {
-            if (commandParts.Last() != "$")
+            if (commandDetails.CommandParts.Last() != "$")
             {
                 while (!streamEntries.Any())
                 {
-                    var streamKeys = GetStreamKeysFromCommand(commandParts, isBlocking);
+                    var streamKeys = GetStreamKeysFromCommand(commandDetails, isBlocking);
                     if (streamKeys.Count == 0)
                     {
                         continue;
@@ -73,7 +74,7 @@ public class Xread : Base
             }
             else
             {
-                var key = commandParts[^3];
+                var key = commandDetails.CommandParts[^3];
 
                 string? maxEntryId = null;
                 var maxExistingEntryId = DataCache.Fetch(key);
@@ -91,7 +92,7 @@ public class Xread : Base
         }
         else
         {
-            var streamKeys = GetStreamKeysFromCommand(commandParts, isBlocking);
+            var streamKeys = GetStreamKeysFromCommand(commandDetails, isBlocking);
             if (streamKeys.Count == 0)
             {
                 if (!replicaConnection)
@@ -206,26 +207,26 @@ public class Xread : Base
         return streamEntries;
     }
 
-    private static List<StreamKeyWithEntryId> GetStreamKeysFromCommand(string[] commandParts, bool isBlocking)
+    private static List<StreamKeyWithEntryId> GetStreamKeysFromCommand(CommandDetails commandDetails, bool isBlocking)
     {
         var streamKeys = new List<string>();
         var streamKeysWithEntryIds = new List<StreamKeyWithEntryId>();
 
-        if (!string.Equals(commandParts[isBlocking ? 8 : 4], "streams", StringComparison.InvariantCultureIgnoreCase))
+        if (!string.Equals(commandDetails.CommandParts[isBlocking ? 8 : 4], "streams", StringComparison.InvariantCultureIgnoreCase))
         {
             return streamKeysWithEntryIds;
         }
 
-        streamKeys.AddRange(commandParts.Skip(isBlocking ? 9 : 5)
+        streamKeys.AddRange(commandDetails.CommandParts.Skip(isBlocking ? 9 : 5)
             .Where(x => !Regex.IsMatch(x, @"^\$\d+$") && !Regex.IsMatch(x, @"^\d+-\d+$")));
 
         var streamKeyEntryIds = new List<string>();
-        var index = commandParts.ToList().IndexOf(streamKeys.Last());
-        for (var i = index + 1; i < commandParts.Length; i++)
+        var index = commandDetails.CommandParts.ToList().IndexOf(streamKeys.Last());
+        for (var i = index + 1; i < commandDetails.CommandParts.Length; i++)
         {
-            if (Regex.IsMatch(commandParts[i], @"^\d+-\d+$"))
+            if (Regex.IsMatch(commandDetails.CommandParts[i], @"^\d+-\d+$"))
             {
-                streamKeyEntryIds.Add(commandParts[i]);
+                streamKeyEntryIds.Add(commandDetails.CommandParts[i]);
             }
         }
 

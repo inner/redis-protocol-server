@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Cache;
-using codecrafters_redis.Enums;
+using codecrafters_redis.Common;
 using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
@@ -11,26 +11,26 @@ public class Xadd : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
     
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    private Task GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
+    private Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
     {
-        var key = commandParts[4];
-        var entryId = commandParts[6];
+        var key = commandDetails.CommandParts[4];
+        var entryId = commandDetails.CommandParts[6];
 
         try
         {
-            var values = BuildEntryValue(key, entryId, commandParts);
+            var values = BuildEntryValue(key, entryId, commandDetails);
             var newOrExistingEntryId = DataCache.Xadd(key, values);
             
             if (!replicaConnection)
@@ -47,7 +47,7 @@ public class Xadd : Base
         }
     }
 
-    private StreamCacheItemValueItem BuildEntryValue(string key, string entryId, string[] commandParts)
+    private StreamCacheItemValueItem BuildEntryValue(string key, string entryId, CommandDetails commandDetails)
     {
         var entryIdType = GetEntryIdType(entryId);
 
@@ -78,18 +78,18 @@ public class Xadd : Base
         };
 
         var values = new List<StreamCacheItemValueItemValue>();
-        for (var i = 8; i < commandParts.Length; i += 2)
+        for (var i = 8; i < commandDetails.CommandParts.Length; i += 2)
         {
-            var valueIndex = commandParts[i].Contains(' ') ? i : i + 2;
+            var valueIndex = commandDetails.CommandParts[i].Contains(' ') ? i : i + 2;
             values.Add(new StreamCacheItemValueItemValue
             {
-                Key = commandParts[i],
-                Value = commandParts[valueIndex]
+                Key = commandDetails.CommandParts[i],
+                Value = commandDetails.CommandParts[valueIndex]
             });
             value.Key = key;
             value.Value = values;
             i += 2;
-            if (valueIndex + 2 >= commandParts.Length - 1)
+            if (valueIndex + 2 >= commandDetails.CommandParts.Length - 1)
             {
                 break;
             }

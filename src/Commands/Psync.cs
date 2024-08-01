@@ -8,7 +8,7 @@ public class Psync : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         var fullResyncResponse = $"+FULLRESYNC {ServerInfo.ServerRuntimeContext.MasterReplId} 0\r\n";
@@ -26,7 +26,7 @@ public class Psync : Base
         return Task.CompletedTask;
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         return Task.CompletedTask;

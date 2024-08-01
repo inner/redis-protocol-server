@@ -9,23 +9,23 @@ public class Incr : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandParts, replicaConnection);
+        GenerateCommonResponse(socket, commandDetails);
         return Task.CompletedTask;
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandParts, replicaConnection);
+        GenerateCommonResponse(socket, commandDetails);
         return Task.CompletedTask;
     }
 
-    private static void GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
+    private static void GenerateCommonResponse(Socket socket, CommandDetails commandDetails)
     {
-        var key = commandParts[4];
+        var key = commandDetails.CommandParts[4];
         
         var cacheItem = DataCache.Get(key);
         if (cacheItem == null)

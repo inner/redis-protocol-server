@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Cache;
+using codecrafters_redis.Common;
 using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
@@ -10,21 +11,21 @@ public class Xrange : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
     
-    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
+    private static Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
     {
-        var key = commandParts[4];
+        var key = commandDetails.CommandParts[4];
 
         var fetchItem = DataCache.Fetch(key);
 
@@ -41,8 +42,8 @@ public class Xrange : Base
             return Task.CompletedTask;
         }
 
-        var startEntryId = commandParts[6];
-        var endEntryId = commandParts[8];
+        var startEntryId = commandDetails.CommandParts[6];
+        var endEntryId = commandDetails.CommandParts[8];
 
         long? startTimestamp = null;
         long? startSequence = null;

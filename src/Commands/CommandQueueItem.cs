@@ -1,4 +1,4 @@
-﻿using codecrafters_redis.Enums;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 

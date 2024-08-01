@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Commands;
-using codecrafters_redis.Enums;
+using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Receivers;
 
@@ -69,26 +69,31 @@ public abstract class ReceiverBase
 
         foreach (var commandToExecute in commandsToExecute)
         {
-            await ExecuteArray(socket, commandToExecute, commandQueue);
+            var commandDetails = BuildCommandDetails(commandString, commandToExecute);
+            await ExecuteCommand(socket, commandDetails, commandQueue);
         }
     }
 
-    private async Task ExecuteArray(Socket socket, string commandString, List<CommandQueueItem> commandQueue)
+    private static CommandDetails BuildCommandDetails(string commandString, string commandToExecute)
     {
         var commandParts = commandString.Split("\\r\\n")
             .Where(x => !string.IsNullOrEmpty(x))
             .ToArray();
 
-        var commandCount = int.Parse(commandParts[0].Replace("*", string.Empty));
-        var commandType = commandParts[2].ToCommandType();
+        var commandDetails = new CommandDetails
+        {
+            CommandString = commandToExecute,
+            CommandParts = commandParts,
+            CommandCount = int.Parse(commandParts[0].Replace("*", string.Empty)),
+            CommandType = commandParts[2].ToCommandType()
+        };
 
-        await ExecuteCommand(socket, commandString, commandType, commandCount, commandParts, commandQueue);
+        return commandDetails;
     }
 
-    private async Task ExecuteCommand(Socket socket, string commandString, CommandType commandType, int commandCount,
-        string[] commandParts, List<CommandQueueItem> commandQueue)
+    public async Task ExecuteCommand(Socket socket, CommandDetails commandDetails, List<CommandQueueItem> commandQueue)
     {
-        var className = $"codecrafters_redis.Commands.{commandType}";
+        var className = $"codecrafters_redis.Commands.{commandDetails.CommandType}";
         var type = System.Type.GetType(className);
 
         if (type == null)
@@ -97,14 +102,19 @@ public abstract class ReceiverBase
         }
 
         var command = (Base)Activator.CreateInstance(type)!;
-        await command.Execute(socket, commandCount, commandParts, commandQueue, this);
+        await command.Execute(socket, commandDetails, commandQueue, this);
 
         if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated ||
-            commandString.Contains("$3\r\nACK\r\n"))
+            commandDetails.CommandString.Contains("$3\r\nACK\r\n"))
         {
             return;
         }
 
+        SendToReplicas(commandDetails.CommandString);
+    }
+
+    private static void SendToReplicas(string commandString)
+    {
         foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
         {
             Console.WriteLine(

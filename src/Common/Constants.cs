@@ -1,4 +1,4 @@
-﻿namespace codecrafters_redis;
+﻿namespace codecrafters_redis.Common;
 
 public static class Constants
 {

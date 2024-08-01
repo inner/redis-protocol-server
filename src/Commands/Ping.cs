@@ -8,7 +8,7 @@ public class Ping : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         const string response = "+PONG\r\n";
@@ -16,7 +16,7 @@ public class Ping : Base
         return Task.CompletedTask;
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         // if (replicaConnection)

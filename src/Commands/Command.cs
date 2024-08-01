@@ -8,11 +8,10 @@ public class Command : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        List<CommandQueueItem> commandQueue,
-        ReceiverBase receiver, bool replicaConnection = false)
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        if (commandParts.Length == 5 && commandParts[4].ToUpper() == "DOCS")
+        if (commandDetails.CommandParts.Length == 5 && commandDetails.CommandParts[4].ToUpper() == "DOCS")
         {
             var docs = GetCommandDocs();
             var response = FormatAsResp(docs);
@@ -26,9 +25,8 @@ public class Command : Base
         return Task.CompletedTask;
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
-        List<CommandQueueItem> commandQueue,
-        ReceiverBase receiver, bool replicaConnection = false)
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         return Task.CompletedTask;
     }

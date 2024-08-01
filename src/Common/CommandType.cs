@@ -1,4 +1,4 @@
-﻿namespace codecrafters_redis.Enums;
+﻿namespace codecrafters_redis.Common;
 
 public enum CommandType
 {

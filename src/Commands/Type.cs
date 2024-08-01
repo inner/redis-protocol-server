@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis.Cache;
+using codecrafters_redis.Common;
 using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
@@ -9,21 +10,21 @@ public class Type : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
     
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
+    private static Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
     {
-        var key = commandParts[4];
+        var key = commandDetails.CommandParts[4];
         var fetchItem = DataCache.Fetch(key);
 
         if (fetchItem != null)

@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis.Cache;
+using codecrafters_redis.Common;
 using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
@@ -9,13 +10,13 @@ public class Set : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        var cacheKey = commandParts[4];
-        var cacheValue = commandParts[6];
+        var cacheKey = commandDetails.CommandParts[4];
+        var cacheValue = commandDetails.CommandParts[6];
 
-        if (commandParts.Length < 9)
+        if (commandDetails.CommandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
             socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
@@ -24,13 +25,13 @@ public class Set : Base
 
         const string expiryCommandConstant = "PX";
 
-        var expiryCommand = commandParts[8];
+        var expiryCommand = commandDetails.CommandParts[8];
         if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
         {
             throw new Exception($"Unrecognized command used for '{nameof(Set)}': '{expiryCommand}'.");
         }
 
-        var expiry = int.Parse(commandParts[10]);
+        var expiry = int.Parse(commandDetails.CommandParts[10]);
         DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
         
         socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
@@ -38,13 +39,13 @@ public class Set : Base
         return Task.CompletedTask;
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        var cacheKey = commandParts[4];
-        var cacheValue = commandParts[6];
+        var cacheKey = commandDetails.CommandParts[4];
+        var cacheValue = commandDetails.CommandParts[6];
 
-        if (commandParts.Length < 9)
+        if (commandDetails.CommandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
             return Task.CompletedTask;
@@ -52,13 +53,13 @@ public class Set : Base
 
         const string expiryCommandConstant = "PX";
 
-        var expiryCommand = commandParts[8];
+        var expiryCommand = commandDetails.CommandParts[8];
         if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
         {
             throw new AggregateException($"Unrecognized command used for '{nameof(Set)}': '{expiryCommand}'.");
         }
 
-        var expiry = int.Parse(commandParts[10]);
+        var expiry = int.Parse(commandDetails.CommandParts[10]);
         DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
         
         return Task.CompletedTask;

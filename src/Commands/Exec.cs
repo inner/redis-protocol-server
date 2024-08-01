@@ -1,5 +1,5 @@
 ﻿using System.Net.Sockets;
-using codecrafters_redis.Enums;
+using codecrafters_redis.Common;
 using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
@@ -8,20 +8,20 @@ public class Exec : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override async Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override async Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        await GenerateCommonResponse(socket, commandParts, commandQueue, receiver, replicaConnection);
+        await GenerateCommonResponse(socket, commandDetails, commandQueue, receiver);
     }
 
-    protected override async Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override async Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        await GenerateCommonResponse(socket, commandParts, commandQueue, receiver, replicaConnection);
+        await GenerateCommonResponse(socket, commandDetails, commandQueue, receiver);
     }
 
-    private async Task GenerateCommonResponse(Socket socket, string[] commandParts,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    private async Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
+        List<CommandQueueItem> commandQueue, ReceiverBase receiver)
     {
         if (commandQueue.All(x => x.CommandType != CommandType.Multi))
         {
@@ -42,7 +42,8 @@ public class Exec : Base
                 continue;
             }
             
-            await receiver.Receive(socket, commandInQueue.CommandString, [], countBytes: false);
+            // collect command responses here
+            await receiver.ExecuteCommand(socket, commandDetails, []);
         }
         
         commandQueue.Clear();

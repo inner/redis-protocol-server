@@ -9,13 +9,13 @@ public class Wait : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override async Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         ServerInfo.Replication.ReplicaAcksReceived = 0;
         
-        var numberOfReplicasToWaitFor = commandParts[4];
-        var msToWait = commandParts[6];
+        var numberOfReplicasToWaitFor = commandDetails.CommandParts[4];
+        var msToWait = commandDetails.CommandParts[6];
         
         var tasks = new List<Task>();
         foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
@@ -48,7 +48,7 @@ public class Wait : Base
         socket.Send(Encoding.UTF8.GetBytes($":{acksReceived}\r\n"));
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         return Task.CompletedTask;

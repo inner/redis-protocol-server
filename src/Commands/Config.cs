@@ -8,21 +8,23 @@ public class Config : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return GenerateCommonResponse(socket, commandParts, replicaConnection);
+        return GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    private static Task GenerateCommonResponse(Socket socket, string[] commandParts, bool replicaConnection = false)
+    private static Task GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
+        bool replicaConnection = false)
     {
-        if (Array.IndexOf(commandParts, "GET") != -1 && Array.IndexOf(commandParts, "dir") != -1)
+        if (Array.IndexOf(commandDetails.CommandParts, "GET") != -1 &&
+            Array.IndexOf(commandDetails.CommandParts, "dir") != -1)
         {
             if (!replicaConnection)
             {
@@ -34,7 +36,8 @@ public class Config : Base
             return Task.CompletedTask;
         }
 
-        if (Array.IndexOf(commandParts, "GET") != -1 && Array.IndexOf(commandParts, "dbfilename") != -1)
+        if (Array.IndexOf(commandDetails.CommandParts, "GET") != -1 &&
+            Array.IndexOf(commandDetails.CommandParts, "dbfilename") != -1)
         {
             if (!replicaConnection)
             {

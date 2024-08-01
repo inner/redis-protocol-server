@@ -8,26 +8,27 @@ public class Echo : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task OnMasterNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandCount, commandParts, replicaConnection);
+        GenerateCommonResponse(socket, commandDetails, replicaConnection);
         return Task.CompletedTask;
     }
 
-    protected override Task OnReplicaNodeExecute(Socket socket, int commandCount, string[] commandParts,
+    protected override Task OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        GenerateCommonResponse(socket, commandCount, commandParts, replicaConnection);
+        GenerateCommonResponse(socket, commandDetails, replicaConnection);
         return Task.CompletedTask;
     }
 
-    private static void GenerateCommonResponse(Socket socket, int commandCount, string[] commandParts, bool replicaConnection)
+    private static void GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection)
     {
-        var response = commandCount switch
+        var response = commandDetails.CommandCount switch
         {
-            2 => $"${commandParts[4].Length}\r\n{commandParts[4]}\r\n",
-            _ => throw new ArgumentException($"Wrong number of arguments for '{nameof(Echo)}' command: {commandCount}.")
+            2 => $"${commandDetails.CommandParts[4].Length}\r\n{commandDetails.CommandParts[4]}\r\n",
+            _ => throw new ArgumentException($"Wrong number of arguments for '{nameof(Echo)}' " +
+                                             $"command: {commandDetails.CommandCount}.")
         };
 
         if (!replicaConnection)

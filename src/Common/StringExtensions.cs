@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
-using codecrafters_redis.Enums;
 
-namespace codecrafters_redis;
+namespace codecrafters_redis.Common;
 
 public static class StringExtensions
 {
