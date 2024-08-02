@@ -21,5 +21,6 @@ public enum CommandType
     Incr,
     Multi,
     Exec,
-    Command
+    Command,
+    Discard
 }
