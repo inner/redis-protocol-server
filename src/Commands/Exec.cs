@@ -37,6 +37,7 @@ public class Exec : Base
         {
             result = "*0\r\n";
             socket.Send(Encoding.UTF8.GetBytes(result));
+            commandQueue.Clear();
             return result;
         }
 
