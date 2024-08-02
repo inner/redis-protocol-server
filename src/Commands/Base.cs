@@ -28,7 +28,7 @@ public abstract class Base
         ReceiverBase receiver, bool replicaConnection = false)
     {
         string result;
-        
+
         if (TransactionEnabled(socket, commandDetails.CommandParts, commandQueue))
         {
             return string.Empty;
@@ -58,12 +58,15 @@ public abstract class Base
             return false;
         }
 
-        if (string.Equals(commandParts[2], CommandType.Multi.ToString(),
-                StringComparison.InvariantCultureIgnoreCase) ||
-            string.Equals(commandParts[2], CommandType.Exec.ToString(),
-                StringComparison.InvariantCultureIgnoreCase) ||
-            string.Equals(commandParts[2], CommandType.Discard.ToString(),
-                StringComparison.InvariantCultureIgnoreCase))
+        var commandTypesExcluded = new List<CommandType>
+        {
+            CommandType.Multi, CommandType.Exec, CommandType.Discard
+        };
+
+        var commandStrings = commandTypesExcluded.ConvertAll(c => c.ToString());
+
+        if (commandStrings.Exists(c =>
+                string.Equals(commandParts[2], c, StringComparison.InvariantCultureIgnoreCase)))
         {
             return false;
         }
