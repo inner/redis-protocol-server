@@ -4,19 +4,10 @@ using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
-public class CommandDetails
-{
-    public int CommandCount { get; set; }
-    public string[] CommandParts { get; set; }
-    public string CommandString { get; set; }
-    public CommandType CommandType { get; set; }
-    public bool FromTransaction { get; set; }
-}
-
 public abstract class Base
 {
     public abstract bool CanBePropagated { get; }
-    protected bool TransactionStarted { get; set; }
+    private bool TransactionStarted { get; set; }
 
     protected abstract Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false);
