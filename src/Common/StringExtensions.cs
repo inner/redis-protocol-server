@@ -54,6 +54,25 @@ public static class StringExtensions
 
         return commandDetails;
     }
+
+    public static string ConvertStringToSimpleResp(this string? value)
+    {
+        string result;
+        if (value == null)
+        {
+            result = "$-1";
+        }
+        else if (int.TryParse(value, out var numericResult))
+        {
+            result = $":{numericResult}";
+        }
+        else
+        {
+            result = $"+{value}";
+        }
+
+        return result;
+    }
     
     public static T? Deserialize<T>(this string value)
     {

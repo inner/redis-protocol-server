@@ -36,8 +36,7 @@ public class Get : Base
         {
             socket.Send(Encoding.UTF8.GetBytes(response));
         }
-
-        var result = $":{response.Split("\r\n").FirstOrDefault(x => !x.Contains("$"))}\r\n";
-        return Task.FromResult(result);
+        
+        return Task.FromResult(cacheItem?.Value.ConvertStringToSimpleResp())!;
     }
 }

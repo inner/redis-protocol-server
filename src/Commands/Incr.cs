@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using codecrafters_redis.Cache;
+using codecrafters_redis.Common;
 using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
@@ -30,23 +31,22 @@ public class Incr : Base
         if (cacheItem == null)
         {
             DataCache.Set(key, "1");
-            result = ":1\r\n";
 
             if (!commandDetails.FromTransaction)
             {
-                socket.Send(Encoding.UTF8.GetBytes(result));
+                socket.Send(":1\r\n"u8.ToArray());
             }
 
-            return Task.FromResult(result);
+            return Task.FromResult("1".ConvertStringToSimpleResp());
         }
 
         if (!long.TryParse(cacheItem.Value, out var longValue))
         {
-            result = "-ERR value is not an integer or out of range\r\n";
+            result = "-ERR value is not an integer or out of range";
 
             if (!commandDetails.FromTransaction)
             {
-                socket.Send(Encoding.UTF8.GetBytes(result));
+                socket.Send(Encoding.UTF8.GetBytes($"{result}\r\n"));
             }
 
             return Task.FromResult(result);
@@ -54,11 +54,11 @@ public class Incr : Base
 
         longValue++;
         DataCache.Set(key, longValue.ToString());
-        result = $":{longValue}\r\n";
+        result = $":{longValue}";
 
         if (!commandDetails.FromTransaction)
         {
-            socket.Send(Encoding.UTF8.GetBytes(result));
+            socket.Send(Encoding.UTF8.GetBytes($"{result}\r\n"));
         }
 
         return Task.FromResult(result);
