@@ -37,6 +37,6 @@ public class Get : Base
             socket.Send(Encoding.UTF8.GetBytes(response));
         }
         
-        return Task.FromResult(cacheItem?.Value.ConvertStringToSimpleResp())!;
+        return Task.FromResult(cacheItem?.Value.ConvertStringToStringResp())!;
     }
 }

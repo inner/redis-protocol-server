@@ -74,6 +74,15 @@ public static class StringExtensions
         return result;
     }
     
+    public static string ConvertStringToStringResp(this string? value)
+    {
+        var result = value == null
+            ? "$-1"
+            : $"+{value}";
+
+        return result;
+    }
+    
     public static T? Deserialize<T>(this string value)
     {
         T? result = default;
