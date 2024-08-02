@@ -41,8 +41,6 @@ public class Exec : Base
             return result;
         }
 
-        // socket.Send(Encoding.UTF8.GetBytes("*2\r\n+OK\r\n:42\r\n"));
-
         List<string> commandResults = new();
 
         foreach (var commandInQueue in commandQueue)
@@ -69,7 +67,6 @@ public class Exec : Base
             sb.Append($"{commandResult}\r\n");
         }
         
-        // socket.Send(Encoding.UTF8.GetBytes("*2\r\n+OK\r\n:42\r\n"));
         socket.Send(Encoding.UTF8.GetBytes(sb.ToString()));
         commandQueue.Clear();
         return string.Empty;

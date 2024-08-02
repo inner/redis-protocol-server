@@ -14,10 +14,18 @@ public class Ping : Base
         return await GenerateCommonResponse(socket, replicaConnection);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
+    protected override Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        return await GenerateCommonResponse(socket, replicaConnection);
+        // if (replicaConnection)
+        // {
+        //     return Task.CompletedTask;
+        // }
+        //
+        
+        const string response = "*1\r\n$4\r\nPONG\r\n";
+        socket.Send(Encoding.UTF8.GetBytes(response));
+        return Task.FromResult(string.Empty);
     }
 
     private static Task<string> GenerateCommonResponse(Socket socket, bool replicaConnection)
