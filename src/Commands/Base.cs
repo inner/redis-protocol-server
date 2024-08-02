@@ -61,6 +61,8 @@ public abstract class Base
         if (string.Equals(commandParts[2], CommandType.Multi.ToString(),
                 StringComparison.InvariantCultureIgnoreCase) ||
             string.Equals(commandParts[2], CommandType.Exec.ToString(),
+                StringComparison.InvariantCultureIgnoreCase) ||
+            string.Equals(commandParts[2], CommandType.Discard.ToString(),
                 StringComparison.InvariantCultureIgnoreCase))
         {
             return false;
