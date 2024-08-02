@@ -17,12 +17,12 @@ public class Ping : Base
     protected override Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
-        if (!replicaConnection)
-        {
-            const string response = "*1\r\n$4\r\nPONG\r\n";
-            socket.Send(Encoding.UTF8.GetBytes(response));
-            return Task.FromResult(string.Empty);
-        }
+        // if (!replicaConnection)
+        // {
+        //     const string response = "*1\r\n$4\r\nPONG\r\n";
+        //     socket.Send(Encoding.UTF8.GetBytes(response));
+        //     return Task.FromResult(string.Empty);
+        // }
         
         return Task.FromResult(string.Empty);
     }
