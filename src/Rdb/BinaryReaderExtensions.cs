@@ -20,40 +20,40 @@ public static class BinaryReaderExtensions
             return binaryReader.ReadBytes((int)length);
         }
 
-        if (length == RdbConstants.EncType.Int8)
+        switch (length)
         {
-            var tmp = binaryReader.ReadBytes(RdbConstants.One);
-            return Encoding.UTF8.GetBytes(((sbyte)tmp[0]).ToString());
+            case RdbConstants.EncType.Int8:
+            {
+                var tmp = binaryReader.ReadBytes(RdbConstants.One);
+                return Encoding.UTF8.GetBytes(((sbyte)tmp[0]).ToString());
+            }
+            case RdbConstants.EncType.Int16:
+            {
+                var tmp = binaryReader.ReadBytes(RdbConstants.Two);
+                return Encoding.UTF8.GetBytes(BitConverter.ToInt16(tmp).ToString());
+            }
+            case RdbConstants.EncType.Int32:
+            {
+                var tmp = binaryReader.ReadBytes(RdbConstants.Four);
+                return Encoding.UTF8.GetBytes(BitConverter.ToInt32(tmp).ToString());
+            }
+            case RdbConstants.EncType.Lzf:
+            {
+                var compressedLen = ReadLength(binaryReader);
+                var uncompressedLen = ReadLength(binaryReader);
+
+                var compressed = binaryReader.ReadBytes((int)compressedLen);
+                var decompressed = LzfDecompress(compressed, (int)uncompressedLen);
+
+                if (decompressed.Length != (int)uncompressedLen)
+                    throw new RdbReaderException(
+                        $"decompressed string length {decompressed.Length} didn't match expected length {(int)uncompressedLen}");
+
+                return decompressed;
+            }
+            default:
+                throw new RdbReaderException($"Invalid string encoding {length}");
         }
-
-        if (length == RdbConstants.EncType.Int16)
-        {
-            var tmp = binaryReader.ReadBytes(RdbConstants.Two);
-            return Encoding.UTF8.GetBytes(BitConverter.ToInt16(tmp).ToString());
-        }
-
-        if (length == RdbConstants.EncType.Int32)
-        {
-            var tmp = binaryReader.ReadBytes(RdbConstants.Four);
-            return Encoding.UTF8.GetBytes(BitConverter.ToInt32(tmp).ToString());
-        }
-
-        if (length == RdbConstants.EncType.Lzf)
-        {
-            var clen = ReadLength(binaryReader);
-            var ulen = ReadLength(binaryReader);
-
-            var compressed = binaryReader.ReadBytes((int)clen);
-            var decompressed = LzfDecompress(compressed, (int)ulen);
-
-            if (decompressed.Length != (int)ulen)
-                throw new RdbReaderException(
-                    $"decompressed string length {decompressed.Length} didn't match expected length {(int)ulen}");
-
-            return decompressed;
-        }
-
-        throw new RdbReaderException($"Invalid string encoding {length}");
     }
 
     private static (ulong Length, bool IsEncoded) ReadLengthWithEncoding(this BinaryReader binaryReader)
@@ -69,43 +69,44 @@ public static class BinaryReaderExtensions
         // 0x3F  00111111
         var encType = (b & 0xC0) >> 6;
 
-        if (encType == RdbConstants.LengthEncoding.Bit6)
+        switch (encType)
         {
-            // starting bits are 00
-            len = (ulong)(b & 0x3F);
-        }
-        else if (encType == RdbConstants.LengthEncoding.Bit14)
-        {
-            // starting bits are 01
-            var b1 = binaryReader.ReadByte();
-            len = (ulong)((b & 0x3F) << 8 | b1);
-        }
-        else if (encType == RdbConstants.LengthEncoding.EncVal)
-        {
-            // starting bits are 11
-            len = (ulong)(b & 0x3F);
-            isEncoded = true;
-        }
-        else if (b == RdbConstants.LengthEncoding.Bit32)
-        {
-            // starting bits are 10
-            len = binaryReader.ReadUInt32BigEndian();
-        }
-        else if (b == RdbConstants.LengthEncoding.Bit64)
-        {
-            len = binaryReader.ReadUInt32BigEndian();
-        }
-        else
-        {
-            throw new RdbReaderException($"Invalid string encoding {encType} (encoding byte {b})");
+            case RdbConstants.LengthEncoding.Bit6:
+                // starting bits are 00
+                len = (ulong)(b & 0x3F);
+                break;
+            case RdbConstants.LengthEncoding.Bit14:
+            {
+                // starting bits are 01
+                var b1 = binaryReader.ReadByte();
+                len = (ulong)((b & 0x3F) << 8 | b1);
+                break;
+            }
+            case RdbConstants.LengthEncoding.EncVal:
+                // starting bits are 11
+                len = (ulong)(b & 0x3F);
+                isEncoded = true;
+                break;
+            default:
+            {
+                len = b switch
+                {
+                    RdbConstants.LengthEncoding.Bit32 or RdbConstants.LengthEncoding.Bit64 =>
+                        // starting bits are 10
+                        binaryReader.ReadUInt32BigEndian(),
+                    _ => throw new RdbReaderException($"Invalid string encoding {encType} (encoding byte {b})")
+                };
+
+                break;
+            }
         }
 
         return (len, isEncoded);
     }
 
-    private static byte[] LzfDecompress(byte[] compressed, int ulen)
+    private static byte[] LzfDecompress(byte[] compressed, int uncompressedLength)
     {
-        var outStream = new List<byte>(ulen);
+        var outStream = new List<byte>(uncompressedLength);
         var outIndex = 0;
 
         var inLen = compressed.Length;
