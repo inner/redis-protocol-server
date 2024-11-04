@@ -25,7 +25,6 @@ public class MasterNode : NodeBase
     private static void SetServerInfo()
     {
         ServerInfo.ServerRuntimeContext.MasterReplId = GenerateRandomReplId();
-        ServerInfo.ServerRuntimeContext.MasterReplOffset = 0;
     }
     
     private static string GenerateRandomReplId()

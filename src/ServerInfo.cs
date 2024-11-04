@@ -3,16 +3,21 @@ using System.Net.Sockets;
 
 namespace codecrafters_redis;
 
+public static class ServerInfo
+{
+    public static readonly ServerRuntimeContext ServerRuntimeContext = new();
+    public static Replication Replication { get; } = new();
+}
+
 public class ServerRuntimeContext
 {
     private static readonly object ReplicasLockObject = new();
     public bool IsMaster { get; set; } = true;
     public string MasterReplId { get; set; } = string.Empty;
-    public int MasterReplOffset { get; set; }
     public readonly ConcurrentDictionary<string, Socket> Replicas = new();
     public string DataDir { get; set; } = null!;
     public string DbFilename { get; set; } = null!;
-    public bool DbFileExists { get; set; } = false;
+    public bool DbFileExists { get; set; }
     
     public int GetConnectedReplicas()
     {
@@ -47,10 +52,4 @@ public class Replication
             ReplicaBytesReceived += bytesReceived;
         }
     }
-}
-
-public static class ServerInfo
-{
-    public static ServerRuntimeContext ServerRuntimeContext = new();
-    public static Replication Replication { get; set; } = new();
 }
