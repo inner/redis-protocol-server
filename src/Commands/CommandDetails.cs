@@ -7,6 +7,6 @@ public class CommandDetails
     public int CommandCount { get; init; }
     public required string[] CommandParts { get; init; }
     public required string CommandString { get; init; }
-    public CommandType CommandType { get; init; }
-    public bool FromTransaction { get; set; }
+    public required CommandType CommandType { get; init; }
+    public required bool FromTransaction { get; set; }
 }

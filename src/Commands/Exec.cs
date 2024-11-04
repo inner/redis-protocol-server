@@ -21,7 +21,7 @@ public class Exec : Base
         return await GenerateCommonResponse(socket, commandQueue, receiver);
     }
 
-    private async Task<string> GenerateCommonResponse(Socket socket, List<CommandQueueItem> commandQueue,
+    private static async Task<string> GenerateCommonResponse(Socket socket, List<CommandQueueItem> commandQueue,
         ReceiverBase receiver)
     {
         string result;
@@ -51,7 +51,7 @@ public class Exec : Base
             }
             
             var commandDetails = commandInQueue.CommandString
-                .Replace("\r\n", "\\r\\n")
+                .Replace("\r\n", @"\r\n")
                 .BuildCommandDetails();
 
             commandDetails.FromTransaction = true;

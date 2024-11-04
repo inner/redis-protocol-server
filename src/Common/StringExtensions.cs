@@ -49,7 +49,8 @@ public static class StringExtensions
             CommandCount = int.Parse(commandParts[0].Replace("*", string.Empty)),
             CommandParts = commandParts,
             CommandString = commandToExecute,
-            CommandType = commandParts[2].ToCommandType()
+            CommandType = commandParts[2].ToCommandType(),
+            FromTransaction = false
         };
     }
 
