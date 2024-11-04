@@ -115,15 +115,15 @@ public static class BinaryReaderExtensions
         {
             var ctrl = compressed[inIndex];
 
-            inIndex = inIndex + 1;
+            inIndex += 1;
 
             if (ctrl < 32)
             {
                 for (int i = 0; i < ctrl + 1; i++)
                 {
                     outStream.Add(compressed[inIndex]);
-                    inIndex = inIndex + 1;
-                    outIndex = outIndex + 1;
+                    inIndex += 1;
+                    outIndex += 1;
                 }
             }
             else
@@ -131,18 +131,18 @@ public static class BinaryReaderExtensions
                 var length = ctrl >> 5;
                 if (length == 7)
                 {
-                    length = length + compressed[inIndex];
-                    inIndex = inIndex + 1;
+                    length += compressed[inIndex];
+                    inIndex += 1;
                 }
 
                 var @ref = outIndex - ((ctrl & 0x1f) << 8) - compressed[inIndex] - 1;
-                inIndex = inIndex + 1;
+                inIndex += 1;
 
-                for (int i = 0; i < length + 2; i++)
+                for (var i = 0; i < length + 2; i++)
                 {
                     outStream.Add(outStream[@ref]);
-                    @ref = @ref + 1;
-                    outIndex = outIndex + 1;
+                    @ref += 1;
+                    outIndex += 1;
                 }
             }
         }
