@@ -41,7 +41,7 @@ public class Exec : Base
             return result;
         }
 
-        List<string> commandResults = new();
+        List<string> commandResults = [];
 
         foreach (var commandInQueue in commandQueue)
         {
