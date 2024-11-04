@@ -4,9 +4,9 @@ namespace codecrafters_redis.Commands;
 
 public class CommandDetails
 {
-    public int CommandCount { get; set; }
-    public string[] CommandParts { get; set; }
-    public string CommandString { get; set; }
-    public CommandType CommandType { get; set; }
+    public int CommandCount { get; init; }
+    public required string[] CommandParts { get; init; }
+    public required string CommandString { get; init; }
+    public CommandType CommandType { get; init; }
     public bool FromTransaction { get; set; }
 }

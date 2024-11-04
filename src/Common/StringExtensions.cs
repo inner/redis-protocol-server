@@ -11,7 +11,7 @@ public static class StringExtensions
         {
             throw new ArgumentException("Invalid RESP data type.");
         }
-        
+
         return respDataTypeString[..1] switch
         {
             "+" => DataType.SimpleString,
@@ -22,7 +22,7 @@ public static class StringExtensions
             _ => throw new ArgumentException("Invalid RESP data type.")
         };
     }
-    
+
     public static CommandType ToCommandType(this string respCommandTypeString)
     {
         if (string.IsNullOrWhiteSpace(respCommandTypeString))
@@ -37,22 +37,20 @@ public static class StringExtensions
 
         throw new ArgumentException($"Unknown client command: {respCommandTypeString}");
     }
-    
+
     public static CommandDetails BuildCommandDetails(this string commandToExecute)
     {
         var commandParts = commandToExecute.Split(@"\r\n")
             .Where(x => !string.IsNullOrEmpty(x))
             .ToArray();
 
-        var commandDetails = new CommandDetails
+        return new CommandDetails
         {
-            CommandString = commandToExecute,
-            CommandParts = commandParts,
             CommandCount = int.Parse(commandParts[0].Replace("*", string.Empty)),
+            CommandParts = commandParts,
+            CommandString = commandToExecute,
             CommandType = commandParts[2].ToCommandType()
         };
-
-        return commandDetails;
     }
 
     public static string ConvertStringToSimpleResp(this string? value)
@@ -73,7 +71,7 @@ public static class StringExtensions
 
         return result;
     }
-    
+
     public static string ConvertStringToStringResp(this string? value)
     {
         var result = value == null
@@ -82,7 +80,7 @@ public static class StringExtensions
 
         return result;
     }
-    
+
     public static T? Deserialize<T>(this string value)
     {
         T? result = default;
