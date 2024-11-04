@@ -12,7 +12,7 @@ public static class StringExtensions
             throw new ArgumentException("Invalid RESP data type.");
         }
         
-        return respDataTypeString.Substring(0, 1) switch
+        return respDataTypeString[..1] switch
         {
             "+" => DataType.SimpleString,
             "-" => DataType.SimpleError,
@@ -40,7 +40,7 @@ public static class StringExtensions
     
     public static CommandDetails BuildCommandDetails(this string commandToExecute)
     {
-        var commandParts = commandToExecute.Split("\\r\\n")
+        var commandParts = commandToExecute.Split(@"\r\n")
             .Where(x => !string.IsNullOrEmpty(x))
             .ToArray();
 
