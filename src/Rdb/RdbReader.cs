@@ -10,8 +10,8 @@ public static class RdbReader
         using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
         using var binaryReader = new BinaryReader(fileStream);
 
-        RdbVerification.ValidateRedisMagicString(binaryReader);
-        var version = RdbVerification.ValidateRdbVersion(binaryReader);
+        binaryReader.ValidateRedisMagicString();
+        var version = binaryReader.GetRdbVersion();
 
         ulong? database = null;
         long expiry = 0;

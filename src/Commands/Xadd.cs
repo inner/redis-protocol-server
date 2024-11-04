@@ -16,14 +16,15 @@ public class Xadd : Base
     {
         return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
-    
+
     protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
     {
         return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
     }
 
-    private Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
+    private Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
+        bool replicaConnection = false)
     {
         string result;
         var key = commandDetails.CommandParts[4];
@@ -35,7 +36,7 @@ public class Xadd : Base
             var newOrExistingEntryId = DataCache.Xadd(key, values);
 
             result = $"${newOrExistingEntryId.Length}\r\n{newOrExistingEntryId}\r\n";
-            
+
             if (!replicaConnection)
             {
                 socket.Send(Encoding.UTF8.GetBytes(result));
@@ -48,14 +49,12 @@ public class Xadd : Base
             result = $"-ERR {ex.Message}\r\n";
             socket.Send(Encoding.UTF8.GetBytes(result));
         }
-        
+
         return Task.FromResult(result);
     }
 
     private StreamCacheItemValueItem BuildEntryValue(string key, string entryId, CommandDetails commandDetails)
     {
-        var entryIdType = GetEntryIdType(entryId);
-
         string? existingEntryId = null;
 
         var fetchStreamCacheItem = DataCache.Fetch(key);
@@ -74,6 +73,7 @@ public class Xadd : Base
             }
         }
 
+        var entryIdType = GetEntryIdType(entryId);
         var value = entryIdType switch
         {
             EntryIdType.Preset => GetEntryIdValueForPreset(entryId, existingEntryId),
@@ -171,7 +171,7 @@ public class Xadd : Base
         return value;
     }
 
-    private StreamCacheItemValueItem GetEntryIdValueForAuto(string? existingEntryId)
+    private static StreamCacheItemValueItem GetEntryIdValueForAuto(string? existingEntryId)
     {
         StreamCacheItemValueItem value = new();
 
@@ -231,9 +231,8 @@ public class Xadd : Base
 
     private static void InitialPresetEntryIdValidation(string entryId)
     {
-        var errorMessage = "The ID specified in XADD must be greater than 0-0";
-
         var entryIdParts = entryId.Split('-');
+        var errorMessage = "The ID specified in XADD must be greater than 0-0";
 
         switch (long.Parse(entryIdParts[0]))
         {
@@ -246,9 +245,8 @@ public class Xadd : Base
 
     private static void InitialAutoSequenceEntryIdValidation(string entryId)
     {
-        var errorMessage = "The ID specified in XADD must be greater than 0-0";
-
         var entryIdParts = entryId.Split('-');
+        var errorMessage = "The ID specified in XADD must be greater than 0-0";
 
         switch (long.Parse(entryIdParts[0]))
         {

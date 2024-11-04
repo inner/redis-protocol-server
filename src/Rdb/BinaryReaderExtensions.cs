@@ -62,39 +62,39 @@ public static class BinaryReaderExtensions
         ulong len;
         var isEncoded = false;
 
-        var b = binaryReader.ReadByte();
-
+        var @byte = binaryReader.ReadByte();
+        
         // 8bit right shift 6bit, get the starting 2bit
         // 0xC0  11000000
         // 0x3F  00111111
-        var encType = (b & 0xC0) >> 6;
+        var encodingType = (@byte & 0xC0) >> 6;
 
-        switch (encType)
+        switch (encodingType)
         {
             case RdbConstants.LengthEncoding.Bit6:
                 // starting bits are 00
-                len = (ulong)(b & 0x3F);
+                len = (ulong)(@byte & 0x3F);
                 break;
             case RdbConstants.LengthEncoding.Bit14:
             {
                 // starting bits are 01
                 var b1 = binaryReader.ReadByte();
-                len = (ulong)((b & 0x3F) << 8 | b1);
+                len = (ulong)((@byte & 0x3F) << 8 | b1);
                 break;
             }
             case RdbConstants.LengthEncoding.EncVal:
                 // starting bits are 11
-                len = (ulong)(b & 0x3F);
+                len = (ulong)(@byte & 0x3F);
                 isEncoded = true;
                 break;
             default:
             {
-                len = b switch
+                len = @byte switch
                 {
                     RdbConstants.LengthEncoding.Bit32 or RdbConstants.LengthEncoding.Bit64 =>
                         // starting bits are 10
                         binaryReader.ReadUInt32BigEndian(),
-                    _ => throw new RdbReaderException($"Invalid string encoding {encType} (encoding byte {b})")
+                    _ => throw new RdbReaderException($"Invalid string encoding {encodingType} (encoding byte {@byte})")
                 };
 
                 break;
@@ -120,7 +120,7 @@ public static class BinaryReaderExtensions
 
             if (ctrl < 32)
             {
-                for (int i = 0; i < ctrl + 1; i++)
+                for (var i = 0; i < ctrl + 1; i++)
                 {
                     outStream.Add(compressed[inIndex]);
                     inIndex += 1;
