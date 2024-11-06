@@ -10,10 +10,6 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
     : NodeBase(localAddress, port, receiver)
 {
     private readonly int port = port;
-    
-    // private TcpClient? tcpClient = masterNode == null || masterPort == null
-    //     ? throw new Exception("Handshake failed: master node is not specified")
-    //     : new TcpClient(masterNode, masterPort.Value);
 
     protected override void LogOnStart() => Console.WriteLine($"starting Redis '{NodeName}' server on port '{port}'");
     protected sealed override string NodeName => $"replica-node-{port}";
