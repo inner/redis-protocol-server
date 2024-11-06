@@ -8,20 +8,8 @@ using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Servers;
 
-public abstract class NodeBase
+public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase receiver)
 {
-    private readonly IPAddress localAddress;
-    private readonly int port;
-
-    private readonly ReceiverBase receiver;
-
-    protected NodeBase(IPAddress localAddress, int port, ReceiverBase receiver)
-    {
-        this.localAddress = localAddress;
-        this.port = port;
-        this.receiver = receiver;
-    }
-
     protected abstract void LogOnStart();
     protected abstract string NodeName { get; }
 

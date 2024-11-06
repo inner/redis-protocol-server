@@ -31,7 +31,7 @@ public abstract class ReceiverBase
                     ExecuteInteger();
                     break;
                 case DataType.BulkString:
-                    ExecuteBulkString(socket, commandString);
+                    ExecuteBulkString(socket);
                     break;
                 default:
                     throw new ArgumentException("Invalid data type.");
@@ -78,8 +78,8 @@ public abstract class ReceiverBase
         List<CommandQueueItem> commandQueue)
     {
         var className = $"codecrafters_redis.Commands.{commandDetails.CommandType}";
+        
         var type = System.Type.GetType(className);
-
         if (type == null)
         {
             throw new ArgumentException("Unknown RESP command.");
@@ -122,9 +122,8 @@ public abstract class ReceiverBase
         }
     }
 
-    private void ExecuteBulkString(Socket socket, string commandString)
+    private void ExecuteBulkString(Socket socket)
     {
-        var commandParts = commandString.Split("\\r\\n");
         socket.Send("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"u8.ToArray());
     }
 

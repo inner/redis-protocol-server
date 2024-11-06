@@ -11,7 +11,6 @@ public class MasterNode : NodeBase
         : base(localAddress, port, masterReceiver)
     {
         SetServerInfo();
-        
         this.port = port;
     }
 
@@ -29,7 +28,7 @@ public class MasterNode : NodeBase
     
     private static string GenerateRandomReplId()
     {
-        var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         var random = new Random();
         var result = new string(
             Enumerable.Repeat(chars, 40)
