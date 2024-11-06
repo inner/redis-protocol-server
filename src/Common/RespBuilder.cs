@@ -4,7 +4,7 @@ namespace codecrafters_redis.Common;
 
 public static class RespBuilder
 {
-    public static string BuildRespArray(params string[] commands)
+    public static byte[] BuildRespArray(params string[] commands)
     {
         var sb = new StringBuilder();
         
@@ -14,6 +14,6 @@ public static class RespBuilder
             sb.Append($"${command.Length}\r\n{command}\r\n");
         }
 
-        return sb.ToString();
+        return Encoding.UTF8.GetBytes(sb.ToString());
     }
 }
