@@ -12,21 +12,16 @@ public abstract class Base
 
     public async Task<string> Execute(CommandContext commandContext)
     {
-        string result;
-
         if (TransactionEnabled(commandContext))
         {
             return string.Empty;
         }
 
-        if (ServerInfo.ServerRuntimeContext.IsMaster)
+        var result = ServerInfo.ServerRuntimeContext.IsMaster switch
         {
-            result = await OnMasterNodeExecute(commandContext);
-        }
-        else
-        {
-            result = await OnReplicaNodeExecute(commandContext);
-        }
+            true => await OnMasterNodeExecute(commandContext),
+            false => await OnReplicaNodeExecute(commandContext)
+        };
 
         return result;
     }

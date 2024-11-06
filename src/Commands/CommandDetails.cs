@@ -4,7 +4,7 @@ namespace codecrafters_redis.Commands;
 
 public class CommandDetails
 {
-    public int CommandCount { get; init; }
+    public required int CommandCount { get; init; }
     public required string[] CommandParts { get; init; }
     public required string CommandString { get; init; }
     public required CommandType CommandType { get; init; }
