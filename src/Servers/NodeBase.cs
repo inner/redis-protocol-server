@@ -47,7 +47,6 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
     private void LogReceivedCommand(string clientCommand)
     {
         var logMessage = clientCommand.Replace("\r\n", "\\r\\n");
-
         if (!logMessage.EndsWith('\n'))
         {
             logMessage += '\n';
@@ -59,7 +58,6 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
     protected async Task HandleConnection(TcpClient client)
     {
         List<CommandQueueItem> commandQueue = [];
-        
         var connectionId = $"{client.Client.LocalEndPoint}->{client.Client.RemoteEndPoint}";
 
         while (client.Connected)

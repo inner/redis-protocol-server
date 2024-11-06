@@ -10,7 +10,6 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
     : NodeBase(localAddress, port, receiver)
 {
     private readonly int port = port;
-    private TcpClient? tcpClient;
 
     protected override void LogOnStart() => Console.WriteLine($"starting Redis '{NodeName}' server on port '{port}'");
     protected sealed override string NodeName => $"replica-node-{port}";
@@ -19,13 +18,13 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
     {
         try
         {
-            tcpClient = masterNode == null || !masterPort.HasValue
+            var tcpClient = masterNode == null || !masterPort.HasValue
                 ? null
                 : new TcpClient(masterNode, masterPort.Value);
 
             if (tcpClient == null)
             {
-                Console.WriteLine("TCP client is null. Exiting...");
+                Console.WriteLine("Handshake failed: master node is not specified");
                 return this;
             }
 
@@ -54,7 +53,7 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
     private void SendPing(NetworkStream stream)
     {
         var ping = RespBuilder.BuildRespArray("PING");
-        
+
         StreamWrite(stream, ping);
         if (StreamRead(stream) != Constants.PongResponse)
         {
@@ -67,7 +66,7 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
         Console.WriteLine($"[{NodeName}] Sending REPLCONF listening-port {port}");
 
         var replconfListeningPort = RespBuilder.BuildRespArray("REPLCONF", "listening-port", port.ToString());
-        
+
         StreamWrite(stream, replconfListeningPort);
         if (StreamRead(stream) != Constants.OkResponse)
         {
@@ -78,7 +77,7 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
     private void SendReplconfCapaPsync2(NetworkStream stream)
     {
         var replconfCapa = RespBuilder.BuildRespArray("REPLCONF", "capa", "psync2");
-        
+
         StreamWrite(stream, replconfCapa);
         if (StreamRead(stream) != Constants.OkResponse)
         {
