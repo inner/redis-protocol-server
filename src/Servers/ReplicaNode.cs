@@ -10,6 +10,7 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
     : NodeBase(localAddress, port, receiver)
 {
     private readonly int port = port;
+    private TcpClient? tcpClient;
 
     protected override void LogOnStart() => Console.WriteLine($"starting Redis '{NodeName}' server on port '{port}'");
     protected sealed override string NodeName => $"replica-node-{port}";
@@ -18,7 +19,7 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
     {
         try
         {
-            var tcpClient = masterNode == null || !masterPort.HasValue
+            tcpClient = masterNode == null || !masterPort.HasValue
                 ? null
                 : new TcpClient(masterNode, masterPort.Value);
 
