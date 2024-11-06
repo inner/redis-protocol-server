@@ -74,7 +74,7 @@ public static class NetworkStreamExtensions
             throw new Exception("Expected RDB length, but received: " + rdbLengthStr);
         }
 
-        var rdbLength = int.Parse(rdbLengthStr.Substring(1));
+        var rdbLength = int.Parse(rdbLengthStr[1..]);
         var rdbFile = new byte[rdbLength];
 
         // read the RDB file
