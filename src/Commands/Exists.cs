@@ -1,6 +1,4 @@
-using System.Net.Sockets;
 using System.Text;
-using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -8,31 +6,28 @@ public class Exists : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, receiver);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, receiver);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    private static Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
-        ReceiverBase receiver)
+    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        if (commandDetails.CommandParts.Length < 2)
+        if (commandContext.CommandDetails.CommandParts.Length < 2)
         {
             throw new ArgumentException(
-                $"Wrong number of arguments for '{nameof(Exists)}' command: {commandDetails.CommandParts.Length}.");
+                $"Wrong number of arguments for '{nameof(Exists)}' command: {commandContext.CommandDetails.CommandParts.Length}.");
         }
 
         var exists = 1;
         var response = $":{exists}\r\n";
 
-        socket.Send(Encoding.UTF8.GetBytes(response));
+        commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
         return Task.FromResult(response);
     }
 }

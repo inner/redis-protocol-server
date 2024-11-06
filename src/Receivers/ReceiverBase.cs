@@ -86,7 +86,17 @@ public abstract class ReceiverBase
         }
 
         var command = (Base)Activator.CreateInstance(type)!;
-        var result = await command.Execute(socket, commandDetails, commandQueue, this);
+
+        var commandContext = new CommandContext
+        {
+            Socket = socket,
+            CommandDetails = commandDetails,
+            CommandQueue = commandQueue,
+            Receiver = this,
+            ReplicaConnection = false
+        };
+        
+        var result = await command.Execute(commandContext);
 
         if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated ||
             commandDetails.CommandString.Contains("$3\r\nACK\r\n"))

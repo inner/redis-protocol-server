@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Text;
-using codecrafters_redis.Receivers;
+﻿using System.Text;
 
 namespace codecrafters_redis.Commands;
 
@@ -8,22 +6,21 @@ public class Command : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        if (commandDetails.CommandParts.Length != 5 || commandDetails.CommandParts[4].ToUpper() != "DOCS")
+        if (commandContext.CommandDetails.CommandParts.Length != 5 ||
+            commandContext.CommandDetails.CommandParts[4].ToUpper() != "DOCS")
         {
             throw new ArgumentException("Invalid subcommand for COMMAND.");
         }
 
         var docs = await GetCommandDocs();
         var result = await FormatAsResp(docs);
-        socket.Send(Encoding.UTF8.GetBytes(result));
+        commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
         return result;
     }
 
-    protected override Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
         return Task.FromResult(string.Empty);
     }

@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-using codecrafters_redis.Common;
-using codecrafters_redis.Receivers;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -9,39 +7,35 @@ public abstract class Base
     public abstract bool CanBePropagated { get; }
     private bool TransactionStarted { get; set; }
 
-    protected abstract Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false);
+    protected abstract Task<string> OnMasterNodeExecute(CommandContext commandContext);
+    protected abstract Task<string> OnReplicaNodeExecute(CommandContext commandContext);
 
-    protected abstract Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false);
-
-    public async Task<string> Execute(Socket socket, CommandDetails commandDetails, List<CommandQueueItem> commandQueue,
-        ReceiverBase receiver, bool replicaConnection = false)
+    public async Task<string> Execute(CommandContext commandContext)
     {
         string result;
 
-        if (TransactionEnabled(socket, commandDetails.CommandParts, commandQueue))
+        if (TransactionEnabled(commandContext))
         {
             return string.Empty;
         }
 
         if (ServerInfo.ServerRuntimeContext.IsMaster)
         {
-            result = await OnMasterNodeExecute(socket, commandDetails, commandQueue, receiver, replicaConnection);
+            result = await OnMasterNodeExecute(commandContext);
         }
         else
         {
-            result = await OnReplicaNodeExecute(socket, commandDetails, commandQueue, receiver, replicaConnection);
+            result = await OnReplicaNodeExecute(commandContext);
         }
 
         return result;
     }
 
-    private bool TransactionEnabled(Socket socket, string[] commandParts, List<CommandQueueItem> commandQueue)
+    private bool TransactionEnabled(CommandContext commandContext)
     {
         if (!TransactionStarted)
         {
-            TransactionStarted = commandQueue.Count != 0;
+            TransactionStarted = commandContext.CommandQueue.Count != 0;
         }
 
         if (!TransactionStarted)
@@ -57,21 +51,22 @@ public abstract class Base
         var commandStrings = commandTypesExcluded.ConvertAll(c => c.ToString());
 
         if (commandStrings.Exists(c =>
-                string.Equals(commandParts[2], c, StringComparison.InvariantCultureIgnoreCase)))
+                string.Equals(commandContext.CommandDetails.CommandParts[2], c,
+                    StringComparison.InvariantCultureIgnoreCase)))
         {
             return false;
         }
 
-        var commandString = string.Join("\r\n", commandParts);
-        var commandType = commandParts[2].ToCommandType();
+        var commandString = string.Join("\r\n", commandContext.CommandDetails.CommandParts);
+        var commandType = commandContext.CommandDetails.CommandParts[2].ToCommandType();
 
-        commandQueue.Add(new CommandQueueItem
+        commandContext.CommandQueue.Add(new CommandQueueItem
         {
             CommandType = commandType,
             CommandString = commandString
         });
 
-        socket.Send("+QUEUED\r\n"u8.ToArray());
+        commandContext.Socket.Send("+QUEUED\r\n"u8.ToArray());
         return true;
     }
 }

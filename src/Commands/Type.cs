@@ -1,8 +1,6 @@
-﻿using System.Net.Sockets;
-using System.Text;
+﻿using System.Text;
 using codecrafters_redis.Cache;
 using codecrafters_redis.Common;
-using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -10,24 +8,21 @@ public class Type : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    private static Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
-        bool replicaConnection = false)
+    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         string result;
 
-        var key = commandDetails.CommandParts[4];
+        var key = commandContext.CommandDetails.CommandParts[4];
         var fetchItem = DataCache.Fetch(key);
 
         if (fetchItem != null)
@@ -37,7 +32,7 @@ public class Type : Base
                     StringComparison.InvariantCultureIgnoreCase))
             {
                 result = "+string\r\n";
-                socket.Send(Encoding.UTF8.GetBytes(result));
+                commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
                 return Task.FromResult(result);
             }
 
@@ -46,9 +41,9 @@ public class Type : Base
                     StringComparison.InvariantCultureIgnoreCase))
             {
                 result = "+stream\r\n";
-                if (!replicaConnection)
+                if (!commandContext.ReplicaConnection)
                 {
-                    socket.Send(Encoding.UTF8.GetBytes(result));
+                    commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
                 }
 
                 return Task.FromResult(result);
@@ -56,7 +51,7 @@ public class Type : Base
         }
 
         result = "+none\r\n";
-        socket.Send(Encoding.UTF8.GetBytes(result));
+        commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
         return Task.FromResult(result);
     }
 }

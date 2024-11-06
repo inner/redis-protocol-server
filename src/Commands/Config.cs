@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Text;
-using codecrafters_redis.Receivers;
+﻿using System.Text;
 
 namespace codecrafters_redis.Commands;
 
@@ -8,44 +6,41 @@ public class Config : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    private static Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
-        bool replicaConnection = false)
+    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         var result =
             $"*2\r\n$3\r\ndir\r\n${ServerInfo.ServerRuntimeContext.DataDir.Length}\r\n{ServerInfo.ServerRuntimeContext.DataDir}\r\n";
-        
-        if (Array.IndexOf(commandDetails.CommandParts, "GET") != -1 &&
-            Array.IndexOf(commandDetails.CommandParts, "dir") != -1)
+
+        if (Array.IndexOf(commandContext.CommandDetails.CommandParts, "GET") != -1 &&
+            Array.IndexOf(commandContext.CommandDetails.CommandParts, "dir") != -1)
         {
-            if (!replicaConnection)
+            if (!commandContext.ReplicaConnection)
             {
-                socket.Send(Encoding.UTF8.GetBytes(result));
+                commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
             }
 
             return Task.FromResult(result);
         }
 
-        if (Array.IndexOf(commandDetails.CommandParts, "GET") != -1 &&
-            Array.IndexOf(commandDetails.CommandParts, "dbfilename") != -1)
+        if (Array.IndexOf(commandContext.CommandDetails.CommandParts, "GET") != -1 &&
+            Array.IndexOf(commandContext.CommandDetails.CommandParts, "dbfilename") != -1)
         {
             result =
                 $"*2\r\n$10\r\ndbfilename\r\n${ServerInfo.ServerRuntimeContext.DbFilename.Length}\r\n{ServerInfo.ServerRuntimeContext.DbFilename}\r\n";
-            
-            if (!replicaConnection)
+
+            if (!commandContext.ReplicaConnection)
             {
-                socket.Send(
+                commandContext.Socket.Send(
                     Encoding.UTF8.GetBytes(result));
             }
 
@@ -53,10 +48,10 @@ public class Config : Base
         }
 
         result = "-ERR Unsupported CONFIG parameter\r\n";
-        
-        if (!replicaConnection)
+
+        if (!commandContext.ReplicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
         }
 
         return Task.FromResult(result);

@@ -1,7 +1,5 @@
-﻿using System.Net.Sockets;
-using System.Text;
+﻿using System.Text;
 using codecrafters_redis.Common;
-using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -9,25 +7,23 @@ public class Client : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    private static Task<string> GenerateCommonResponse(Socket socket, bool replicaConnection)
+    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         var result = Constants.OkResponse;
         
-        if (!replicaConnection)
+        if (!commandContext.ReplicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
         }
 
         return Task.FromResult(result);

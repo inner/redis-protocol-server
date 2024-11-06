@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Text;
-using codecrafters_redis.Receivers;
+﻿using System.Text;
 
 namespace codecrafters_redis.Commands;
 
@@ -8,8 +6,7 @@ public class Psync : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var fullResyncResponse = $"+FULLRESYNC {ServerInfo.ServerRuntimeContext.MasterReplId} 0\r\n";
         
@@ -19,15 +16,17 @@ public class Psync : Base
             .Concat(rdbFile)
             .ToArray();
         
-        socket.Send(Encoding.UTF8.GetBytes(fullResyncResponse));
-        socket.Send(rdbResynchronizationFileMsg);
+        commandContext.Socket.Send(Encoding.UTF8.GetBytes(fullResyncResponse));
+        commandContext.Socket.Send(rdbResynchronizationFileMsg);
         
-        ServerInfo.ServerRuntimeContext.Replicas.TryAdd(socket.RemoteEndPoint!.ToString()!, socket);
+        ServerInfo.ServerRuntimeContext.Replicas.TryAdd(
+            commandContext.Socket.RemoteEndPoint!.ToString()!,
+            commandContext.Socket);
+        
         return Task.FromResult(string.Empty);
     }
 
-    protected override Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
         return Task.FromResult(string.Empty);
     }

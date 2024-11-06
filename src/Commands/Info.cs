@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Text;
-using codecrafters_redis.Receivers;
+﻿using System.Text;
 
 namespace codecrafters_redis.Commands;
 
@@ -8,8 +6,7 @@ public class Info : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var infoValues = new Dictionary<string, string>
         {
@@ -27,16 +24,15 @@ public class Info : Base
         var value = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
         var response = $"${value.Length}\r\n{value}\r\n";
 
-        if (!replicaConnection)
+        if (!commandContext.ReplicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(response));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
         }
         
         return Task.FromResult(response);
     }
 
-    protected override Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
         var infoValues = new Dictionary<string, string>
         {
@@ -54,9 +50,9 @@ public class Info : Base
         var value = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
         var response = $"${value.Length}\r\n{value}\r\n";
 
-        if (!replicaConnection)
+        if (!commandContext.ReplicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(response));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
         }
         
         return Task.FromResult(response);

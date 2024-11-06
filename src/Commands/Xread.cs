@@ -1,9 +1,7 @@
-﻿using System.Net.Sockets;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Cache;
 using codecrafters_redis.Common;
-using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -13,55 +11,56 @@ public class Xread : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        var blockIndex = Array.IndexOf(commandDetails.CommandParts, "block") + 1;
-        if (blockIndex != -1 && int.TryParse(commandDetails.CommandParts[blockIndex + 1], out var blockTime))
+        var blockIndex = Array.IndexOf(commandContext.CommandDetails.CommandParts, "block") + 1;
+        if (blockIndex != -1 &&
+            int.TryParse(commandContext.CommandDetails.CommandParts[blockIndex + 1], out var blockTime))
         {
             await Task.Delay(blockTime);
         }
 
-        if (blockIndex != -1 && (commandDetails.CommandParts[6] == "\\x00" || commandDetails.CommandParts[6] == "0"))
+        if (blockIndex != -1 && (commandContext.CommandDetails.CommandParts[6] == "\\x00" ||
+                                 commandContext.CommandDetails.CommandParts[6] == "0"))
         {
-            return await GenerateCommonResponse(socket, commandDetails, noTimeout: true, replicaConnection);
+            return await GenerateCommonResponse(commandContext, noTimeout: true);
         }
 
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        var blockIndex = Array.IndexOf(commandDetails.CommandParts, "block") + 1;
-        if (blockIndex != -1 && int.TryParse(commandDetails.CommandParts[blockIndex + 1], out var blockTime))
+        var blockIndex = Array.IndexOf(commandContext.CommandDetails.CommandParts, "block") + 1;
+
+        if (blockIndex != -1 &&
+            int.TryParse(commandContext.CommandDetails.CommandParts[blockIndex + 1], out var blockTime))
         {
             await Task.Delay(blockTime);
         }
 
-        if (blockIndex != -1 && (commandDetails.CommandParts[6] == "\\x00" || commandDetails.CommandParts[6] == "0"))
+        if (blockIndex != -1 && (commandContext.CommandDetails.CommandParts[6] == "\\x00" ||
+                                 commandContext.CommandDetails.CommandParts[6] == "0"))
         {
-            return await GenerateCommonResponse(socket, commandDetails, noTimeout: true, replicaConnection);
+            return await GenerateCommonResponse(commandContext, noTimeout: true);
         }
 
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    private static Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
-        bool noTimeout = false,
-        bool replicaConnection = false)
+    private static Task<string> GenerateCommonResponse(CommandContext commandContext, bool noTimeout = false)
     {
         string result;
-        var isBlocking = Array.IndexOf(commandDetails.CommandParts, "block") != -1;
+        var isBlocking = Array.IndexOf(commandContext.CommandDetails.CommandParts, "block") != -1;
         List<StreamCacheItemValueItem> streamEntries = [];
 
         if (noTimeout)
         {
-            if (commandDetails.CommandParts.Last() != "$")
+            if (commandContext.CommandDetails.CommandParts.Last() != "$")
             {
                 while (!streamEntries.Any())
                 {
-                    var streamKeys = GetStreamKeysFromCommand(commandDetails, isBlocking);
+                    var streamKeys = GetStreamKeysFromCommand(commandContext.CommandDetails, isBlocking);
                     if (streamKeys.Count == 0)
                     {
                         continue;
@@ -72,7 +71,7 @@ public class Xread : Base
             }
             else
             {
-                var key = commandDetails.CommandParts[^3];
+                var key = commandContext.CommandDetails.CommandParts[^3];
 
                 string? maxEntryId = null;
                 var maxExistingEntryId = DataCache.Fetch(key);
@@ -90,14 +89,14 @@ public class Xread : Base
         }
         else
         {
-            var streamKeys = GetStreamKeysFromCommand(commandDetails, isBlocking);
+            var streamKeys = GetStreamKeysFromCommand(commandContext.CommandDetails, isBlocking);
             if (streamKeys.Count == 0)
             {
                 result = "$-1\r\n";
-                
-                if (!replicaConnection)
+
+                if (!commandContext.ReplicaConnection)
                 {
-                    socket.Send(Encoding.UTF8.GetBytes(result));
+                    commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
                 }
 
                 return Task.FromResult(result);
@@ -109,10 +108,10 @@ public class Xread : Base
         if (streamEntries.Count == 0)
         {
             result = "$-1\r\n";
-            
-            if (!replicaConnection)
+
+            if (!commandContext.ReplicaConnection)
             {
-                socket.Send(Encoding.UTF8.GetBytes(result));
+                commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
             }
 
             return Task.FromResult(result);
@@ -139,9 +138,9 @@ public class Xread : Base
 
         result = sb.ToString();
 
-        if (!replicaConnection)
+        if (!commandContext.ReplicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
         }
 
         return Task.FromResult(result);

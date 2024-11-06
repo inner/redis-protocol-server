@@ -60,7 +60,6 @@ public static class RdbConstants
         public const int Module = 6;
         public const int Module2 = 7;
 
-
         public const int HashZipmap = 9;
         public const int ListZiplist = 10;
         public const int SetIntset = 11;

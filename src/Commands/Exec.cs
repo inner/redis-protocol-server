@@ -1,7 +1,5 @@
-﻿using System.Net.Sockets;
-using System.Text;
+﻿using System.Text;
 using codecrafters_redis.Common;
-using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -9,66 +7,66 @@ public class Exec : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandQueue, receiver);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandQueue, receiver);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    private static async Task<string> GenerateCommonResponse(Socket socket, List<CommandQueueItem> commandQueue,
-        ReceiverBase receiver)
+    private static async Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         string result;
 
-        if (commandQueue.All(x => x.CommandType != CommandType.Multi))
+        if (commandContext.CommandQueue.All(x => x.CommandType != CommandType.Multi))
         {
             result = "-ERR EXEC without MULTI\r\n";
-            socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
             return result;
         }
 
-        if (commandQueue.Count == 1 && commandQueue.Single().CommandType == CommandType.Multi)
+        if (commandContext.CommandQueue.Count == 1 &&
+            commandContext.CommandQueue.Single().CommandType == CommandType.Multi)
         {
             result = "*0\r\n";
-            socket.Send(Encoding.UTF8.GetBytes(result));
-            commandQueue.Clear();
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.CommandQueue.Clear();
             return result;
         }
 
         List<string> commandResults = [];
 
-        foreach (var commandInQueue in commandQueue)
+        foreach (var commandInQueue in commandContext.CommandQueue)
         {
             if (commandInQueue.CommandType == CommandType.Multi)
             {
                 continue;
             }
-            
+
             var commandDetails = commandInQueue.CommandString
                 .Replace("\r\n", @"\r\n")
                 .BuildCommandDetails();
 
             commandDetails.FromTransaction = true;
 
-            var commandResult = await receiver.ExecuteCommand(socket, commandDetails, []);
+            var commandResult = await commandContext.Receiver.ExecuteCommand(
+                commandContext.Socket, commandDetails, []);
+            
             commandResults.Add(commandResult);
         }
-        
+
         var sb = new StringBuilder();
         sb.Append($"*{commandResults.Count}\r\n");
         foreach (var commandResult in commandResults)
         {
             sb.Append($"{commandResult}\r\n");
         }
-        
-        socket.Send(Encoding.UTF8.GetBytes(sb.ToString()));
-        commandQueue.Clear();
+
+        commandContext.Socket.Send(Encoding.UTF8.GetBytes(sb.ToString()));
+        commandContext.CommandQueue.Clear();
         return string.Empty;
     }
 }

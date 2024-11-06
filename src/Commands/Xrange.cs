@@ -1,9 +1,7 @@
-﻿using System.Net.Sockets;
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Cache;
 using codecrafters_redis.Common;
-using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -11,29 +9,27 @@ public class Xrange : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
     
-    private static Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails, bool replicaConnection = false)
+    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         string result;
-        var key = commandDetails.CommandParts[4];
+        var key = commandContext.CommandDetails.CommandParts[4];
 
         var fetchItem = DataCache.Fetch(key);
 
         if (string.IsNullOrEmpty(fetchItem))
         {
             result = "$-1\r\n";
-            socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
             return Task.FromResult(result);
         }
 
@@ -41,12 +37,12 @@ public class Xrange : Base
         if (streamCacheItem == null)
         {
             result = "$-1\r\n";
-            socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
             return Task.FromResult(result);
         }
 
-        var startEntryId = commandDetails.CommandParts[6];
-        var endEntryId = commandDetails.CommandParts[8];
+        var startEntryId = commandContext.CommandDetails.CommandParts[6];
+        var endEntryId = commandContext.CommandDetails.CommandParts[8];
 
         long? startTimestamp = null;
         long? startSequence = null;
@@ -130,9 +126,9 @@ public class Xrange : Base
 
         result = sb.ToString();
         
-        if (!replicaConnection)
+        if (!commandContext.ReplicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(result));   
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));   
         }
         
         return Task.FromResult(result);

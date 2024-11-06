@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
-using System.Net.Sockets;
 using System.Text;
-using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -9,20 +7,19 @@ public class Wait : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         ServerInfo.Replication.ReplicaAcksReceived = 0;
         
-        var numberOfReplicasToWaitFor = commandDetails.CommandParts[4];
-        var msToWait = commandDetails.CommandParts[6];
+        var numberOfReplicasToWaitFor = commandContext.CommandDetails.CommandParts[4];
+        var msToWait = commandContext.CommandDetails.CommandParts[6];
         
         var tasks = new List<Task>();
         foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
         {
             tasks.Add(Task.Run(() =>
             {
-                replica.Value.Send(Encoding.UTF8.GetBytes("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n"));
+                replica.Value.Send("*3\r\n$8\r\nREPLCONF\r\n$6\r\nGETACK\r\n$1\r\n*\r\n"u8.ToArray());
             }));
         }
 
@@ -46,12 +43,11 @@ public class Wait : Base
             : ServerInfo.Replication.ReplicaAcksReceived;
         
         var result = $":{acksReceived}\r\n";
-        socket.Send(Encoding.UTF8.GetBytes(result));
+        commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
         return result;
     }
 
-    protected override Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
         return Task.FromResult(string.Empty);
     }

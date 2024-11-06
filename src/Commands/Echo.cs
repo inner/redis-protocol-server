@@ -1,6 +1,4 @@
-﻿using System.Net.Sockets;
-using System.Text;
-using codecrafters_redis.Receivers;
+﻿using System.Text;
 
 namespace codecrafters_redis.Commands;
 
@@ -8,31 +6,29 @@ public class Echo : Base
 {
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails, replicaConnection);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    private static Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails,
-        bool replicaConnection)
+    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var response = commandDetails.CommandCount switch
+        var response = commandContext.CommandDetails.CommandCount switch
         {
-            2 => $"${commandDetails.CommandParts[4].Length}\r\n{commandDetails.CommandParts[4]}\r\n",
+            2 =>
+                $"${commandContext.CommandDetails.CommandParts[4].Length}\r\n{commandContext.CommandDetails.CommandParts[4]}\r\n",
             _ => throw new ArgumentException($"Wrong number of arguments for '{nameof(Echo)}' " +
-                                             $"command: {commandDetails.CommandCount}.")
+                                             $"command: {commandContext.CommandDetails.CommandCount}.")
         };
 
-        if (!replicaConnection)
+        if (!commandContext.ReplicaConnection)
         {
-            socket.Send(Encoding.UTF8.GetBytes(response));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
         }
 
         return Task.FromResult(response);

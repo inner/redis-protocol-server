@@ -1,8 +1,6 @@
-﻿using System.Net.Sockets;
-using System.Text;
+﻿using System.Text;
 using codecrafters_redis.Cache;
 using codecrafters_redis.Common;
-using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Commands;
 
@@ -10,31 +8,29 @@ public class Incr : Base
 {
     public override bool CanBePropagated => true;
 
-    protected override async Task<string> OnMasterNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    protected override async Task<string> OnReplicaNodeExecute(Socket socket, CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue, ReceiverBase receiver, bool replicaConnection = false)
+    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse(socket, commandDetails);
+        return await GenerateCommonResponse(commandContext);
     }
 
-    private Task<string> GenerateCommonResponse(Socket socket, CommandDetails commandDetails)
+    private Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         string result;
-        var key = commandDetails.CommandParts[4];
+        var key = commandContext.CommandDetails.CommandParts[4];
 
         var cacheItem = DataCache.Get(key);
         if (cacheItem == null)
         {
             DataCache.Set(key, "1");
 
-            if (!commandDetails.FromTransaction)
+            if (!commandContext.CommandDetails.FromTransaction)
             {
-                socket.Send(":1\r\n"u8.ToArray());
+                commandContext.Socket.Send(":1\r\n"u8.ToArray());
             }
 
             return Task.FromResult("1".ConvertStringToSimpleResp());
@@ -44,9 +40,9 @@ public class Incr : Base
         {
             result = "-ERR value is not an integer or out of range";
 
-            if (!commandDetails.FromTransaction)
+            if (!commandContext.CommandDetails.FromTransaction)
             {
-                socket.Send(Encoding.UTF8.GetBytes($"{result}\r\n"));
+                commandContext.Socket.Send(Encoding.UTF8.GetBytes($"{result}\r\n"));
             }
 
             return Task.FromResult(result);
@@ -56,9 +52,9 @@ public class Incr : Base
         DataCache.Set(key, longValue.ToString());
         result = $":{longValue}";
 
-        if (!commandDetails.FromTransaction)
+        if (!commandContext.CommandDetails.FromTransaction)
         {
-            socket.Send(Encoding.UTF8.GetBytes($"{result}\r\n"));
+            commandContext.Socket.Send(Encoding.UTF8.GetBytes($"{result}\r\n"));
         }
 
         return Task.FromResult(result);
