@@ -101,7 +101,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
         }
     }
 
-    private void CloseSocket(string connectionId, Socket? socket)
+    private static void CloseSocket(string connectionId, Socket? socket)
     {
         if (socket == null)
         {

@@ -8,13 +8,12 @@ public static class NetworkStreamExtensions
     public static NetworkStream SendPing(this NetworkStream stream)
     {
         var resp = RespBuilder.BuildRespArray("PING");
-        
         stream.Write(resp);
         
-        if (stream.ReadResponse() != Constants.PongResponse)
-        {
-            ThrowHandshakeFailed(nameof(SendPing));
-        }
+        EnsureExpectedResponse(
+            nameof(SendPing),
+            Constants.PongResponse,
+            stream.ReadResponse());
 
         return stream;
     }
@@ -25,11 +24,11 @@ public static class NetworkStreamExtensions
 
         var resp = RespBuilder.BuildRespArray("REPLCONF", "listening-port", port.ToString());
         stream.Write(resp);
-
-        if (stream.ReadResponse() != Constants.OkResponse)
-        {
-            ThrowHandshakeFailed(nameof(SendReplconfListeningPort));
-        }
+        
+        EnsureExpectedResponse(
+            nameof(SendReplconfListeningPort),
+            Constants.OkResponse,
+            stream.ReadResponse());
 
         return stream;
     }
@@ -38,11 +37,11 @@ public static class NetworkStreamExtensions
     {
         var resp = RespBuilder.BuildRespArray("REPLCONF", "capa", "psync2");
         stream.Write(resp);
-
-        if (stream.ReadResponse() != Constants.OkResponse)
-        {
-            ThrowHandshakeFailed(nameof(SendReplconfCapaPsync2));
-        }
+        
+        EnsureExpectedResponse(
+            nameof(SendReplconfCapaPsync2),
+            Constants.OkResponse,
+            stream.ReadResponse());
 
         return stream;
     }
@@ -76,7 +75,7 @@ public static class NetworkStreamExtensions
         {
             throw new Exception("Expected RDB length, but received: " + rdbLengthStr);
         }
-        
+
         var rdbLength = int.Parse(rdbLengthStr.Substring(1));
         var rdbFile = new byte[rdbLength];
 
@@ -91,7 +90,7 @@ public static class NetworkStreamExtensions
         }
 
         // Process the RDB file (e.g., save it, load it, etc.)
-        
+
         Console.WriteLine("Received RDB file of length: " + rdbLength);
     }
 
@@ -144,8 +143,12 @@ public static class NetworkStreamExtensions
         return Encoding.UTF8.GetString(memoryStream.ToArray());
     }
     
-    private static void ThrowHandshakeFailed(string failedMethodName)
+    private static void EnsureExpectedResponse(string methodName, string expectedResponse, string actualResponse)
     {
-        throw new Exception($"Handshake failed on step: {failedMethodName}");
+        if (expectedResponse != actualResponse)
+        {
+            throw new Exception($"Handshake failed on step: {methodName}. " +
+                                $"Expected response: {expectedResponse}, but received: {actualResponse}");
+        }
     }
 }
