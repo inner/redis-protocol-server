@@ -59,6 +59,7 @@ public class Exec : Base
         }
 
         var sb = new StringBuilder();
+        
         sb.Append($"*{commandResults.Count}\r\n");
         foreach (var commandResult in commandResults)
         {

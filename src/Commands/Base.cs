@@ -44,7 +44,7 @@ public abstract class Base
         };
 
         var commandStrings = commandTypesExcluded.ConvertAll(c => c.ToString());
-
+        
         if (commandStrings.Exists(c =>
                 string.Equals(commandContext.CommandDetails.CommandParts[2], c,
                     StringComparison.InvariantCultureIgnoreCase)))
