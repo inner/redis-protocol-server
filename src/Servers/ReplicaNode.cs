@@ -23,7 +23,7 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
 
             tcpClient.GetStream()
                 .SendPing()
-                .SendReplconfListeningPort(NodeName, port)
+                .SendReplconfListeningPort(port)
                 .SendReplconfCapaPsync2()
                 .SendPsync();
 

@@ -9,7 +9,7 @@ public static class NetworkStreamExtensions
     {
         var resp = RespBuilder.BuildRespArray("PING");
         stream.Write(resp);
-        
+
         EnsureExpectedResponse(
             nameof(SendPing),
             Constants.PongResponse,
@@ -18,13 +18,11 @@ public static class NetworkStreamExtensions
         return stream;
     }
 
-    public static NetworkStream SendReplconfListeningPort(this NetworkStream stream, string nodeName, int port)
+    public static NetworkStream SendReplconfListeningPort(this NetworkStream stream, int port)
     {
-        Console.WriteLine($"[{nodeName}] Sending REPLCONF listening-port {port}");
-
         var resp = RespBuilder.BuildRespArray("REPLCONF", "listening-port", port.ToString());
         stream.Write(resp);
-        
+
         EnsureExpectedResponse(
             nameof(SendReplconfListeningPort),
             Constants.OkResponse,
@@ -37,7 +35,7 @@ public static class NetworkStreamExtensions
     {
         var resp = RespBuilder.BuildRespArray("REPLCONF", "capa", "psync2");
         stream.Write(resp);
-        
+
         EnsureExpectedResponse(
             nameof(SendReplconfCapaPsync2),
             Constants.OkResponse,
@@ -142,10 +140,10 @@ public static class NetworkStreamExtensions
 
         return Encoding.UTF8.GetString(memoryStream.ToArray());
     }
-    
+
     private static void EnsureExpectedResponse(string methodName, string expectedResponse, string actualResponse)
     {
-        if (expectedResponse != actualResponse)
+        if (!string.Equals(expectedResponse, actualResponse, StringComparison.InvariantCultureIgnoreCase))
         {
             throw new Exception($"Handshake failed on step: {methodName}. " +
                                 $"Expected response: {expectedResponse}, but received: {actualResponse}");
