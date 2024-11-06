@@ -68,20 +68,18 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
 
                 while (true)
                 {
-                    var buffer = new byte[1024];
-                    var bytesRead = client.GetStream().Read(buffer, 0, buffer.Length);
-                    if (bytesRead == 0) continue;
+                    var clientCommand = client
+                        .GetStream()
+                        .ReadResponse();
                     
-                    var clientCommand = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                     if (string.IsNullOrEmpty(clientCommand))
                     {
                         client.Client.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
                         continue;
                     }
 
-                    LogReceivedCommand(clientCommand);
-
                     await receiver.Receive(client.Client, clientCommand.Replace("\"", string.Empty), commandQueue);
+                    LogReceivedCommand(clientCommand);
                 }
             }
             catch (SocketException)

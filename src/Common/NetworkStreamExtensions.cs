@@ -126,7 +126,7 @@ public static class NetworkStreamExtensions
         return sb.ToString();
     }
 
-    private static string ReadResponse(this NetworkStream stream)
+    public static string ReadResponse(this NetworkStream stream)
     {
         using var memoryStream = new MemoryStream();
         var buffer = new byte[1024];
