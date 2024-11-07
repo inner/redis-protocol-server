@@ -17,9 +17,4 @@ public class Ping : Base
 
         return Task.FromResult(response);
     }
-
-    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return Task.FromResult(string.Empty);
-    }
 }

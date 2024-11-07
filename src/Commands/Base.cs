@@ -7,8 +7,15 @@ public abstract class Base
     public abstract bool CanBePropagated { get; }
     private bool TransactionStarted { get; set; }
 
-    protected abstract Task<string> OnMasterNodeExecute(CommandContext commandContext);
-    protected abstract Task<string> OnReplicaNodeExecute(CommandContext commandContext);
+    protected virtual Task<string> OnMasterNodeExecute(CommandContext commandContext)
+    {
+        return Task.FromResult(string.Empty);
+    }
+
+    protected virtual Task<string> OnReplicaNodeExecute(CommandContext commandContext)
+    {
+        return Task.FromResult(string.Empty);
+    }
 
     public async Task<string> Execute(CommandContext commandContext)
     {

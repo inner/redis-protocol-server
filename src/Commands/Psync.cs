@@ -25,9 +25,4 @@ public class Psync : Base
         
         return Task.FromResult(string.Empty);
     }
-
-    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return Task.FromResult(string.Empty);
-    }
 }

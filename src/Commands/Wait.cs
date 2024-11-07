@@ -46,9 +46,4 @@ public class Wait : Base
         commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
         return result;
     }
-
-    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return Task.FromResult(string.Empty);
-    }
 }

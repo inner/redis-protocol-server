@@ -16,14 +16,14 @@ public class ReplicaReceiver : ReceiverBase
 
         if (!countBytes)
         {
-            await base.Receive(socket, commandString, commandQueue);
+            await base.Receive(socket, commandString, commandQueue, countBytes: false);
             return;
         }
 
         if (!ServerInfo.Replication.ReplicaFirstByteReceived || commandString.Contains("$3\r\nACK\r\n"))
         {
             ServerInfo.Replication.ReplicaFirstByteReceived = true;
-            await base.Receive(socket, commandString, commandQueue);
+            await base.Receive(socket, commandString, commandQueue, countBytes: true);
             return;
         }
 
@@ -33,10 +33,13 @@ public class ReplicaReceiver : ReceiverBase
         }
 
         var currentBytesReceived = Encoding.UTF8.GetBytes(commandString).Length;
+        
         Console.WriteLine(
-            $"Total bytes received: {ServerInfo.Replication.ReplicaBytesReceived}. Incrementing bytes received by {currentBytesReceived}");
+            $"Total bytes received: {ServerInfo.Replication.ReplicaBytesReceived}. " +
+            $"Incrementing bytes received by {currentBytesReceived}");
+        
         ServerInfo.Replication.IncrementReplicaBytesReceived(currentBytesReceived);
 
-        await base.Receive(socket, commandString, commandQueue);
+        await base.Receive(socket, commandString, commandQueue, countBytes: true);
     }
 }

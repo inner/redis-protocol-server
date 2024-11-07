@@ -25,3 +25,19 @@ public enum CommandType
     Discard,
     Exists
 }
+
+public enum DataType
+{
+    SimpleString,
+    SimpleError,
+    Integer,
+    BulkString,
+    Array
+}
+
+public enum EntryIdType
+{
+    Preset,
+    AutoSequence,
+    Auto
+}

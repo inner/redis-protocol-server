@@ -20,11 +20,6 @@ public class Command : Base
         return result;
     }
 
-    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return Task.FromResult(string.Empty);
-    }
-
     private Task<string> GetCommandDocs()
     {
         var commandDocs = new Dictionary<string, string>
