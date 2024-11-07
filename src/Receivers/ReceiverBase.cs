@@ -95,16 +95,19 @@ public abstract class ReceiverBase
             ReplicaConnection = false
         };
 
+        var result = await command.Execute(commandContext);
 
-        if (ServerInfo.ServerRuntimeContext.IsMaster && command.CanBePropagated &&
-            !commandDetails.CommandString.Contains("$3\r\nACK\r\n"))
+        if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated ||
+            commandDetails.CommandString.Contains("$3\r\nACK\r\n"))
         {
-            ExecuteOnReplicas(commandDetails.CommandString);
+            return commandDetails.FromTransaction
+                ? result
+                : string.Empty;
         }
-        
-        return commandDetails.FromTransaction
-            ? await command.Execute(commandContext)
-            : string.Empty;
+
+        ExecuteOnReplicas(commandDetails.CommandString);
+
+        return result;
     }
 
     private static void ExecuteOnReplicas(string commandString)
