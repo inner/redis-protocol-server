@@ -17,6 +17,11 @@ public static class RespBuilder
         return sb.ToString();
     }
     
+    public static string BuildRespInteger(int integer)
+    {
+        return $":{integer}\r\n";
+    }
+    
     public static byte[] AsBytes(this string resp)
     {
         return Encoding.UTF8.GetBytes(resp);

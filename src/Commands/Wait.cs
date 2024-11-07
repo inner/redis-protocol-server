@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Text;
 using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
@@ -16,22 +15,20 @@ public class Wait : Base
         var msToWait = commandContext.CommandDetails.CommandParts[6];
 
         var tasks = new List<Task>();
-        var resp = RespBuilder.BuildRespArray("REPLCONF", "GETACK", "*");
-        
+        var getAckResp = RespBuilder.BuildRespArray("REPLCONF", "GETACK", "*");
+
         var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
             .Where(x => x.Value.Connected);
-        
+
         foreach (var replica in connectedReplicas)
         {
             tasks.Add(Task.Run(() =>
-                replica.Value.Send(resp.AsBytes())));
+                replica.Value.Send(getAckResp.AsBytes())));
         }
 
         await Task.WhenAll(tasks);
-
-        var sw = new Stopwatch();
-        sw.Start();
-
+        
+        var sw = Stopwatch.StartNew();
         while (sw.ElapsedMilliseconds < int.Parse(msToWait))
         {
             if (ServerInfo.Replication.ReplicaAcksReceived >= int.Parse(numberOfReplicasToWaitFor))
@@ -46,8 +43,8 @@ public class Wait : Base
             ? ServerInfo.ServerRuntimeContext.GetConnectedReplicas()
             : ServerInfo.Replication.ReplicaAcksReceived;
 
-        var result = $":{acksReceived}\r\n";
-        commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
-        return result;
+        var acksReceivedResp = RespBuilder.BuildRespInteger(acksReceived);
+        commandContext.Socket.Send(acksReceivedResp.AsBytes());
+        return acksReceivedResp;
     }
 }
