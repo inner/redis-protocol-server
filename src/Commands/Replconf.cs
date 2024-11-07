@@ -39,18 +39,21 @@ public class Replconf : Base
         {
             return Task.FromResult(string.Empty);
         }
+        
+        var resp = RespBuilder
+            .BuildRespArray(
+                "REPLCONF",
+                "ACK",
+                ServerInfo.Replication.ReplicaBytesReceived.ToString());
 
-        var result =
-            $"*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n${ServerInfo.Replication.ReplicaBytesReceived.ToString().Length}\r\n{ServerInfo.Replication.ReplicaBytesReceived}\r\n";
-
-        if (string.Equals(commandContext.CommandDetails.CommandParts[4], "getack",
+        if (string.Equals(commandContext.CommandDetails.CommandParts[4], "GETACK",
                 StringComparison.InvariantCultureIgnoreCase) &&
             string.Equals(commandContext.CommandDetails.CommandParts[6], "*",
                 StringComparison.InvariantCultureIgnoreCase))
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(resp.AsBytes());
         }
 
-        return Task.FromResult(result);
+        return Task.FromResult(resp);
     }
 }
