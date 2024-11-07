@@ -100,9 +100,7 @@ public abstract class ReceiverBase
         if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated ||
             commandDetails.CommandString.Contains("$3\r\nACK\r\n"))
         {
-            return commandDetails.FromTransaction
-                ? result
-                : string.Empty;
+            return result;
         }
 
         ExecuteOnReplicas(commandDetails.CommandString);
