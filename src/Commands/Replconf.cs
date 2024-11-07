@@ -35,11 +35,6 @@ public class Replconf : Base
 
     protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
-        {
-            return Task.FromResult(string.Empty);
-        }
-        
         var resp = RespBuilder
             .BuildRespArray(
                 "REPLCONF",
