@@ -77,7 +77,7 @@ public abstract class ReceiverBase
         List<CommandQueueItem> commandQueue)
     {
         var className = $"codecrafters_redis.Commands.{commandDetails.CommandType}";
-        
+
         var type = System.Type.GetType(className);
         if (type == null)
         {
@@ -94,7 +94,7 @@ public abstract class ReceiverBase
             Receiver = this,
             ReplicaConnection = false
         };
-        
+
         var result = await command.Execute(commandContext);
 
         if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated ||
@@ -126,15 +126,15 @@ public abstract class ReceiverBase
         socket.Send("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"u8.ToArray());
     }
 
-    private void ExecuteSimpleString()
+    private static void ExecuteSimpleString()
     {
     }
 
-    private void ExecuteSimpleError()
+    private static void ExecuteSimpleError()
     {
     }
 
-    private void ExecuteInteger()
+    private static void ExecuteInteger()
     {
     }
 }
