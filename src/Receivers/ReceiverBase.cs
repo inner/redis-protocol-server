@@ -97,6 +97,10 @@ public abstract class ReceiverBase
 
         var result = await command.Execute(commandContext);
 
+        // check if:
+        // - the server is not a master
+        // - the command cannot be propagated
+        // - the command is an ACK response
         if (!ServerInfo.ServerRuntimeContext.IsMaster || !command.CanBePropagated ||
             commandDetails.CommandString.Contains("$3\r\nACK\r\n"))
         {
