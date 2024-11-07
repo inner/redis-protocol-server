@@ -28,9 +28,9 @@ public class Xadd : Base
         {
             var values = BuildEntryValue(key, entryId, commandContext.CommandDetails);
             var newOrExistingEntryId = DataCache.Xadd(key, values);
-            
+
             result = RespBuilder.BuildRespBulkString(newOrExistingEntryId);
-            
+
             if (!commandContext.ReplicaConnection)
             {
                 commandContext.Socket.Send(result.AsBytes());
@@ -67,8 +67,7 @@ public class Xadd : Base
             }
         }
 
-        var entryIdType = GetEntryIdType(entryId);
-        var value = entryIdType switch
+        var value = GetEntryIdType(entryId) switch
         {
             EntryIdType.Preset => GetEntryIdValueForPreset(entryId, existingEntryId),
             EntryIdType.AutoSequence => GetEntryIdValueForAutoSequence(entryId, existingEntryId),
@@ -77,17 +76,24 @@ public class Xadd : Base
         };
 
         var values = new List<StreamCacheItemValueItemValue>();
+        
         for (var i = 8; i < commandDetails.CommandParts.Length; i += 2)
         {
-            var valueIndex = commandDetails.CommandParts[i].Contains(' ') ? i : i + 2;
+            var valueIndex = commandDetails.CommandParts[i].Contains(' ')
+                ? i
+                : i + 2;
+
             values.Add(new StreamCacheItemValueItemValue
             {
                 Key = commandDetails.CommandParts[i],
                 Value = commandDetails.CommandParts[valueIndex]
             });
+
             value.Key = key;
             value.Value = values;
+
             i += 2;
+
             if (valueIndex + 2 >= commandDetails.CommandParts.Length - 1)
             {
                 break;

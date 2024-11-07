@@ -23,16 +23,16 @@ public class Exec : Base
 
         if (commandContext.CommandQueue.All(x => x.CommandType != CommandType.Multi))
         {
-            result = "-ERR EXEC without MULTI\r\n";
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            result = RespBuilder.BuildRespError("EXEC without MULTI");
+            commandContext.Socket.Send(result.AsBytes());
             return result;
         }
 
         if (commandContext.CommandQueue.Count == 1 &&
             commandContext.CommandQueue.Single().CommandType == CommandType.Multi)
         {
-            result = "*0\r\n";
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            result = RespBuilder.BuildRespArray();
+            commandContext.Socket.Send(result.AsBytes());
             commandContext.CommandQueue.Clear();
             return result;
         }
@@ -59,15 +59,18 @@ public class Exec : Base
         }
 
         var sb = new StringBuilder();
-        
         sb.Append($"*{commandResults.Count}\r\n");
         foreach (var commandResult in commandResults)
         {
             sb.Append($"{commandResult}\r\n");
         }
-
+        
+        var resp = RespBuilder.BuildRespArray(commandResults.ToArray());
+        Console.WriteLine($"'{resp}' vs '{sb}'");
+        
         commandContext.Socket.Send(Encoding.UTF8.GetBytes(sb.ToString()));
         commandContext.CommandQueue.Clear();
+        
         return string.Empty;
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -18,42 +18,39 @@ public class Config : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var result =
-            $"*2\r\n$3\r\ndir\r\n${ServerInfo.ServerRuntimeContext.DataDir.Length}\r\n{ServerInfo.ServerRuntimeContext.DataDir}\r\n";
-
+        var resp = RespBuilder.BuildRespArray("dir", ServerInfo.ServerRuntimeContext.DataDir);
+        
         if (Array.IndexOf(commandContext.CommandDetails.CommandParts, "GET") != -1 &&
             Array.IndexOf(commandContext.CommandDetails.CommandParts, "dir") != -1)
         {
             if (!commandContext.ReplicaConnection)
             {
-                commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+                commandContext.Socket.Send(resp.AsBytes());
             }
 
-            return Task.FromResult(result);
+            return Task.FromResult(resp);
         }
 
         if (Array.IndexOf(commandContext.CommandDetails.CommandParts, "GET") != -1 &&
             Array.IndexOf(commandContext.CommandDetails.CommandParts, "dbfilename") != -1)
         {
-            result =
-                $"*2\r\n$10\r\ndbfilename\r\n${ServerInfo.ServerRuntimeContext.DbFilename.Length}\r\n{ServerInfo.ServerRuntimeContext.DbFilename}\r\n";
-
+            resp = RespBuilder.BuildRespArray("dbfilename", ServerInfo.ServerRuntimeContext.DbFilename);
+            
             if (!commandContext.ReplicaConnection)
             {
-                commandContext.Socket.Send(
-                    Encoding.UTF8.GetBytes(result));
+                commandContext.Socket.Send(resp.AsBytes());
             }
 
-            return Task.FromResult(result);
+            return Task.FromResult(resp);
         }
-
-        result = "-ERR Unsupported CONFIG parameter\r\n";
-
+        
+        resp = RespBuilder.BuildRespError("Unsupported CONFIG parameter");
+        
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(resp.AsBytes());
         }
 
-        return Task.FromResult(result);
+        return Task.FromResult(resp);
     }
 }

@@ -22,18 +22,18 @@ public static class RespBuilder
         return $"${value.Length}\r\n{value}\r\n";
     }
     
-    public static string BuildRespInteger(int integer)
+    public static string BuildRespInteger(int value)
     {
-        return $":{integer}\r\n";
+        return $":{value}\r\n";
     }
     
-    public static string BuildRespError(string message)
+    public static string BuildRespError(string value)
     {
-        return $"-ERR {message}\r\n";
+        return $"-ERR {value}\r\n";
     }
     
-    public static byte[] AsBytes(this string resp)
+    public static byte[] AsBytes(this string value)
     {
-        return Encoding.UTF8.GetBytes(resp);
+        return Encoding.UTF8.GetBytes(value);
     }
 }
