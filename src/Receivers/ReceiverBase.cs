@@ -96,7 +96,7 @@ public abstract class ReceiverBase
         };
 
         var result = await command.Execute(commandContext);
-        
+
         if (!ShouldReplicateCommand(command, commandDetails))
         {
             return result;
@@ -117,7 +117,7 @@ public abstract class ReceiverBase
             replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
         }
     }
-    
+
     private static bool ShouldReplicateCommand(Base command, CommandDetails commandDetails)
     {
         // do not replicate the command if:
@@ -125,13 +125,15 @@ public abstract class ReceiverBase
         // - the command cannot be propagated
         // - the command is an ACK response
         
-        return ServerInfo.ServerRuntimeContext.IsMaster && command.CanBePropagated &&
+        return ServerInfo.ServerRuntimeContext.IsMaster &&
+               command.CanBePropagated &&
                !commandDetails.CommandString.Contains("$3\r\nACK\r\n");
     }
 
     private void ExecuteBulkString(Socket socket)
     {
-        socket.Send("*3\r\n$8\r\nREPLCONF\r\n$3\r\nACK\r\n$1\r\n0\r\n"u8.ToArray());
+        var resp = RespBuilder.BuildRespArray("REPLCONF", "ACK", "0");
+        socket.Send(resp.AsBytes());
     }
 
     private static void ExecuteSimpleString()
