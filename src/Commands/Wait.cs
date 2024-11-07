@@ -10,7 +10,7 @@ public class Wait : Base
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        // ServerInfo.Replication.ReplicaAcksReceived = 0;
+        ServerInfo.Replication.ReplicaAcksReceived = 0;
 
         var numberOfReplicasToWaitFor = commandContext.CommandDetails.CommandParts[4];
         var msToWait = commandContext.CommandDetails.CommandParts[6];
