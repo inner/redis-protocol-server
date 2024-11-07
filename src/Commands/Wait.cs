@@ -25,18 +25,15 @@ public class Wait : Base
 
         await Task.WhenAll(tasks);
 
-        var sw = new Stopwatch();
-        sw.Start();
+        var startingTimestamp = Stopwatch.GetTimestamp();
         
-        while (sw.ElapsedMilliseconds < int.Parse(msToWait))
+        while (Stopwatch.GetElapsedTime(startingTimestamp).Milliseconds < int.Parse(msToWait))
         {
             if (ServerInfo.Replication.ReplicaAcksReceived >= int.Parse(numberOfReplicasToWaitFor))
             {
                 break;
             }
         }
-        
-        sw.Stop();
 
         var acksReceived = ServerInfo.Replication.ReplicaAcksReceived == 0
             ? ServerInfo.ServerRuntimeContext.GetConnectedReplicas()
