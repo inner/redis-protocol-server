@@ -5,8 +5,8 @@ using codecrafters_redis.Receivers;
 
 namespace codecrafters_redis.Servers;
 
-public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, int? masterPort, ReceiverBase receiver)
-    : NodeBase(localAddress, port, receiver)
+public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, int? masterPort)
+    : NodeBase(localAddress, port, new ReplicaReceiver())
 {
     private readonly int port = port;
 

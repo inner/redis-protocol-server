@@ -2,7 +2,6 @@ using System.Net;
 using System.Runtime.InteropServices;
 using codecrafters_redis;
 using codecrafters_redis.Common;
-using codecrafters_redis.Receivers;
 using codecrafters_redis.Servers;
 
 var programArgs = args
@@ -109,12 +108,12 @@ try
 {
     if (ServerInfo.ServerRuntimeContext.IsMaster)
     {
-        new MasterNode(IPAddress.Any, port, new MasterReceiver())
+        new MasterNode(IPAddress.Any, port)
             .Start();
     }
     else
     {
-        new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value, new ReplicaReceiver())
+        new ReplicaNode(IPAddress.Any, port, masterHost!, masterPort!.Value)
             .Handshake()
             .Start();
     }

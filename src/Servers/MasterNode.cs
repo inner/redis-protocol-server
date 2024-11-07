@@ -7,8 +7,8 @@ public class MasterNode : NodeBase
 {
     private readonly int port;
 
-    public MasterNode(IPAddress localAddress, int port, MasterReceiver masterReceiver)
-        : base(localAddress, port, masterReceiver)
+    public MasterNode(IPAddress localAddress, int port)
+        : base(localAddress, port, new MasterReceiver())
     {
         SetServerInfo();
         this.port = port;
@@ -18,14 +18,14 @@ public class MasterNode : NodeBase
     {
         Console.WriteLine($"starting Redis 'master' server on port '{port}'");
     }
-    
+
     protected override string NodeName => "master-node";
-    
+
     private static void SetServerInfo()
     {
         ServerInfo.ServerRuntimeContext.MasterReplId = GenerateRandomReplId();
     }
-    
+
     private static string GenerateRandomReplId()
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
