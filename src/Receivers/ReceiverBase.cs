@@ -8,8 +8,7 @@ namespace codecrafters_redis.Receivers;
 
 public abstract class ReceiverBase
 {
-    public virtual async Task Receive(Socket socket, string commandString, List<CommandQueueItem> commandQueue,
-        bool countBytes = true)
+    public virtual async Task Receive(Socket socket, string commandString, List<CommandQueueItem> commandQueue)
     {
         try
         {

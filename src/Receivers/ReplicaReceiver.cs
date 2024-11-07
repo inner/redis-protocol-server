@@ -6,24 +6,18 @@ namespace codecrafters_redis.Receivers;
 
 public class ReplicaReceiver : ReceiverBase
 {
-    public override async Task Receive(Socket socket, string commandString, List<CommandQueueItem> commandQueue,
-        bool countBytes = true)
+    public override async Task Receive(Socket socket, string commandString, List<CommandQueueItem> commandQueue)
     {
         if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
         {
             return;
         }
 
-        if (!countBytes)
-        {
-            await base.Receive(socket, commandString, commandQueue, countBytes: false);
-            return;
-        }
 
         if (!ServerInfo.Replication.ReplicaFirstByteReceived || commandString.Contains("$3\r\nACK\r\n"))
         {
             ServerInfo.Replication.ReplicaFirstByteReceived = true;
-            await base.Receive(socket, commandString, commandQueue, countBytes: true);
+            await base.Receive(socket, commandString, commandQueue);
             return;
         }
 
@@ -40,6 +34,6 @@ public class ReplicaReceiver : ReceiverBase
         
         ServerInfo.Replication.IncrementReplicaBytesReceived(currentBytesReceived);
 
-        await base.Receive(socket, commandString, commandQueue, countBytes: true);
+        await base.Receive(socket, commandString, commandQueue);
     }
 }
