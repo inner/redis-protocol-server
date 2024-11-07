@@ -12,8 +12,7 @@ public class ReplicaReceiver : ReceiverBase
         {
             return;
         }
-
-
+        
         if (!ServerInfo.Replication.ReplicaFirstByteReceived || commandString.Contains("$3\r\nACK\r\n"))
         {
             ServerInfo.Replication.ReplicaFirstByteReceived = true;
