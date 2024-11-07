@@ -17,9 +17,19 @@ public static class RespBuilder
         return sb.ToString();
     }
     
+    public static string BuildRespBulkString(string value)
+    {
+        return $"${value.Length}\r\n{value}\r\n";
+    }
+    
     public static string BuildRespInteger(int integer)
     {
         return $":{integer}\r\n";
+    }
+    
+    public static string BuildRespError(string message)
+    {
+        return $"-ERR {message}\r\n";
     }
     
     public static byte[] AsBytes(this string resp)

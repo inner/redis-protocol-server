@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using codecrafters_redis.Cache;
 using codecrafters_redis.Common;
 
@@ -29,20 +28,20 @@ public class Xadd : Base
         {
             var values = BuildEntryValue(key, entryId, commandContext.CommandDetails);
             var newOrExistingEntryId = DataCache.Xadd(key, values);
-
-            result = $"${newOrExistingEntryId.Length}\r\n{newOrExistingEntryId}\r\n";
-
+            
+            result = RespBuilder.BuildRespBulkString(newOrExistingEntryId);
+            
             if (!commandContext.ReplicaConnection)
             {
-                commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+                commandContext.Socket.Send(result.AsBytes());
             }
 
             return Task.FromResult(result);
         }
         catch (Exception ex)
         {
-            result = $"-ERR {ex.Message}\r\n";
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            result = RespBuilder.BuildRespError(ex.Message);
+            commandContext.Socket.Send(result.AsBytes());
         }
 
         return Task.FromResult(result);
