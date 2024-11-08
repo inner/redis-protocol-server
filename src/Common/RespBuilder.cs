@@ -4,34 +4,14 @@ namespace codecrafters_redis.Common;
 
 public static class RespBuilder
 {
-    public static string BuildRespArray(params object[] commands)
+    public static string BuildRespArray(params string[] commands)
     {
         var sb = new StringBuilder();
-
-        // Append array header with the number of elements
+        
         sb.Append($"*{commands.Length}\r\n");
-
         foreach (var command in commands)
         {
-            if (command is string str)
-            {
-                // Encode non-null strings as bulk strings
-                sb.Append($"${str.Length}\r\n{str}\r\n");
-            }
-            else if (command is int integer)
-            {
-                // Encode integers with colon prefix
-                sb.Append($":{integer}\r\n");
-            }
-            else if (command == null)
-            {
-                // Encode null elements as `$-1\r\n`
-                sb.Append("$-1\r\n");
-            }
-            else
-            {
-                throw new ArgumentException("Unsupported data type in RESP array");
-            }
+            sb.Append($"${command.Length}\r\n{command}\r\n");
         }
 
         return sb.ToString();

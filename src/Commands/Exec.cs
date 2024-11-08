@@ -65,9 +65,6 @@ public class Exec : Base
             sb.Append($"{commandResult}\r\n");
         }
         
-        var resp = RespBuilder.BuildRespArray(commandResults.ToArray());
-        Console.WriteLine($"'{resp.Replace("\r\n", @"\r\n")}' vs '{sb.Replace("\r\n", @"\r\n")}'");
-        
         commandContext.Socket.Send(Encoding.UTF8.GetBytes(sb.ToString()));
         commandContext.CommandQueue.Clear();
         
