@@ -1,5 +1,4 @@
-﻿using System.Text;
-using codecrafters_redis.Cache;
+﻿using codecrafters_redis.Cache;
 using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
@@ -25,11 +24,11 @@ public class Get : Base
 
         var response = cacheItem is null or { Value: null }
             ? Constants.NullResponse
-            : $"${cacheItem.Value.Length}\r\n{cacheItem.Value}\r\n";
+            : RespBuilder.BuildRespBulkString(cacheItem.Value);
 
-        if (!commandContext.ReplicaConnection && !commandContext.CommandDetails.FromTransaction)
+        if (commandContext is { ReplicaConnection: false, CommandDetails.FromTransaction: false })
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
+            commandContext.Socket.Send(response.AsBytes());
         }
         
         return Task.FromResult(cacheItem?.Value.ConvertStringToStringResp())!;
