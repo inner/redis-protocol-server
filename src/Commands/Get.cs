@@ -31,6 +31,6 @@ public class Get : Base
             commandContext.Socket.Send(response.AsBytes());
         }
         
-        return Task.FromResult(cacheItem?.Value.ConvertStringToStringResp())!;
+        return Task.FromResult(cacheItem?.Value?.ConvertStringToStringResp())!;
     }
 }

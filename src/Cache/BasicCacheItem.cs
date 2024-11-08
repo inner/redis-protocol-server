@@ -2,7 +2,7 @@
 
 public class BasicCacheItem : ICacheItemBase, IExpiredCacheItem
 {
-    public required string Value { get; set; }
+    public required string Value { get; init; }
     public string Type => nameof(BasicCacheItem);
     public long Expiry { get; set; }
 }
