@@ -1,5 +1,4 @@
-﻿using System.Text;
-using codecrafters_redis.Common;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -24,13 +23,13 @@ public class Discard : Base
         if (commandContext.CommandQueue.Count > 0)
         {
             commandContext.CommandQueue.Clear();
-            result = Constants.OkResponse;
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(Constants.OkResponse));
+            result = RespBuilder.SimpleString("OK");
+            commandContext.Socket.Send(result.AsBytes());
         }
         else
         {
-            result = "-ERR DISCARD without MULTI\r\n";
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            result = RespBuilder.Error("DISCARD without MULTI");
+            commandContext.Socket.Send(result.AsBytes());
         }
 
         return Task.FromResult(result);

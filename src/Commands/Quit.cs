@@ -19,7 +19,7 @@ public class Quit : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var result = Constants.OkResponse;
+        var result = RespBuilder.SimpleString("OK");
 
         if (!commandContext.ReplicaConnection)
         {

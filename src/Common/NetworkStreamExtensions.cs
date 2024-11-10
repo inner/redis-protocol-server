@@ -12,7 +12,7 @@ public static class NetworkStreamExtensions
 
         EnsureExpectedResponse(
             nameof(SendPing),
-            Constants.PongResponse,
+            RespBuilder.SimpleString("PONG"),
             stream.ReadResponse());
 
         return stream;
@@ -25,7 +25,7 @@ public static class NetworkStreamExtensions
 
         EnsureExpectedResponse(
             nameof(SendReplconfListeningPort),
-            Constants.OkResponse,
+            RespBuilder.SimpleString("OK"),
             stream.ReadResponse());
 
         return stream;
@@ -38,7 +38,7 @@ public static class NetworkStreamExtensions
 
         EnsureExpectedResponse(
             nameof(SendReplconfCapaPsync2),
-            Constants.OkResponse,
+            RespBuilder.SimpleString("OK"),
             stream.ReadResponse());
 
         return stream;

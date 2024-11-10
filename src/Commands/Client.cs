@@ -1,5 +1,4 @@
-﻿using System.Text;
-using codecrafters_redis.Common;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 

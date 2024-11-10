@@ -1,5 +1,4 @@
-﻿using System.Text;
-using codecrafters_redis.Common;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -9,14 +8,14 @@ public class Replconf : Base
 
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        var result = Constants.OkResponse;
+        var result = RespBuilder.SimpleString("OK");
 
         if (string.Equals(commandContext.CommandDetails.CommandParts[4], "listening-port",
                 StringComparison.InvariantCultureIgnoreCase) ||
             string.Equals(commandContext.CommandDetails.CommandParts[4], "capa",
                 StringComparison.InvariantCultureIgnoreCase))
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(result.AsBytes());
         }
 
         if (string.Equals(commandContext.CommandDetails.CommandParts[4], "ack",

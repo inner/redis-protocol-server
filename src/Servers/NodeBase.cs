@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using codecrafters_redis.Commands;
 using codecrafters_redis.Common;
 using codecrafters_redis.Rdb;
@@ -74,7 +73,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
                     
                     if (string.IsNullOrEmpty(clientCommand))
                     {
-                        client.Client.Send(Encoding.UTF8.GetBytes(Constants.NullResponse));
+                        client.Client.Send(RespBuilder.Null().AsBytes());
                         continue;
                     }
 

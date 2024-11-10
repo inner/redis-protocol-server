@@ -1,5 +1,4 @@
-﻿using System.Text;
-using codecrafters_redis.Common;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -28,8 +27,8 @@ public class Multi : Base
             });
         }
 
-        var result = Constants.OkResponse;
-        commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+        var result = RespBuilder.SimpleString("OK");
+        commandContext.Socket.Send(result.AsBytes());
         return Task.FromResult(result);
     }
 }

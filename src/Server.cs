@@ -1,8 +1,9 @@
 using System.Net;
 using System.Runtime.InteropServices;
 using codecrafters_redis;
-using codecrafters_redis.Common;
 using codecrafters_redis.Servers;
+
+const int defaultRedisPort = 6379;
 
 var programArgs = args
     .Select(x => x.Replace("\"", string.Empty))
@@ -12,7 +13,7 @@ var port = Array.IndexOf(programArgs, "--port") != -1
     ? int.Parse(programArgs[Array.IndexOf(programArgs, "--port") + 1])
     : Array.IndexOf(programArgs, "-p") != -1
         ? int.Parse(programArgs[Array.IndexOf(programArgs, "-p") + 1])
-        : Constants.DefaultRedisPort;
+        : defaultRedisPort;
 
 var masterHostString = Array.IndexOf(programArgs, "--replicaof") != -1
     ? programArgs[Array.IndexOf(programArgs, "--replicaof") + 1]
@@ -27,7 +28,7 @@ if (!string.IsNullOrEmpty(masterHostString))
     masterHost = masterHostParts[0];
     masterPort = masterHostParts.Length > 1
         ? int.Parse(masterHostParts[1])
-        : Constants.DefaultRedisPort;
+        : defaultRedisPort;
 }
 
 ServerInfo.ServerRuntimeContext.IsMaster = masterHost == null;
@@ -93,7 +94,7 @@ else
             : linuxReplicaDir;
 
     ServerInfo.ServerRuntimeContext.DbFilename = ServerInfo.ServerRuntimeContext.IsMaster
-        ? $"master{(port != 0 ? port : Constants.DefaultRedisPort)}.rdb"
+        ? $"master{(port != 0 ? port : defaultRedisPort)}.rdb"
         : $"replica{port}.rdb";
 }
 

@@ -12,8 +12,8 @@ public class Set : Base
 
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        var result = Constants.OkResponse;
-
+        var result = RespBuilder.SimpleString("OK");
+        
         var cacheKey = commandContext.CommandDetails.CommandParts[4];
         var cacheValue = commandContext.CommandDetails.CommandParts[6];
 
@@ -23,7 +23,7 @@ public class Set : Base
 
             if (!commandContext.CommandDetails.FromTransaction)
             {
-                commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+                commandContext.Socket.Send(result.AsBytes());
             }
 
             return Task.FromResult(Ok);

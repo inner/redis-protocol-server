@@ -23,7 +23,7 @@ public class Get : Base
         var cacheItem = DataCache.Get(cacheKey);
 
         var response = cacheItem is null or { Value: null }
-            ? Constants.NullResponse
+            ? RespBuilder.Null()
             : RespBuilder.BulkString(cacheItem.Value);
 
         if (commandContext is { ReplicaConnection: false, CommandDetails.FromTransaction: false })
