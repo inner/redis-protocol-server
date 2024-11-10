@@ -18,7 +18,7 @@ public class Config : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var resp = RespBuilder.Array("dir", ServerInfo.ServerRuntimeContext.DataDir);
+        var resp = RespBuilder.ArrayFromCommands("dir", ServerInfo.ServerRuntimeContext.DataDir);
         
         if (Array.IndexOf(commandContext.CommandDetails.CommandParts, "GET") != -1 &&
             Array.IndexOf(commandContext.CommandDetails.CommandParts, "dir") != -1)
@@ -34,7 +34,7 @@ public class Config : Base
         if (Array.IndexOf(commandContext.CommandDetails.CommandParts, "GET") != -1 &&
             Array.IndexOf(commandContext.CommandDetails.CommandParts, "dbfilename") != -1)
         {
-            resp = RespBuilder.Array("dbfilename", ServerInfo.ServerRuntimeContext.DbFilename);
+            resp = RespBuilder.ArrayFromCommands("dbfilename", ServerInfo.ServerRuntimeContext.DbFilename);
             
             if (!commandContext.ReplicaConnection)
             {

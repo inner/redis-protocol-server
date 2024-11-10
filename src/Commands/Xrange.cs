@@ -108,7 +108,7 @@ public class Xrange : Base
                 return true;
             })
             .ToList();
-
+        
         var sb = new StringBuilder($"*{streamEntries.Count}\r\n");
         foreach (var streamEntry in streamEntries)
         {

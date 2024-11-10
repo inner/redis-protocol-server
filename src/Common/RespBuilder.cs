@@ -4,7 +4,7 @@ namespace codecrafters_redis.Common;
 
 public static class RespBuilder
 {
-    public static string Array(params string[] commands)
+    public static string ArrayFromCommands(params string[] commands)
     {
         var sb = new StringBuilder($"*{commands.Length}\r\n");
         foreach (var command in commands)

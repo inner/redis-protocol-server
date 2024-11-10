@@ -15,7 +15,7 @@ public class Wait : Base
         var msToWait = commandContext.CommandDetails.CommandParts[6];
 
         var tasks = new List<Task>();
-        var getAckResp = RespBuilder.Array("REPLCONF", "GETACK", "*");
+        var getAckResp = RespBuilder.ArrayFromCommands("REPLCONF", "GETACK", "*");
 
         var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
             .Where(x => x.Value.Connected);
