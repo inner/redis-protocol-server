@@ -28,11 +28,9 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
                 .SendPsync();
 
             ServerInfo.Replication.ReplicaHandshakeCompleted = true;
-
-            Console.WriteLine($"[{NodeName}] Handshake completed");
-
             Task.Run(() => { _ = HandleConnection(tcpClient); });
-
+            
+            Console.WriteLine($"[{NodeName}] Handshake completed");
             return this;
         }
         catch (Exception ex)
