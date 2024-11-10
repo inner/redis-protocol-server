@@ -27,9 +27,7 @@ public class Keys : Base
             commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
         }
 
-        var sb = new StringBuilder();
-        sb.Append($"*{keys.Count}\r\n");
-
+        var sb = new StringBuilder($"*{keys.Count}\r\n");
         foreach (var key in keys)
         {
             sb.Append($"${key.Length}\r\n{key}\r\n");
