@@ -23,7 +23,7 @@ public class Exec : Base
 
         if (commandContext.CommandQueue.All(x => x.CommandType != CommandType.Multi))
         {
-            result = RespBuilder.BuildRespError("EXEC without MULTI");
+            result = RespBuilder.Error("EXEC without MULTI");
             commandContext.Socket.Send(result.AsBytes());
             return result;
         }
@@ -31,7 +31,7 @@ public class Exec : Base
         if (commandContext.CommandQueue.Count == 1 &&
             commandContext.CommandQueue.Single().CommandType == CommandType.Multi)
         {
-            result = RespBuilder.BuildRespArray();
+            result = RespBuilder.Array();
             commandContext.Socket.Send(result.AsBytes());
             commandContext.CommandQueue.Clear();
             return result;

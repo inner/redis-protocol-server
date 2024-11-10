@@ -24,7 +24,7 @@ public class Get : Base
 
         var response = cacheItem is null or { Value: null }
             ? Constants.NullResponse
-            : RespBuilder.BuildRespBulkString(cacheItem.Value);
+            : RespBuilder.BulkString(cacheItem.Value);
 
         if (commandContext is { ReplicaConnection: false, CommandDetails.FromTransaction: false })
         {

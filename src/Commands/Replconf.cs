@@ -36,7 +36,7 @@ public class Replconf : Base
     protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
         var resp = RespBuilder
-            .BuildRespArray(
+            .Array(
                 "REPLCONF",
                 "ACK",
                 ServerInfo.Replication.ReplicaBytesReceived.ToString());

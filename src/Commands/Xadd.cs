@@ -29,7 +29,7 @@ public class Xadd : Base
             var values = BuildEntryValue(key, entryId, commandContext.CommandDetails);
             var newOrExistingEntryId = DataCache.Xadd(key, values);
 
-            result = RespBuilder.BuildRespBulkString(newOrExistingEntryId);
+            result = RespBuilder.BulkString(newOrExistingEntryId);
 
             if (!commandContext.ReplicaConnection)
             {
@@ -40,7 +40,7 @@ public class Xadd : Base
         }
         catch (Exception ex)
         {
-            result = RespBuilder.BuildRespError(ex.Message);
+            result = RespBuilder.Error(ex.Message);
             commandContext.Socket.Send(result.AsBytes());
         }
 

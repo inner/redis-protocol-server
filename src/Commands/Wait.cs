@@ -15,7 +15,7 @@ public class Wait : Base
         var msToWait = commandContext.CommandDetails.CommandParts[6];
 
         var tasks = new List<Task>();
-        var getAckResp = RespBuilder.BuildRespArray("REPLCONF", "GETACK", "*");
+        var getAckResp = RespBuilder.Array("REPLCONF", "GETACK", "*");
 
         var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
             .Where(x => x.Value.Connected);
@@ -41,7 +41,7 @@ public class Wait : Base
             ? ServerInfo.ServerRuntimeContext.GetConnectedReplicas()
             : ServerInfo.Replication.ReplicaAcksReceived;
 
-        var acksReceivedResp = RespBuilder.BuildRespInteger(acksReceived);
+        var acksReceivedResp = RespBuilder.Integer(acksReceived);
         commandContext.Socket.Send(acksReceivedResp.AsBytes());
         return acksReceivedResp;
     }

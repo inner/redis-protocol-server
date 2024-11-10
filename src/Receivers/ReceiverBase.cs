@@ -132,7 +132,7 @@ public abstract class ReceiverBase
 
     private void ExecuteBulkString(Socket socket)
     {
-        var resp = RespBuilder.BuildRespArray("REPLCONF", "ACK", "0");
+        var resp = RespBuilder.Array("REPLCONF", "ACK", "0");
         socket.Send(resp.AsBytes());
     }
 

@@ -4,7 +4,7 @@ namespace codecrafters_redis.Common;
 
 public static class RespBuilder
 {
-    public static string BuildRespArray(params string[] commands)
+    public static string Array(params string[] commands)
     {
         var sb = new StringBuilder($"*{commands.Length}\r\n");
         foreach (var command in commands)
@@ -15,19 +15,24 @@ public static class RespBuilder
         return sb.ToString();
     }
 
-    public static string BuildRespBulkString(string value)
+    public static string BulkString(string value)
     {
         return $"${value.Length}\r\n{value}\r\n";
     }
 
-    public static string BuildRespInteger(long value)
+    public static string Integer(long value)
     {
         return $":{value}\r\n";
     }
 
-    public static string BuildRespError(string value)
+    public static string Error(string value)
     {
         return $"-ERR {value}\r\n";
+    }
+    
+    public static string Null()
+    {
+        return "$-1\r\n";
     }
 
     public static byte[] AsBytes(this string value)

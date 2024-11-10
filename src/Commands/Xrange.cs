@@ -28,16 +28,16 @@ public class Xrange : Base
 
         if (string.IsNullOrEmpty(fetchItem))
         {
-            result = "$-1\r\n";
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            result = RespBuilder.Null();
+            commandContext.Socket.Send(result.AsBytes());
             return Task.FromResult(result);
         }
 
         var streamCacheItem = fetchItem.Deserialize<StreamCacheItem>();
         if (streamCacheItem == null)
         {
-            result = "$-1\r\n";
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            result = RespBuilder.Null();
+            commandContext.Socket.Send(result.AsBytes());
             return Task.FromResult(result);
         }
 

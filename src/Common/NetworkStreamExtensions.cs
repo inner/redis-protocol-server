@@ -7,7 +7,7 @@ public static class NetworkStreamExtensions
 {
     public static NetworkStream SendPing(this NetworkStream stream)
     {
-        var resp = RespBuilder.BuildRespArray("PING").AsBytes();
+        var resp = RespBuilder.Array("PING").AsBytes();
         stream.Write(resp);
 
         EnsureExpectedResponse(
@@ -20,7 +20,7 @@ public static class NetworkStreamExtensions
 
     public static NetworkStream SendReplconfListeningPort(this NetworkStream stream, int port)
     {
-        var resp = RespBuilder.BuildRespArray("REPLCONF", "listening-port", port.ToString()).AsBytes();
+        var resp = RespBuilder.Array("REPLCONF", "listening-port", port.ToString()).AsBytes();
         stream.Write(resp);
 
         EnsureExpectedResponse(
@@ -33,7 +33,7 @@ public static class NetworkStreamExtensions
 
     public static NetworkStream SendReplconfCapaPsync2(this NetworkStream stream)
     {
-        var resp = RespBuilder.BuildRespArray("REPLCONF", "capa", "psync2").AsBytes();
+        var resp = RespBuilder.Array("REPLCONF", "capa", "psync2").AsBytes();
         stream.Write(resp);
 
         EnsureExpectedResponse(
@@ -47,7 +47,7 @@ public static class NetworkStreamExtensions
     public static void SendPsync(this NetworkStream stream)
     {
         // e.g. PSYNC ? -1
-        var resp = RespBuilder.BuildRespArray("PSYNC", "?", "-1").AsBytes();
+        var resp = RespBuilder.Array("PSYNC", "?", "-1").AsBytes();
         stream.Write(resp);
 
         // read FULLRESYNC response
