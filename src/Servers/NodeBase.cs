@@ -46,7 +46,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
 
     private void LogReceivedCommand(string clientCommand)
     {
-        var logMessage = clientCommand.Replace("\r\n", "\\r\\n");
+        var logMessage = clientCommand.Replace("\r\n", @"\r\n");
         if (!logMessage.EndsWith('\n'))
         {
             logMessage += '\n';
@@ -78,8 +78,12 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
                         continue;
                     }
 
-                    await receiver.Receive(client.Client, clientCommand.Replace("\"", string.Empty), commandQueue);
                     LogReceivedCommand(clientCommand);
+                    
+                    await receiver.Receive(
+                        client.Client,
+                        clientCommand.Replace("\"", string.Empty),
+                        commandQueue);
                 }
             }
             catch (SocketException)
