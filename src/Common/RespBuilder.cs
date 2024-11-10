@@ -19,6 +19,11 @@ public static class RespBuilder
     {
         return $"${value.Length}\r\n{value}\r\n";
     }
+    
+    public static string SimpleString(string value)
+    {
+        return $"+{value}\r\n";
+    }
 
     public static string Integer(long value)
     {

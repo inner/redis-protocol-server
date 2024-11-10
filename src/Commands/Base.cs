@@ -66,8 +66,8 @@ public abstract class Base
             CommandType = commandType,
             CommandString = commandString
         });
-
-        commandContext.Socket.Send("+QUEUED\r\n"u8.ToArray());
+        
+        commandContext.Socket.Send(RespBuilder.SimpleString("QUEUED").AsBytes());
         return true;
     }
 }
