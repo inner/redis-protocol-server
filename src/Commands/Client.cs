@@ -19,11 +19,11 @@ public class Client : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var result = Constants.OkResponse;
+        var result = RespBuilder.SimpleString("OK");
         
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(result.AsBytes());
         }
 
         return Task.FromResult(result);
