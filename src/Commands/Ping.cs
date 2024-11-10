@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -8,11 +8,11 @@ public class Ping : Base
 
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        const string response = "+PONG\r\n";
+        var response = RespBuilder.SimpleString("PONG");
         
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
+            commandContext.Socket.Send(response.AsBytes());
         }
 
         return Task.FromResult(response);
