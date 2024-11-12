@@ -59,15 +59,15 @@ public static class StringExtensions
         string result;
         if (value == null)
         {
-            result = "$-1";
+            result = RespBuilder.Null();
         }
         else if (int.TryParse(value, out var numericResult))
         {
-            result = $":{numericResult}";
+            result = RespBuilder.Integer(numericResult);
         }
         else
         {
-            result = $"+{value}";
+            result = RespBuilder.SimpleString(value);
         }
 
         return result;
@@ -76,8 +76,8 @@ public static class StringExtensions
     public static string ConvertStringToStringResp(this string? value)
     {
         var result = value == null
-            ? "$-1"
-            : $"+{value}";
+            ? RespBuilder.Null()
+            : RespBuilder.SimpleString(value);
 
         return result;
     }

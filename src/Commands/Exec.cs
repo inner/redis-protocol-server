@@ -61,7 +61,7 @@ public class Exec : Base
         var sb = new StringBuilder($"*{commandResults.Count}\r\n");
         foreach (var commandResult in commandResults)
         {
-            sb.Append($"{commandResult}\r\n");
+            sb.Append($"{commandResult}");
         }
         
         commandContext.Socket.Send(Encoding.UTF8.GetBytes(sb.ToString()));
