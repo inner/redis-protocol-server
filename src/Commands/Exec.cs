@@ -46,10 +46,7 @@ public class Exec : Base
                 continue;
             }
 
-            var commandDetails = commandInQueue.CommandString
-                .Replace("\r\n", @"\r\n")
-                .BuildCommandDetails();
-
+            var commandDetails = commandInQueue.CommandString.BuildCommandDetails();
             commandDetails.FromTransaction = true;
 
             var commandResult = await commandContext.Receiver.ExecuteCommand(
