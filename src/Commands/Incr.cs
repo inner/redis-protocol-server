@@ -32,7 +32,7 @@ public class Incr : Base
                 commandContext.Socket.Send(RespBuilder.Integer(1).AsBytes());
             }
 
-            return Task.FromResult("1".ConvertStringToSimpleResp());
+            return Task.FromResult(RespBuilder.Integer(1));
         }
 
         if (!long.TryParse(cacheItem.Value, out var longValue))

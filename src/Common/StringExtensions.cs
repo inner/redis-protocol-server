@@ -54,34 +54,6 @@ public static class StringExtensions
         };
     }
 
-    public static string ConvertStringToSimpleResp(this string? value)
-    {
-        string result;
-        if (value == null)
-        {
-            result = RespBuilder.Null();
-        }
-        else if (int.TryParse(value, out var numericResult))
-        {
-            result = RespBuilder.Integer(numericResult);
-        }
-        else
-        {
-            result = RespBuilder.SimpleString(value);
-        }
-
-        return result;
-    }
-
-    public static string ConvertStringToStringResp(this string? value)
-    {
-        var result = value == null
-            ? RespBuilder.Null()
-            : RespBuilder.SimpleString(value);
-
-        return result;
-    }
-
     public static T? Deserialize<T>(this string value)
     {
         T? result = default;
