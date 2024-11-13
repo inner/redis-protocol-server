@@ -7,7 +7,7 @@ public class Set : Base
 {
     public override bool CanBePropagated => true;
     
-    private readonly string ok = RespBuilder.SimpleString("OK");
+    private readonly string okResp = RespBuilder.SimpleString("OK");
 
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
@@ -20,10 +20,10 @@ public class Set : Base
 
             if (!commandContext.CommandDetails.FromTransaction)
             {
-                commandContext.Socket.Send(ok.AsBytes());
+                commandContext.Socket.Send(okResp.AsBytes());
             }
 
-            return Task.FromResult(ok);
+            return Task.FromResult(okResp);
         }
 
         const string expiryCommandConstant = "PX";
@@ -39,10 +39,10 @@ public class Set : Base
 
         if (!commandContext.CommandDetails.FromTransaction)
         {
-            commandContext.Socket.Send(ok.AsBytes());
+            commandContext.Socket.Send(okResp.AsBytes());
         }
 
-        return Task.FromResult(ok);
+        return Task.FromResult(okResp);
     }
 
     protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
@@ -53,7 +53,7 @@ public class Set : Base
         if (commandContext.CommandDetails.CommandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
-            return Task.FromResult(ok);
+            return Task.FromResult(okResp);
         }
 
         const string expiryCommandConstant = "PX";
@@ -67,6 +67,6 @@ public class Set : Base
         var expiry = int.Parse(commandContext.CommandDetails.CommandParts[10]);
         DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
 
-        return Task.FromResult(ok);
+        return Task.FromResult(okResp);
     }
 }
