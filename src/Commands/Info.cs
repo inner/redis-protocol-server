@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -21,12 +21,12 @@ public class Info : Base
             { "repl_backlog_histlen", string.Empty }
         };
         
-        var value = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
-        var response = $"${value.Length}\r\n{value}\r\n";
+        var infoValue = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
+        var response = RespBuilder.BulkString(infoValue);
 
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
+            commandContext.Socket.Send(response.AsBytes());
         }
         
         return Task.FromResult(response);
@@ -47,12 +47,12 @@ public class Info : Base
             { "repl_backlog_histlen", string.Empty }
         };
         
-        var value = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
-        var response = $"${value.Length}\r\n{value}\r\n";
+        var infoValue = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
+        var response = RespBuilder.BulkString(infoValue);
 
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
+            commandContext.Socket.Send(response.AsBytes());
         }
         
         return Task.FromResult(response);

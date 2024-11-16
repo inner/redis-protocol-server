@@ -1,7 +1,8 @@
-using System.Text;
+using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
+// spec: https://redis.io/docs/latest/commands/exists/
 public class Exists : Base
 {
     public override bool CanBePropagated => false;
@@ -18,16 +19,8 @@ public class Exists : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        if (commandContext.CommandDetails.CommandParts.Length < 2)
-        {
-            throw new ArgumentException(
-                $"Wrong number of arguments for '{nameof(Exists)}' command: {commandContext.CommandDetails.CommandParts.Length}.");
-        }
-
-        var exists = 1;
-        var response = $":{exists}\r\n";
-
-        commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
-        return Task.FromResult(response);
+        var result = RespBuilder.Integer(1);
+        commandContext.Socket.Send(result.AsBytes());
+        return Task.FromResult(result);
     }
 }
