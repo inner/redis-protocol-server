@@ -24,14 +24,13 @@ public class Discard : Base
         {
             commandContext.CommandQueue.Clear();
             result = RespBuilder.SimpleString("OK");
-            commandContext.Socket.Send(result.AsBytes());
         }
         else
         {
             result = RespBuilder.Error("DISCARD without MULTI");
-            commandContext.Socket.Send(result.AsBytes());
         }
 
+        commandContext.Socket.Send(result.AsBytes());
         return Task.FromResult(result);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -20,10 +21,8 @@ public class Echo : Base
     {
         var response = commandContext.CommandDetails.CommandCount switch
         {
-            2 =>
-                $"${commandContext.CommandDetails.CommandParts[4].Length}\r\n{commandContext.CommandDetails.CommandParts[4]}\r\n",
-            _ => throw new ArgumentException($"Wrong number of arguments for '{nameof(Echo)}' " +
-                                             $"command: {commandContext.CommandDetails.CommandCount}.")
+            2 => RespBuilder.BulkString(commandContext.CommandDetails.CommandParts[4]),
+            _ => RespBuilder.Error("Wrong number of arguments")
         };
 
         if (!commandContext.ReplicaConnection)
