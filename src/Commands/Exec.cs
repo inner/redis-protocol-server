@@ -31,7 +31,7 @@ public class Exec : Base
         if (commandContext.CommandQueue.Count == 1 &&
             commandContext.CommandQueue.Single().CommandType == CommandType.Multi)
         {
-            result = "*0\r\n";
+            result = RespBuilder.EmptyArray();
             commandContext.Socket.Send(result.AsBytes());
             commandContext.CommandQueue.Clear();
             return result;

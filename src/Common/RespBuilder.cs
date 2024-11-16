@@ -14,6 +14,11 @@ public static class RespBuilder
 
         return sb.ToString();
     }
+    
+    public static string EmptyArray()
+    {
+        return "*0\r\n";
+    }
 
     public static string BulkString(string value)
     {
