@@ -1,5 +1,4 @@
-﻿using System.Text;
-using codecrafters_redis.Commands.Common;
+﻿using codecrafters_redis.Commands.Common;
 using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
@@ -24,7 +23,7 @@ public class Quit : Base
 
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(result.AsBytes());
         }
 
         return Task.FromResult(result);
