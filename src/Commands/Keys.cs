@@ -1,5 +1,7 @@
 ﻿using System.Text;
 using codecrafters_redis.Cache;
+using codecrafters_redis.Commands.Common;
+using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -19,12 +21,10 @@ public class Keys : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        string result;
         var keys = DataCache.GetKeys(commandContext.CommandDetails.CommandParts[4]);
         if (keys.Count == 0)
         {
-            result = "*0";
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(RespBuilder.EmptyArray().AsBytes());
         }
 
         var sb = new StringBuilder($"*{keys.Count}\r\n");
@@ -33,7 +33,7 @@ public class Keys : Base
             sb.Append($"${key.Length}\r\n{key}\r\n");
         }
 
-        result = sb.ToString();
+        var result = sb.ToString();
 
         if (!commandContext.ReplicaConnection)
         {

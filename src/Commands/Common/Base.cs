@@ -1,6 +1,6 @@
 ﻿using codecrafters_redis.Common;
 
-namespace codecrafters_redis.Commands;
+namespace codecrafters_redis.Commands.Common;
 
 public abstract class Base
 {

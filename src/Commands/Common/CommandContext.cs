@@ -1,7 +1,7 @@
 using System.Net.Sockets;
 using codecrafters_redis.Receivers;
 
-namespace codecrafters_redis.Commands;
+namespace codecrafters_redis.Commands.Common;
 
 public class CommandContext
 {

@@ -30,7 +30,6 @@ public static class DataCache
         }
 
         var basicCacheItem = JsonSerializer.Deserialize<BasicCacheItem>(basicCacheItemSerialized);
-
         if (basicCacheItem?.Expiry == null)
         {
             return null;
@@ -49,7 +48,7 @@ public static class DataCache
         }
 
         pattern = pattern.Replace("*", string.Empty);
-
+        
         return Cache
             .Where(x => x.Key.StartsWith(pattern))
             .Select(x => x.Key)

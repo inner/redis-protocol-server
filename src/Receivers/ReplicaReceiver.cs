@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Text;
-using codecrafters_redis.Commands;
+using codecrafters_redis.Commands.Common;
 
 namespace codecrafters_redis.Receivers;
 
