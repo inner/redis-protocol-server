@@ -1,5 +1,5 @@
-﻿using System.Text;
-using codecrafters_redis.Cache;
+﻿using codecrafters_redis.Cache;
+using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Rdb;
 
@@ -37,9 +37,9 @@ public static class RdbReader
             if (opCode == RdbConstants.OpCodes.Aux)
             {
                 var auxKey = binaryReader.ReadStr();
-                var auxKeyStr = Encoding.UTF8.GetString(auxKey);
+                var auxKeyStr = auxKey.AsString();
                 var auxVal = binaryReader.ReadStr();
-                var auxValStr = Encoding.UTF8.GetString(auxVal);
+                var auxValStr = auxVal.AsString();
 
                 Console.WriteLine($"AuxField: {auxKeyStr} - {auxValStr}");
                 continue;
@@ -78,10 +78,7 @@ public static class RdbReader
                 var keyBytes = binaryReader.ReadStr();
                 var valueBytes = binaryReader.ReadStr();
                 
-                DataCache.Set(
-                    Encoding.UTF8.GetString(keyBytes),
-                    Encoding.UTF8.GetString(valueBytes),
-                    expiry);
+                DataCache.Set(keyBytes.AsString(), valueBytes.AsString(), expiry);
             }
         }
     }

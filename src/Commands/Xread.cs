@@ -93,11 +93,11 @@ public class Xread : Base
             var streamKeys = GetStreamKeysFromCommand(commandContext.CommandDetails, isBlocking);
             if (streamKeys.Count == 0)
             {
-                result = "$-1\r\n";
+                result = RespBuilder.Null();
 
                 if (!commandContext.ReplicaConnection)
                 {
-                    commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+                    commandContext.Socket.Send(result.AsBytes());
                 }
 
                 return Task.FromResult(result);
@@ -108,11 +108,11 @@ public class Xread : Base
 
         if (streamEntries.Count == 0)
         {
-            result = "$-1\r\n";
+            result = RespBuilder.Null();
 
             if (!commandContext.ReplicaConnection)
             {
-                commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+                commandContext.Socket.Send(result.AsBytes());
             }
 
             return Task.FromResult(result);
@@ -139,7 +139,7 @@ public class Xread : Base
 
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.Send(result.AsBytes());
         }
 
         return Task.FromResult(result);

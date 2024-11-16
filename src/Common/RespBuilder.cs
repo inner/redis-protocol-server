@@ -44,9 +44,4 @@ public static class RespBuilder
     {
         return "$-1\r\n";
     }
-
-    public static byte[] AsBytes(this string value)
-    {
-        return Encoding.UTF8.GetBytes(value);
-    }
 }

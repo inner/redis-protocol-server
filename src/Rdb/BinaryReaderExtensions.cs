@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Rdb;
 
@@ -25,17 +25,17 @@ public static class BinaryReaderExtensions
             case RdbConstants.EncType.Int8:
             {
                 var tmp = binaryReader.ReadBytes(RdbConstants.One);
-                return Encoding.UTF8.GetBytes(((sbyte)tmp[0]).ToString());
+                return ((sbyte)tmp[0]).ToString().AsBytes();
             }
             case RdbConstants.EncType.Int16:
             {
                 var tmp = binaryReader.ReadBytes(RdbConstants.Two);
-                return Encoding.UTF8.GetBytes(BitConverter.ToInt16(tmp).ToString());
+                return BitConverter.ToInt16(tmp).ToString().AsBytes();
             }
             case RdbConstants.EncType.Int32:
             {
                 var tmp = binaryReader.ReadBytes(RdbConstants.Four);
-                return Encoding.UTF8.GetBytes(BitConverter.ToInt32(tmp).ToString());
+                return BitConverter.ToInt32(tmp).ToString().AsBytes();
             }
             case RdbConstants.EncType.Lzf:
             {

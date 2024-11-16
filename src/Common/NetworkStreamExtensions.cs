@@ -138,7 +138,7 @@ public static class NetworkStreamExtensions
             }
         }
 
-        return Encoding.UTF8.GetString(memoryStream.ToArray());
+        return memoryStream.ToArray().AsString();
     }
 
     private static void EnsureExpectedResponse(string methodName, string expectedResponse, string actualResponse)

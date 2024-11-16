@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using codecrafters_redis.Commands.Common;
+using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
 
@@ -16,8 +17,8 @@ public class Command : Base
         }
 
         var docs = await GetCommandDocs();
-        var result = await FormatAsResp(docs);
-        commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+        var result = RespBuilder.BulkString(docs);
+        commandContext.Socket.Send(result.AsBytes());
         return result;
     }
 
@@ -39,10 +40,5 @@ public class Command : Base
         }
 
         return Task.FromResult(docs.ToString());
-    }
-
-    private Task<string> FormatAsResp(string response)
-    {
-        return Task.FromResult($"${response.Length}\r\n{response}\r\n");
     }
 }

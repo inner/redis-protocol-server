@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using codecrafters_redis.Commands.Common;
 
 namespace codecrafters_redis.Common;
@@ -68,5 +69,15 @@ public static class StringExtensions
         }
 
         return result;
+    }
+    
+    public static byte[] AsBytes(this string value)
+    {
+        return Encoding.UTF8.GetBytes(value);
+    }
+    
+    public static string AsString(this byte[] value)
+    {
+        return Encoding.UTF8.GetString(value);
     }
 }
