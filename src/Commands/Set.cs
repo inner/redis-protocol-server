@@ -7,7 +7,7 @@ namespace codecrafters_redis.Commands;
 public class Set : Base
 {
     public override bool CanBePropagated => true;
-    
+
     private readonly string okResp = RespBuilder.SimpleString("OK");
 
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
@@ -32,7 +32,7 @@ public class Set : Base
         var expiryCommand = commandContext.CommandDetails.CommandParts[8];
         if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
         {
-            throw new Exception($"Unrecognized command used for '{nameof(Set)}': '{expiryCommand}'.");
+            commandContext.Socket.Send(RespBuilder.Error($"Unrecognized command: '{expiryCommand}'.").AsBytes());
         }
 
         var expiry = int.Parse(commandContext.CommandDetails.CommandParts[10]);
@@ -62,7 +62,7 @@ public class Set : Base
         var expiryCommand = commandContext.CommandDetails.CommandParts[8];
         if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
         {
-            throw new AggregateException($"Unrecognized command used for '{nameof(Set)}': '{expiryCommand}'.");
+            commandContext.Socket.Send(RespBuilder.Error($"Unrecognized command: '{expiryCommand}'.").AsBytes());
         }
 
         var expiry = int.Parse(commandContext.CommandDetails.CommandParts[10]);
