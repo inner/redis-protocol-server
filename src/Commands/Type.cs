@@ -1,5 +1,4 @@
-﻿using System.Text;
-using codecrafters_redis.Cache;
+﻿using codecrafters_redis.Cache;
 using codecrafters_redis.Commands.Common;
 using codecrafters_redis.Common;
 
@@ -32,8 +31,8 @@ public class Type : Base
             if (basicCacheItem != null && string.Equals(basicCacheItem.Type, nameof(BasicCacheItem),
                     StringComparison.InvariantCultureIgnoreCase))
             {
-                result = "+string\r\n";
-                commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+                result = RespBuilder.SimpleString("string");
+                commandContext.Socket.Send(result.AsBytes());
                 return Task.FromResult(result);
             }
 
@@ -41,18 +40,18 @@ public class Type : Base
             if (streamCacheItem != null && string.Equals(streamCacheItem.Type, nameof(StreamCacheItem),
                     StringComparison.InvariantCultureIgnoreCase))
             {
-                result = "+stream\r\n";
+                result = RespBuilder.SimpleString("stream");
                 if (!commandContext.ReplicaConnection)
                 {
-                    commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+                    commandContext.Socket.Send(result.AsBytes());
                 }
 
                 return Task.FromResult(result);
             }
         }
 
-        result = "+none\r\n";
-        commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+        result = RespBuilder.SimpleString("none");
+        commandContext.Socket.Send(result.AsBytes());
         return Task.FromResult(result);
     }
 }
