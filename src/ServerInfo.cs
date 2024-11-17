@@ -34,7 +34,7 @@ public class Replication
     private static readonly object ReplicaBytesReceivedLockObject = new();
     public bool ReplicaHandshakeCompleted { get; set; }
     public bool ReplicaFirstByteReceived { get; set; }
-    public int ReplicaBytesReceived { get; set; }
+    public int ReplicaBytesReceived { get; private set; }
     public int ReplicaAcksReceived { get; set; }
     
     public void IncrementReplicaAcksReceived()
