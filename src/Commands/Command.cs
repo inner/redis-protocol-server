@@ -57,19 +57,19 @@ public class Command : Base
             }
         };
 
-        var filteredCommands = commandKey == null
+        var commandsFiltered = commandKey == null
             ? commands
             : commands.Where(c => c.Key.Equals(commandKey, StringComparison.CurrentCultureIgnoreCase))
                 .ToDictionary(c => c.Key, c => c.Value);
 
-        if (filteredCommands.Count == 0)
+        if (commandsFiltered.Count == 0)
         {
             return Task.FromResult(RespBuilder.EmptyArray());
         }
 
         var sb = new StringBuilder();
-        sb.Append($"*{filteredCommands.Count * 2}\r\n");
-        foreach (var command in filteredCommands)
+        sb.Append($"*{commandsFiltered.Count * 2}\r\n");
+        foreach (var command in commandsFiltered)
         {
             sb.Append(RespBuilder.BulkString(command.Key));
             sb.Append($"*{command.Value.Count * 2}\r\n");
