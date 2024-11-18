@@ -46,12 +46,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
     private void LogReceivedCommand(string clientCommand)
     {
         var logMessage = clientCommand.Replace("\r\n", @"\r\n");
-        if (!logMessage.EndsWith('\n'))
-        {
-            logMessage += '\n';
-        }
-
-        Console.WriteLine($"[{NodeName}] Received command: {logMessage[..^1]}.");
+        Console.WriteLine($"[{NodeName}] Received command: {logMessage}.");
     }
 
     protected async Task HandleConnection(TcpClient client)
