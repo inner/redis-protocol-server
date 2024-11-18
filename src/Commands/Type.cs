@@ -32,7 +32,7 @@ public class Type : Base
                     StringComparison.InvariantCultureIgnoreCase))
             {
                 result = RespBuilder.SimpleString("string");
-                commandContext.Socket.Send(result.AsBytes());
+                commandContext.Socket.SendCommand(result);
                 return Task.FromResult(result);
             }
 
@@ -43,7 +43,7 @@ public class Type : Base
                 result = RespBuilder.SimpleString("stream");
                 if (!commandContext.ReplicaConnection)
                 {
-                    commandContext.Socket.Send(result.AsBytes());
+                    commandContext.Socket.SendCommand(result);
                 }
 
                 return Task.FromResult(result);
@@ -51,7 +51,7 @@ public class Type : Base
         }
 
         result = RespBuilder.SimpleString("none");
-        commandContext.Socket.Send(result.AsBytes());
+        commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
     }
 }

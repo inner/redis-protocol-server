@@ -30,7 +30,7 @@ public class Incr : Base
 
             if (!commandContext.CommandDetails.FromTransaction)
             {
-                commandContext.Socket.Send(RespBuilder.Integer(1).AsBytes());
+                commandContext.Socket.SendCommand(RespBuilder.Integer(1));
             }
 
             return Task.FromResult(RespBuilder.Integer(1));
@@ -42,7 +42,7 @@ public class Incr : Base
 
             if (!commandContext.CommandDetails.FromTransaction)
             {
-                commandContext.Socket.Send(result.AsBytes());
+                commandContext.Socket.SendCommand(result);
             }
 
             return Task.FromResult(result);
@@ -54,7 +54,7 @@ public class Incr : Base
 
         if (!commandContext.CommandDetails.FromTransaction)
         {
-            commandContext.Socket.Send(result.AsBytes());
+            commandContext.Socket.SendCommand(result);
         }
 
         return Task.FromResult(result);

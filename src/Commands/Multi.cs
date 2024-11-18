@@ -29,7 +29,7 @@ public class Multi : Base
         }
 
         var result = RespBuilder.SimpleString("OK");
-        commandContext.Socket.Send(result.AsBytes());
+        commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
     }
 }

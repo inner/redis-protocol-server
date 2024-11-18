@@ -27,7 +27,7 @@ public class Info : Base
 
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(response.AsBytes());
+            commandContext.Socket.SendCommand(response);
         }
         
         return Task.FromResult(response);
@@ -53,7 +53,7 @@ public class Info : Base
 
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(response.AsBytes());
+            commandContext.Socket.SendCommand(response);
         }
         
         return Task.FromResult(response);

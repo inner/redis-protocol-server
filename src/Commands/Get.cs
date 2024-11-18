@@ -29,7 +29,7 @@ public class Get : Base
 
         if (commandContext is { ReplicaConnection: false, CommandDetails.FromTransaction: false })
         {
-            commandContext.Socket.Send(response.AsBytes());
+            commandContext.Socket.SendCommand(response);
         }
         
         return Task.FromResult(RespBuilder.SimpleString(cacheItem?.Value!));

@@ -10,7 +10,7 @@ public class Psync : Base
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var fullResync = RespBuilder.SimpleString($"FULLRESYNC {ServerInfo.ServerRuntimeContext.MasterReplId} 0");
-        commandContext.Socket.Send(fullResync.AsBytes());
+        commandContext.Socket.SendCommand(fullResync);
         
         var rdbFile = GetHardcodedEmptyRdbFile();
         var rdbResynchronizationFileMsg = $"${rdbFile.Length}\r\n".AsBytes()

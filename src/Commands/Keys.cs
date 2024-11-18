@@ -24,7 +24,7 @@ public class Keys : Base
         var keys = DataCache.GetKeys(commandContext.CommandDetails.CommandParts[4]);
         if (keys.Count == 0)
         {
-            commandContext.Socket.Send(RespBuilder.EmptyArray().AsBytes());
+            commandContext.Socket.SendCommand(RespBuilder.EmptyArray());
         }
 
         var sb = new StringBuilder($"*{keys.Count}\r\n");
@@ -37,7 +37,7 @@ public class Keys : Base
 
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));
+            commandContext.Socket.SendCommand(result);
         }
 
         return Task.FromResult(result);
