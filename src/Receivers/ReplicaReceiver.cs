@@ -24,7 +24,6 @@ public class ReplicaReceiver : ReceiverBase
             $"Incrementing bytes received by {currentBytesReceived}");
         
         ServerInfo.Replication.IncrementReplicaBytesReceived(currentBytesReceived);
-
         await base.Receive(socket, commandString, commandQueue);
     }
 }
