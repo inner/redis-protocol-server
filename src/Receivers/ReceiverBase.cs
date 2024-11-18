@@ -1,5 +1,4 @@
 ﻿using System.Net.Sockets;
-using System.Text;
 using System.Text.RegularExpressions;
 using codecrafters_redis.Commands.Common;
 using codecrafters_redis.Common;
@@ -12,7 +11,6 @@ public abstract class ReceiverBase
     {
         try
         {
-            commandString = commandString.Replace("\r\n", "\\r\\n");
             var respDataType = commandString.GetRespDataType();
 
             switch (respDataType)
@@ -46,6 +44,7 @@ public abstract class ReceiverBase
     private async Task ExecuteAsArrayMultiCommand(Socket socket, string commandString,
         List<CommandQueueItem> commandQueue)
     {
+        commandString = commandString.Replace("\r\n", @"\r\n");
         var multiCommandSplit = Regex.Split(commandString, @"(\*\d+\\r\\n)")
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Select(x => x.TrimEnd())
@@ -111,10 +110,10 @@ public abstract class ReceiverBase
     {
         foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
         {
-            Console.WriteLine(
-                $"Propagating command '{commandString[..^1]}' to replica '{replica.Value.RemoteEndPoint}'.");
+            Console.WriteLine($"Propagating command '{commandString[..^1]}' " +
+                              $"to replica '{replica.Value.RemoteEndPoint}'.");
 
-            replica.Value.Send(Encoding.UTF8.GetBytes(commandString.Replace("\\r\\n", "\r\n")));
+            replica.Value.Send(commandString.Replace(@"\r\n", "\r\n").AsBytes());
         }
     }
 
