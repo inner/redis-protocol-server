@@ -9,13 +9,13 @@ public class Ping : Base
 
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        var response = RespBuilder.SimpleString("PONG");
+        var pong = RespBuilder.SimpleString("PONG");
         
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(response.AsBytes());
+            commandContext.Socket.SendCommand(pong);
         }
 
-        return Task.FromResult(response);
+        return Task.FromResult(pong);
     }
 }

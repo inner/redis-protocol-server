@@ -113,7 +113,7 @@ public abstract class ReceiverBase
             Console.WriteLine($"Propagating command '{commandString[..^1]}' " +
                               $"to replica '{replica.Value.RemoteEndPoint}'.");
 
-            replica.Value.Send(commandString.Replace(@"\r\n", "\r\n").AsBytes());
+            replica.Value.SendCommand(commandString);
         }
     }
 
@@ -123,7 +123,7 @@ public abstract class ReceiverBase
         // - the server is not a master
         // - the command cannot be propagated
         // - the command is an ACK response
-        
+
         return ServerInfo.ServerRuntimeContext.IsMaster &&
                command.CanBePropagated &&
                !commandDetails.CommandString.Contains("$3\r\nACK\r\n");
@@ -131,8 +131,7 @@ public abstract class ReceiverBase
 
     private void ExecuteBulkString(Socket socket)
     {
-        var resp = RespBuilder.ArrayFromCommands("REPLCONF", "ACK", "0");
-        socket.Send(resp.AsBytes());
+        socket.SendCommand(RespBuilder.ArrayFromCommands("REPLCONF", "ACK", "0"));
     }
 
     private static void ExecuteSimpleString()

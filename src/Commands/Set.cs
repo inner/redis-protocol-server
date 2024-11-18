@@ -21,7 +21,7 @@ public class Set : Base
 
             if (!commandContext.CommandDetails.FromTransaction)
             {
-                commandContext.Socket.Send(okResp.AsBytes());
+                commandContext.Socket.SendCommand(okResp);
             }
 
             return Task.FromResult(okResp);
@@ -32,7 +32,7 @@ public class Set : Base
         var expiryCommand = commandContext.CommandDetails.CommandParts[8];
         if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
         {
-            commandContext.Socket.Send(RespBuilder.Error($"Unrecognized command: '{expiryCommand}'.").AsBytes());
+            commandContext.Socket.SendCommand(RespBuilder.Error($"Unrecognized command: '{expiryCommand}'."));
         }
 
         var expiry = int.Parse(commandContext.CommandDetails.CommandParts[10]);
@@ -40,7 +40,7 @@ public class Set : Base
 
         if (!commandContext.CommandDetails.FromTransaction)
         {
-            commandContext.Socket.Send(okResp.AsBytes());
+            commandContext.Socket.SendCommand(okResp);
         }
 
         return Task.FromResult(okResp);
@@ -62,7 +62,7 @@ public class Set : Base
         var expiryCommand = commandContext.CommandDetails.CommandParts[8];
         if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
         {
-            commandContext.Socket.Send(RespBuilder.Error($"Unrecognized command: '{expiryCommand}'.").AsBytes());
+            commandContext.Socket.SendCommand(RespBuilder.Error($"Unrecognized command: '{expiryCommand}'."));
         }
 
         var expiry = int.Parse(commandContext.CommandDetails.CommandParts[10]);

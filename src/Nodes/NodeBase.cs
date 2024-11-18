@@ -68,7 +68,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
 
                     if (string.IsNullOrEmpty(clientCommand))
                     {
-                        client.Client.Send(RespBuilder.Null().AsBytes());
+                        client.Client.SendCommand(RespBuilder.Null());
                         continue;
                     }
 

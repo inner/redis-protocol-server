@@ -97,7 +97,7 @@ public class Xread : Base
 
                 if (!commandContext.ReplicaConnection)
                 {
-                    commandContext.Socket.Send(result.AsBytes());
+                    commandContext.Socket.SendCommand(result);
                 }
 
                 return Task.FromResult(result);
@@ -112,7 +112,7 @@ public class Xread : Base
 
             if (!commandContext.ReplicaConnection)
             {
-                commandContext.Socket.Send(result.AsBytes());
+                commandContext.Socket.SendCommand(result);
             }
 
             return Task.FromResult(result);
@@ -139,7 +139,7 @@ public class Xread : Base
 
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(result.AsBytes());
+            commandContext.Socket.SendCommand(result);
         }
 
         return Task.FromResult(result);

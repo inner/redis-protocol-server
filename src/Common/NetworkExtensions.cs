@@ -3,7 +3,7 @@ using System.Text;
 
 namespace codecrafters_redis.Common;
 
-public static class NetworkStreamExtensions
+public static class NetworkExtensions
 {
     public static NetworkStream SendPing(this NetworkStream stream)
     {
@@ -139,6 +139,11 @@ public static class NetworkStreamExtensions
         }
 
         return memoryStream.ToArray().AsString();
+    }
+
+    public static void SendCommand(this Socket socket, string resp)
+    {
+        socket.Send(resp.Replace(@"\r\n", "\r\n").AsBytes());
     }
 
     private static void EnsureExpectedResponse(string methodName, string expectedResponse, string actualResponse)
