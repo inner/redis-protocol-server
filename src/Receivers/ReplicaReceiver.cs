@@ -13,7 +13,7 @@ public class ReplicaReceiver : ReceiverBase
             return;
         }
         
-        if (!ServerInfo.Replication.ReplicaFirstByteReceived || commandString.Contains("$3\r\nACK\r\n"))
+        if (!ServerInfo.Replication.ReplicaFirstByteReceived)
         {
             ServerInfo.Replication.ReplicaFirstByteReceived = true;
             await base.Receive(socket, commandString, commandQueue);

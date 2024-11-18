@@ -14,10 +14,7 @@ public class MasterNode : NodeBase
         this.port = port;
     }
 
-    protected override void LogOnStart()
-    {
-        Console.WriteLine($"starting Redis 'master' server on port '{port}'");
-    }
+    protected override void LogOnStart() => Console.WriteLine($"starting Redis 'master' server on port '{port}'");
 
     protected override string NodeName => "master-node";
 
@@ -29,7 +26,7 @@ public class MasterNode : NodeBase
     private static string GenerateRandomReplId()
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        
+
         var result = new string(
             Enumerable.Repeat(chars, 40)
                 .Select(s => s[new Random().Next(s.Length)])
