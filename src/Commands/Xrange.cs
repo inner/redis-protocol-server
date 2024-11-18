@@ -30,7 +30,7 @@ public class Xrange : Base
         if (string.IsNullOrEmpty(fetchItem))
         {
             result = RespBuilder.Null();
-            commandContext.Socket.Send(result.AsBytes());
+            commandContext.Socket.SendCommand(result);
             return Task.FromResult(result);
         }
 
@@ -38,7 +38,7 @@ public class Xrange : Base
         if (streamCacheItem == null)
         {
             result = RespBuilder.Null();
-            commandContext.Socket.Send(result.AsBytes());
+            commandContext.Socket.SendCommand(result);
             return Task.FromResult(result);
         }
 
@@ -127,7 +127,7 @@ public class Xrange : Base
         
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(result));   
+            commandContext.Socket.SendCommand(result);   
         }
         
         return Task.FromResult(result);

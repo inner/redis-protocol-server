@@ -34,7 +34,7 @@ public class Xadd : Base
 
             if (!commandContext.ReplicaConnection)
             {
-                commandContext.Socket.Send(result.AsBytes());
+                commandContext.Socket.SendCommand(result);
             }
 
             return Task.FromResult(result);
@@ -42,7 +42,7 @@ public class Xadd : Base
         catch (Exception ex)
         {
             result = RespBuilder.Error(ex.Message);
-            commandContext.Socket.Send(result.AsBytes());
+            commandContext.Socket.SendCommand(result);
         }
 
         return Task.FromResult(result);

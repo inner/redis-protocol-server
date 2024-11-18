@@ -24,7 +24,7 @@ public class Wait : Base
         foreach (var replica in connectedReplicas)
         {
             tasks.Add(Task.Run(() =>
-                replica.Value.Send(getAckResp.AsBytes())));
+                replica.Value.SendCommand(getAckResp)));
         }
 
         await Task.WhenAll(tasks);
@@ -43,7 +43,7 @@ public class Wait : Base
             : ServerInfo.Replication.ReplicaAcksReceived;
 
         var acksReceivedResp = RespBuilder.Integer(acksReceived);
-        commandContext.Socket.Send(acksReceivedResp.AsBytes());
+        commandContext.Socket.SendCommand(acksReceivedResp);
         return acksReceivedResp;
     }
 }
