@@ -29,10 +29,10 @@ public class MasterNode : NodeBase
     private static string GenerateRandomReplId()
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        var random = new Random();
+        
         var result = new string(
             Enumerable.Repeat(chars, 40)
-                .Select(s => s[random.Next(s.Length)])
+                .Select(s => s[new Random().Next(s.Length)])
                 .ToArray()
         );
 
