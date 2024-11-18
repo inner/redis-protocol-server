@@ -17,9 +17,7 @@ public class ReplicaReceiver : ReceiverBase
             return;
         }
 
-        var currentBytesReceived = commandString
-            .Replace(Constants.VerbatimNewLine, Constants.NewLine)
-            .AsBytes().Length;
+        var currentBytesReceived = GetCurrentBytesReceived(commandString);
         
         Console.WriteLine(
             $"Total bytes received: {ServerInfo.Replication.ReplicaBytesReceived}. " +
@@ -27,5 +25,15 @@ public class ReplicaReceiver : ReceiverBase
         
         ServerInfo.Replication.IncrementReplicaBytesReceived(currentBytesReceived);
         await base.Receive(socket, commandString, commandQueue);
+    }
+
+    private static int GetCurrentBytesReceived(string commandString)
+    {
+        var currentBytesReceived = commandString
+            .Replace(Constants.VerbatimNewLine, Constants.NewLine)
+            .AsBytes()
+            .Length;
+        
+        return currentBytesReceived;
     }
 }
