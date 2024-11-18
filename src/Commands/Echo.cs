@@ -1,5 +1,4 @@
-﻿using System.Text;
-using codecrafters_redis.Commands.Common;
+﻿using codecrafters_redis.Commands.Common;
 using codecrafters_redis.Common;
 
 namespace codecrafters_redis.Commands;
@@ -28,7 +27,7 @@ public class Echo : Base
 
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(Encoding.UTF8.GetBytes(response));
+            commandContext.Socket.SendCommand(response);
         }
 
         return Task.FromResult(response);

@@ -67,7 +67,7 @@ public abstract class Base
             CommandString = commandString
         });
         
-        commandContext.Socket.Send(RespBuilder.SimpleString("QUEUED").AsBytes());
+        commandContext.Socket.SendCommand(RespBuilder.SimpleString("QUEUED"));
         return true;
     }
 }

@@ -18,7 +18,7 @@ public class Command : Base
                 .Equals("DOCS", StringComparison.CurrentCultureIgnoreCase))
         {
             resp = RespBuilder.Error("Invalid command");
-            commandContext.Socket.Send(resp.AsBytes());
+            commandContext.Socket.SendCommand(resp);
             return resp;
         }
 
@@ -26,7 +26,7 @@ public class Command : Base
             ? commandContext.CommandDetails.CommandParts[6]
             : null);
 
-        commandContext.Socket.Send(resp.AsBytes());
+        commandContext.Socket.SendCommand(resp);
         return resp;
     }
 

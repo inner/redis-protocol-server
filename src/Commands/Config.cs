@@ -26,7 +26,7 @@ public class Config : Base
         {
             if (!commandContext.ReplicaConnection)
             {
-                commandContext.Socket.Send(resp.AsBytes());
+                commandContext.Socket.SendCommand(resp);
             }
 
             return Task.FromResult(resp);
@@ -39,7 +39,7 @@ public class Config : Base
             
             if (!commandContext.ReplicaConnection)
             {
-                commandContext.Socket.Send(resp.AsBytes());
+                commandContext.Socket.SendCommand(resp);
             }
 
             return Task.FromResult(resp);
@@ -49,7 +49,7 @@ public class Config : Base
         
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.Send(resp.AsBytes());
+            commandContext.Socket.SendCommand(resp);
         }
 
         return Task.FromResult(resp);

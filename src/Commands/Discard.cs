@@ -31,7 +31,7 @@ public class Discard : Base
             result = RespBuilder.Error("DISCARD without MULTI");
         }
 
-        commandContext.Socket.Send(result.AsBytes());
+        commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
     }
 }

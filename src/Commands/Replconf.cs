@@ -16,7 +16,7 @@ public class Replconf : Base
             string.Equals(commandContext.CommandDetails.CommandParts[4], "capa",
                 StringComparison.InvariantCultureIgnoreCase))
         {
-            commandContext.Socket.Send(result.AsBytes());
+            commandContext.Socket.SendCommand(result);
         }
 
         if (string.Equals(commandContext.CommandDetails.CommandParts[4], "ack",
@@ -46,7 +46,7 @@ public class Replconf : Base
             string.Equals(commandContext.CommandDetails.CommandParts[6], "*",
                 StringComparison.InvariantCultureIgnoreCase))
         {
-            commandContext.Socket.Send(resp.AsBytes());
+            commandContext.Socket.SendCommand(resp);
         }
 
         return Task.FromResult(resp);

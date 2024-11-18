@@ -21,7 +21,7 @@ public class Exists : Base
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         var result = RespBuilder.Integer(1);
-        commandContext.Socket.Send(result.AsBytes());
+        commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
     }
 }
