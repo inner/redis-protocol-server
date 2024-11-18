@@ -17,7 +17,9 @@ public class ReplicaReceiver : ReceiverBase
             return;
         }
 
-        var currentBytesReceived = commandString.AsBytes().Length;
+        var currentBytesReceived = commandString
+            .Replace(Constants.VerbatimNewLine, Constants.NewLine)
+            .AsBytes().Length;
         
         Console.WriteLine(
             $"Total bytes received: {ServerInfo.Replication.ReplicaBytesReceived}. " +

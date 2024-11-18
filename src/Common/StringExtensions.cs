@@ -41,7 +41,7 @@ public static class StringExtensions
 
     public static CommandDetails BuildCommandDetails(this string commandToExecute)
     {
-        var commandParts = commandToExecute.Split(@"\r\n")
+        var commandParts = commandToExecute.Split(Constants.VerbatimNewLine)
             .Where(x => !string.IsNullOrEmpty(x))
             .ToArray();
 

@@ -45,7 +45,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
 
     private void LogReceivedCommand(string clientCommand)
     {
-        var logMessage = clientCommand.Replace("\r\n", @"\r\n");
+        var logMessage = clientCommand.Replace(Constants.NewLine, Constants.VerbatimNewLine);
         Console.WriteLine($"[{NodeName}] Received command: {logMessage}.");
     }
 

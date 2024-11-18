@@ -11,7 +11,7 @@ public static class RespBuilder
         {
             sb.Append($"${command.Length}\r\n{command}\r\n");
         }
-
+        
         return sb.ToString();
     }
     

@@ -138,17 +138,20 @@ public static class NetworkExtensions
             }
         }
 
-        return memoryStream.ToArray().AsString();
+        return memoryStream.ToArray()
+            .AsString()
+            .Replace(Constants.NewLine, Constants.VerbatimNewLine);
     }
 
     public static void SendCommand(this Socket socket, string resp)
     {
-        socket.Send(resp.Replace(@"\r\n", "\r\n").AsBytes());
+        socket.Send(resp.Replace(Constants.VerbatimNewLine, Constants.NewLine).AsBytes());
     }
 
     private static void EnsureExpectedResponse(string methodName, string expectedResponse, string actualResponse)
     {
-        if (!string.Equals(expectedResponse, actualResponse, StringComparison.InvariantCultureIgnoreCase))
+        if (!string.Equals(expectedResponse.Replace(Constants.NewLine, Constants.VerbatimNewLine), actualResponse,
+                StringComparison.InvariantCultureIgnoreCase))
         {
             throw new Exception($"Handshake failed on step: {methodName}. " +
                                 $"Expected response: {expectedResponse}, but received: {actualResponse}");

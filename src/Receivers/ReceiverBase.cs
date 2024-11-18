@@ -44,7 +44,6 @@ public abstract class ReceiverBase
     private async Task ExecuteAsArrayMultiCommand(Socket socket, string commandString,
         List<CommandQueueItem> commandQueue)
     {
-        commandString = commandString.Replace("\r\n", @"\r\n");
         var multiCommandSplit = Regex.Split(commandString, @"(\*\d+\\r\\n)")
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Select(x => x.TrimEnd())
@@ -126,7 +125,7 @@ public abstract class ReceiverBase
 
         return ServerInfo.ServerRuntimeContext.IsMaster &&
                command.CanBePropagated &&
-               !commandDetails.CommandString.Contains("$3\r\nACK\r\n");
+               !commandDetails.CommandString.Contains(@"$3\r\nACK\r\n");
     }
 
     private void ExecuteBulkString(Socket socket)
