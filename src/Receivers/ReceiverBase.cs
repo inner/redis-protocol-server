@@ -78,7 +78,7 @@ public abstract class ReceiverBase
     {
         var className = $"codecrafters_redis.Commands.{commandDetails.CommandType}";
 
-        var type = System.Type.GetType(className);
+        var type = Type.GetType(className);
         if (type == null)
         {
             throw new ArgumentException("Unknown RESP command.");

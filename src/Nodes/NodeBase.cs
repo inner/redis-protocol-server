@@ -90,19 +90,17 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
             }
             finally
             {
-                CloseSocket(connectionId, client.Client);
+                CloseTcpClient(connectionId, client);
             }
         }
     }
 
-    private static void CloseSocket(string connectionId, Socket? socket)
+    private static void CloseTcpClient(string connectionId, TcpClient? tcpClient)
     {
-        if (socket == null)
-        {
-            return;
-        }
-
+        if (tcpClient is not { Connected: true }) return;
+        
+        tcpClient.Client.Close();
+        
         Console.WriteLine($"TCP Connection [{connectionId}] closed");
-        socket.Close();
     }
 }
