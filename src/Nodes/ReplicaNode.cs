@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using codecrafters_redis.Common;
 using codecrafters_redis.Receivers;
 
-namespace codecrafters_redis.Servers;
+namespace codecrafters_redis.Nodes;
 
 public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, int? masterPort)
     : NodeBase(localAddress, port, new ReplicaReceiver())

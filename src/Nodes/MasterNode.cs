@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using codecrafters_redis.Receivers;
 
-namespace codecrafters_redis.Servers;
+namespace codecrafters_redis.Nodes;
 
 public class MasterNode : NodeBase
 {

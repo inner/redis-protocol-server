@@ -5,7 +5,7 @@ using codecrafters_redis.Common;
 using codecrafters_redis.Rdb;
 using codecrafters_redis.Receivers;
 
-namespace codecrafters_redis.Servers;
+namespace codecrafters_redis.Nodes;
 
 public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase receiver)
 {
@@ -70,19 +70,15 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
                     var clientCommand = client
                         .GetStream()
                         .ReadResponse();
-                    
+
                     if (string.IsNullOrEmpty(clientCommand))
                     {
                         client.Client.Send(RespBuilder.Null().AsBytes());
                         continue;
                     }
 
+                    await receiver.Receive(client.Client, clientCommand, commandQueue);
                     LogReceivedCommand(clientCommand);
-                    
-                    await receiver.Receive(
-                        client.Client,
-                        clientCommand.Replace("\"", string.Empty),
-                        commandQueue);
                 }
             }
             catch (SocketException)
