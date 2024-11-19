@@ -29,7 +29,7 @@ public enum CommandType
 public enum DataType
 {
     SimpleString,
-    SimpleError,
+    Error,
     Integer,
     BulkString,
     Array

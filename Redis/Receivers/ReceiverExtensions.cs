@@ -1,0 +1,68 @@
+using System.Net.Sockets;
+using Redis.Commands.Common;
+using Redis.Common;
+
+namespace Redis.Receivers;
+
+public static class ReceiverExtensions
+{
+    public static async Task<string> ExecuteCommand(
+        this ReceiverBase receiver,
+        Socket socket,
+        CommandDetails commandDetails,
+        List<CommandQueueItem> commandQueue)
+    {
+        var className = $"Redis.Commands.{commandDetails.CommandType}";
+
+        var type = Type.GetType(className);
+        if (type == null)
+        {
+            throw new ArgumentException("Unknown RESP command.");
+        }
+
+        var command = (Base)Activator.CreateInstance(type)!;
+
+        var commandContext = new CommandContext
+        {
+            Socket = socket,
+            CommandDetails = commandDetails,
+            CommandQueue = commandQueue,
+            Receiver = receiver,
+            ReplicaConnection = false
+        };
+
+        var result = await command.Execute(commandContext);
+
+        if (!ShouldReplicateCommand(command, commandDetails))
+        {
+            return result;
+        }
+
+        ExecuteOnReplicas(commandDetails.CommandString);
+
+        return result;
+    }
+
+    private static void ExecuteOnReplicas(string resp)
+    {
+        foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
+        {
+            Console.WriteLine($"Propagating command '{resp[..^1]}' " +
+                              $"to replica '{replica.Value.RemoteEndPoint}'.");
+
+            replica.Value.SendCommand(resp);
+        }
+    }
+
+    private static bool ShouldReplicateCommand(Base command, CommandDetails commandDetails)
+    {
+        // do not replicate the command if:
+        // - the server is not a master
+        // - the command cannot be propagated
+        // - the command is an ACK response
+
+        return ServerInfo.ServerRuntimeContext.IsMaster &&
+               command.CanBePropagated &&
+               !commandDetails.CommandString.Contains(@"$3\r\nACK\r\n");
+    }
+}

@@ -16,7 +16,7 @@ public static class StringExtensions
         return respDataTypeString[..1] switch
         {
             "+" => DataType.SimpleString,
-            "-" => DataType.SimpleError,
+            "-" => DataType.Error,
             ":" => DataType.Integer,
             "$" => DataType.BulkString,
             "*" => DataType.Array,
