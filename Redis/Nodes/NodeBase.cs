@@ -43,9 +43,9 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
         }
     }
 
-    private void LogReceivedCommand(string clientCommand)
+    private void LogReceivedCommand(string resp)
     {
-        var logMessage = clientCommand.Replace(Constants.NewLine, Constants.VerbatimNewLine);
+        var logMessage = resp.Replace(Constants.NewLine, Constants.VerbatimNewLine);
         Console.WriteLine($"[{NodeName}] Received command: {logMessage}.");
     }
 
@@ -62,18 +62,18 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
 
                 while (true)
                 {
-                    var clientCommand = client
+                    var resp = client
                         .GetStream()
                         .ReadResponse();
 
-                    if (string.IsNullOrEmpty(clientCommand))
+                    if (string.IsNullOrEmpty(resp))
                     {
                         client.Client.SendCommand(RespBuilder.Null());
                         continue;
                     }
 
-                    await receiver.Receive(client.Client, clientCommand, commandQueue);
-                    LogReceivedCommand(clientCommand);
+                    await receiver.Receive(client.Client, resp, commandQueue);
+                    LogReceivedCommand(resp);
                 }
             }
             catch (SocketException)
