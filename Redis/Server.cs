@@ -55,10 +55,10 @@ if (Array.IndexOf(programArgs, "--dir") != -1)
 }
 else
 {
-    const string windowsMasterDir = "C:\\redis-rdb";
-    const string windowsReplicaDir = "C:\\redis-rdb\\replica";
-    const string linuxMasterDir = "//tmp//redis-rdb";
-    const string linuxReplicaDir = "//tmp//redis-rdb//replica";
+    const string windowsMasterDir = @"C:\redis-rdb";
+    const string windowsReplicaDir = @"C:\redis-rdb\replica";
+    const string linuxMasterDir = "/tmp/redis-rdb";
+    const string linuxReplicaDir = "/tmp/redis-rdb/replica";
 
     if (osType == OSPlatform.Windows)
     {
