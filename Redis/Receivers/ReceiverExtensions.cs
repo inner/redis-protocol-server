@@ -12,7 +12,7 @@ public static class ReceiverExtensions
         CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue)
     {
-        var className = $"Redis.Commands.{commandDetails.CommandType}";
+        var className = $"Redis.Commands.{commandDetails.RespType}";
 
         var type = Type.GetType(className);
         if (type == null)
@@ -38,7 +38,7 @@ public static class ReceiverExtensions
             return result;
         }
 
-        ExecuteOnReplicas(commandDetails.CommandString);
+        ExecuteOnReplicas(commandDetails.Resp);
 
         return result;
     }
@@ -63,6 +63,6 @@ public static class ReceiverExtensions
 
         return ServerInfo.ServerRuntimeContext.IsMaster &&
                command.CanBePropagated &&
-               !commandDetails.CommandString.Contains(@"$3\r\nACK\r\n");
+               !commandDetails.Resp.Contains(@"$3\r\nACK\r\n");
     }
 }

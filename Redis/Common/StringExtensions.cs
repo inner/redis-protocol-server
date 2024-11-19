@@ -24,24 +24,24 @@ public static class StringExtensions
         };
     }
 
-    public static CommandType ToCommandType(this string respCommandTypeString)
+    public static RespType ToCommandType(this string respTypeString)
     {
-        if (string.IsNullOrWhiteSpace(respCommandTypeString))
+        if (string.IsNullOrWhiteSpace(respTypeString))
         {
             throw new ArgumentException("Invalid RESP command type - empty or whitespace.");
         }
 
-        if (Enum.TryParse<CommandType>(respCommandTypeString, true, out var respCommandType))
+        if (Enum.TryParse<RespType>(respTypeString, true, out var respType))
         {
-            return respCommandType;
+            return respType;
         }
 
-        throw new ArgumentException($"Unknown client command: {respCommandTypeString}");
+        throw new ArgumentException($"Unknown client command: {respTypeString}");
     }
 
-    public static CommandDetails BuildCommandDetails(this string commandToExecute)
+    public static CommandDetails BuildCommandDetails(this string resp)
     {
-        var commandParts = commandToExecute.Split(Constants.VerbatimNewLine)
+        var commandParts = resp.Split(Constants.VerbatimNewLine)
             .Where(x => !string.IsNullOrEmpty(x))
             .ToArray();
 
@@ -49,8 +49,8 @@ public static class StringExtensions
         {
             CommandCount = int.Parse(commandParts[0].Replace("*", string.Empty)),
             CommandParts = commandParts,
-            CommandString = commandToExecute,
-            CommandType = commandParts[2].ToCommandType(),
+            Resp = resp,
+            RespType = commandParts[2].ToCommandType(),
             FromTransaction = false
         };
     }

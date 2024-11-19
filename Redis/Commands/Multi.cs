@@ -19,12 +19,12 @@ public class Multi : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        if (commandContext.CommandQueue.All(x => x.CommandType != CommandType.Multi))
+        if (commandContext.CommandQueue.All(x => x.RespType != RespType.Multi))
         {
             commandContext.CommandQueue.Add(new CommandQueueItem
             {
-                CommandType = CommandType.Multi,
-                CommandString = string.Empty
+                RespType = RespType.Multi,
+                Resp = string.Empty
             });
         }
 

@@ -6,30 +6,30 @@ namespace Redis.Receivers;
 
 public class ReplicaReceiver : ReceiverBase
 {
-    public override async Task Receive(Socket socket, string commandString, List<CommandQueueItem> commandQueue)
+    public override async Task Receive(Socket socket, string resp, List<CommandQueueItem> commandQueue)
     {
         if (!ServerInfo.Replication.ReplicaHandshakeCompleted) return;
         
         if (!ServerInfo.Replication.ReplicaFirstByteReceived)
         {
             ServerInfo.Replication.ReplicaFirstByteReceived = true;
-            await base.Receive(socket, commandString, commandQueue);
+            await base.Receive(socket, resp, commandQueue);
             return;
         }
 
-        var currentBytesReceived = GetCurrentBytesReceived(commandString);
+        var currentBytesReceived = GetCurrentBytesReceived(resp);
         
         Console.WriteLine(
             $"Total bytes received: {ServerInfo.Replication.ReplicaBytesReceived}. " +
             $"Incrementing bytes received by {currentBytesReceived}");
         
         ServerInfo.Replication.IncrementReplicaBytesReceived(currentBytesReceived);
-        await base.Receive(socket, commandString, commandQueue);
+        await base.Receive(socket, resp, commandQueue);
     }
 
-    private static int GetCurrentBytesReceived(string commandString)
+    private static int GetCurrentBytesReceived(string resp)
     {
-        var currentBytesReceived = commandString
+        var currentBytesReceived = resp
             .Replace(Constants.VerbatimNewLine, Constants.NewLine)
             .AsBytes()
             .Length;

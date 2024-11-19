@@ -45,9 +45,9 @@ public abstract class Base
             return false;
         }
 
-        var commandTypesExcluded = new List<CommandType>
+        var commandTypesExcluded = new List<RespType>
         {
-            CommandType.Multi, CommandType.Exec, CommandType.Discard
+            RespType.Multi, RespType.Exec, RespType.Discard
         };
 
         var commandStrings = commandTypesExcluded.ConvertAll(c => c.ToString());
@@ -63,8 +63,8 @@ public abstract class Base
 
         commandContext.CommandQueue.Add(new CommandQueueItem
         {
-            CommandType = commandType,
-            CommandString = commandString
+            RespType = commandType,
+            Resp = commandString
         });
         
         commandContext.Socket.SendCommand(RespBuilder.SimpleString("QUEUED"));

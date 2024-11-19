@@ -1,6 +1,6 @@
 ﻿namespace Redis.Common;
 
-public enum CommandType
+public enum RespType
 {
     Ping,
     Echo,

@@ -23,7 +23,7 @@ public class Exec : Base
     {
         string result;
 
-        if (commandContext.CommandQueue.All(x => x.CommandType != CommandType.Multi))
+        if (commandContext.CommandQueue.All(x => x.RespType != RespType.Multi))
         {
             result = RespBuilder.Error("EXEC without MULTI");
             commandContext.Socket.SendCommand(result);
@@ -31,7 +31,7 @@ public class Exec : Base
         }
 
         if (commandContext.CommandQueue.Count == 1 &&
-            commandContext.CommandQueue.Single().CommandType == CommandType.Multi)
+            commandContext.CommandQueue.Single().RespType == RespType.Multi)
         {
             result = RespBuilder.EmptyArray();
             commandContext.Socket.SendCommand(result);
@@ -43,12 +43,12 @@ public class Exec : Base
 
         foreach (var commandInQueue in commandContext.CommandQueue)
         {
-            if (commandInQueue.CommandType == CommandType.Multi)
+            if (commandInQueue.RespType == RespType.Multi)
             {
                 continue;
             }
 
-            var commandDetails = commandInQueue.CommandString.BuildCommandDetails();
+            var commandDetails = commandInQueue.Resp.BuildCommandDetails();
             commandDetails.FromTransaction = true;
 
             var commandResult = await commandContext.Receiver.ExecuteCommand(
