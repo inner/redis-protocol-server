@@ -5,4 +5,4 @@
 # CodeCrafters uses this file to test your code. Don't make any changes here!
 #
 # DON'T EDIT THIS!
-exec dotnet run --project src/Redis.csproj --configuration Release "$@"
+exec dotnet run --project Redis/Redis.csproj --configuration Release "$@"

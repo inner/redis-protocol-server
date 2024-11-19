@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\src\Redis.csproj" />
+      <ProjectReference Include="..\Redis\Redis.csproj" />
     </ItemGroup>
 
 </Project>
