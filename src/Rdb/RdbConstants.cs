@@ -1,4 +1,4 @@
-﻿namespace codecrafters_redis.Rdb;
+﻿namespace Redis.Rdb;
 
 public static class RdbConstants
 {

@@ -1,7 +1,7 @@
 using System.Net.Sockets;
 using System.Text;
 
-namespace codecrafters_redis.Common;
+namespace Redis.Common;
 
 public static class NetworkExtensions
 {

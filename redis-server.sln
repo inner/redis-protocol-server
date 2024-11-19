@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 25.0.1700.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "codecrafters-redis", "codecrafters-redis.csproj", "{D133C1BC-18C6-4906-A04C-7104C5285736}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis", "src\Redis.csproj", "{D133C1BC-18C6-4906-A04C-7104C5285736}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis.Tests", "Redis.Tests\Redis.Tests.csproj", "{831AA373-A17A-4278-932F-83C7F0258AE1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{D133C1BC-18C6-4906-A04C-7104C5285736}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D133C1BC-18C6-4906-A04C-7104C5285736}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D133C1BC-18C6-4906-A04C-7104C5285736}.Release|Any CPU.Build.0 = Release|Any CPU
+		{831AA373-A17A-4278-932F-83C7F0258AE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{831AA373-A17A-4278-932F-83C7F0258AE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{831AA373-A17A-4278-932F-83C7F0258AE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{831AA373-A17A-4278-932F-83C7F0258AE1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

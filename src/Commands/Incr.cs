@@ -1,8 +1,8 @@
-﻿using codecrafters_redis.Cache;
-using codecrafters_redis.Commands.Common;
-using codecrafters_redis.Common;
+﻿using Redis.Cache;
+using Redis.Commands.Common;
+using Redis.Common;
 
-namespace codecrafters_redis.Commands;
+namespace Redis.Commands;
 
 public class Incr : Base
 {

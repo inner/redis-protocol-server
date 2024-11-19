@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Text.Json;
-using codecrafters_redis.Common;
+using Redis.Common;
 
-namespace codecrafters_redis.Cache;
+namespace Redis.Cache;
 
 public static class DataCache
 {

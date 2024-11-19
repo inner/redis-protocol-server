@@ -1,9 +1,9 @@
 ﻿using System.Net.Sockets;
 using System.Text.RegularExpressions;
-using codecrafters_redis.Commands.Common;
-using codecrafters_redis.Common;
+using Redis.Commands.Common;
+using Redis.Common;
 
-namespace codecrafters_redis.Receivers;
+namespace Redis.Receivers;
 
 public abstract class ReceiverBase
 {
@@ -74,7 +74,7 @@ public abstract class ReceiverBase
     public async Task<string> ExecuteCommand(Socket socket, CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue)
     {
-        var className = $"codecrafters_redis.Commands.{commandDetails.CommandType}";
+        var className = $"Redis.Commands.{commandDetails.CommandType}";
 
         var type = Type.GetType(className);
         if (type == null)

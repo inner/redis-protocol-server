@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
 
-namespace codecrafters_redis;
+namespace Redis;
 
 public static class ServerInfo
 {

@@ -1,7 +1,7 @@
 ﻿using System.Net;
-using codecrafters_redis.Receivers;
+using Redis.Receivers;
 
-namespace codecrafters_redis.Nodes;
+namespace Redis.Nodes;
 
 public class MasterNode : NodeBase
 {

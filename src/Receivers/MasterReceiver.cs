@@ -1,3 +1,3 @@
-﻿namespace codecrafters_redis.Receivers;
+﻿namespace Redis.Receivers;
 
 public class MasterReceiver : ReceiverBase;

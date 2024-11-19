@@ -1,7 +1,7 @@
-﻿using codecrafters_redis.Cache;
-using codecrafters_redis.Common;
+﻿using Redis.Cache;
+using Redis.Common;
 
-namespace codecrafters_redis.Rdb;
+namespace Redis.Rdb;
 
 public static class RdbReader
 {

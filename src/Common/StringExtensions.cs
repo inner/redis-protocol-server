@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using System.Text.Json;
-using codecrafters_redis.Commands.Common;
+using Redis.Commands.Common;
 
-namespace codecrafters_redis.Common;
+namespace Redis.Common;
 
 public static class StringExtensions
 {

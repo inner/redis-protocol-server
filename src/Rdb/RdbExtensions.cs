@@ -1,6 +1,6 @@
-﻿using codecrafters_redis.Common;
+﻿using Redis.Common;
 
-namespace codecrafters_redis.Rdb;
+namespace Redis.Rdb;
 
 public static class RdbExtensions
 {

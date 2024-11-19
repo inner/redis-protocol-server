@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace codecrafters_redis.Common;
+namespace Redis.Common;
 
 public static class RespBuilder
 {

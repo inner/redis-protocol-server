@@ -1,4 +1,4 @@
-﻿namespace codecrafters_redis.Common;
+﻿namespace Redis.Common;
 
 public enum CommandType
 {

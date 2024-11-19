@@ -1,11 +1,11 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using codecrafters_redis.Commands.Common;
-using codecrafters_redis.Common;
-using codecrafters_redis.Rdb;
-using codecrafters_redis.Receivers;
+using Redis.Commands.Common;
+using Redis.Common;
+using Redis.Rdb;
+using Redis.Receivers;
 
-namespace codecrafters_redis.Nodes;
+namespace Redis.Nodes;
 
 public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase receiver)
 {

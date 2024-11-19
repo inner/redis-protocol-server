@@ -1,7 +1,7 @@
 using System.Net.Sockets;
-using codecrafters_redis.Receivers;
+using Redis.Receivers;
 
-namespace codecrafters_redis.Commands.Common;
+namespace Redis.Commands.Common;
 
 public class CommandContext
 {

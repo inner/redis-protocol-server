@@ -1,4 +1,4 @@
-﻿namespace codecrafters_redis.Cache;
+﻿namespace Redis.Cache;
 
 public interface IExpiredCacheItem
 {

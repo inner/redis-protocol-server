@@ -1,7 +1,7 @@
 using System.Net;
 using System.Runtime.InteropServices;
-using codecrafters_redis;
-using codecrafters_redis.Nodes;
+using Redis;
+using Redis.Nodes;
 
 const int defaultRedisPort = 6379;
 

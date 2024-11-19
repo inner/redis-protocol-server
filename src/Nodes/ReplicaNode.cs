@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using codecrafters_redis.Common;
-using codecrafters_redis.Receivers;
+using Redis.Common;
+using Redis.Receivers;
 
-namespace codecrafters_redis.Nodes;
+namespace Redis.Nodes;
 
 public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, int? masterPort)
     : NodeBase(localAddress, port, new ReplicaReceiver())

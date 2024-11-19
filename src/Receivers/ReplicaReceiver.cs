@@ -1,8 +1,8 @@
 ﻿using System.Net.Sockets;
-using codecrafters_redis.Commands.Common;
-using codecrafters_redis.Common;
+using Redis.Commands.Common;
+using Redis.Common;
 
-namespace codecrafters_redis.Receivers;
+namespace Redis.Receivers;
 
 public class ReplicaReceiver : ReceiverBase
 {
