@@ -1,9 +1,8 @@
 using System.Net;
 using System.Runtime.InteropServices;
 using Redis;
+using Redis.Common;
 using Redis.Nodes;
-
-const int defaultRedisPort = 6379;
 
 var programArgs = args
     .Select(x => x.Replace("\"", string.Empty))
@@ -13,7 +12,7 @@ var port = Array.IndexOf(programArgs, "--port") != -1
     ? int.Parse(programArgs[Array.IndexOf(programArgs, "--port") + 1])
     : Array.IndexOf(programArgs, "-p") != -1
         ? int.Parse(programArgs[Array.IndexOf(programArgs, "-p") + 1])
-        : defaultRedisPort;
+        : Constants.DefaultRedisPort;
 
 var masterHostString = Array.IndexOf(programArgs, "--replicaof") != -1
     ? programArgs[Array.IndexOf(programArgs, "--replicaof") + 1]
@@ -28,10 +27,10 @@ if (!string.IsNullOrEmpty(masterHostString))
     masterHost = masterHostParts[0];
     masterPort = masterHostParts.Length > 1
         ? int.Parse(masterHostParts[1])
-        : defaultRedisPort;
+        : Constants.DefaultRedisPort;
+    
+    ServerInfo.ServerRuntimeContext.IsMaster = false;
 }
-
-ServerInfo.ServerRuntimeContext.IsMaster = string.IsNullOrEmpty(masterHostString);
 
 if (Array.IndexOf(programArgs, "--dir") != -1)
 {
@@ -51,46 +50,41 @@ if (Array.IndexOf(programArgs, "--dir") != -1)
 }
 else
 {
-    const string windowsMasterDir = @"C:\redis-rdb";
-    const string windowsReplicaDir = @"C:\redis-rdb\replica";
-    const string linuxMasterDir = "/tmp/redis-rdb";
-    const string linuxReplicaDir = "/tmp/redis-rdb/replica";
-
     if (ServerInfo.OperatingSystem == OSPlatform.Windows)
     {
-        if (!Directory.Exists(windowsMasterDir))
+        if (!Directory.Exists(Constants.WindowsMasterDir))
         {
-            Directory.CreateDirectory(windowsMasterDir);
+            Directory.CreateDirectory(Constants.WindowsMasterDir);
         }
 
-        if (!Directory.Exists(windowsReplicaDir))
+        if (!Directory.Exists(Constants.WindowsReplicaDir))
         {
-            Directory.CreateDirectory(windowsReplicaDir);
+            Directory.CreateDirectory(Constants.WindowsReplicaDir);
         }
     }
     else
     {
-        if (!Directory.Exists(linuxMasterDir))
+        if (!Directory.Exists(Constants.LinuxMasterDir))
         {
-            Directory.CreateDirectory(linuxMasterDir);
+            Directory.CreateDirectory(Constants.LinuxMasterDir);
         }
 
-        if (!Directory.Exists(linuxReplicaDir))
+        if (!Directory.Exists(Constants.LinuxReplicaDir))
         {
-            Directory.CreateDirectory(linuxReplicaDir);
+            Directory.CreateDirectory(Constants.LinuxReplicaDir);
         }
     }
 
     ServerInfo.ServerRuntimeContext.DataDir = ServerInfo.OperatingSystem == OSPlatform.Windows
         ? ServerInfo.ServerRuntimeContext.IsMaster
-            ? windowsMasterDir
-            : windowsReplicaDir
+            ? Constants.WindowsMasterDir
+            : Constants.WindowsReplicaDir
         : ServerInfo.ServerRuntimeContext.IsMaster
-            ? linuxMasterDir
-            : linuxReplicaDir;
+            ? Constants.LinuxMasterDir
+            : Constants.LinuxReplicaDir;
 
     ServerInfo.ServerRuntimeContext.DbFilename = ServerInfo.ServerRuntimeContext.IsMaster
-        ? $"master{(port != 0 ? port : defaultRedisPort)}.rdb"
+        ? $"master{(port != 0 ? port : Constants.DefaultRedisPort)}.rdb"
         : $"replica{port}.rdb";
 }
 
