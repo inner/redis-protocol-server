@@ -31,11 +31,7 @@ if (!string.IsNullOrEmpty(masterHostString))
         : defaultRedisPort;
 }
 
-ServerInfo.ServerRuntimeContext.IsMaster = masterHost == null;
-
-var osType = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-    ? OSPlatform.Windows
-    : OSPlatform.Linux;
+ServerInfo.ServerRuntimeContext.IsMaster = string.IsNullOrEmpty(masterHostString);
 
 if (Array.IndexOf(programArgs, "--dir") != -1)
 {
@@ -60,7 +56,7 @@ else
     const string linuxMasterDir = "/tmp/redis-rdb";
     const string linuxReplicaDir = "/tmp/redis-rdb/replica";
 
-    if (osType == OSPlatform.Windows)
+    if (ServerInfo.OperatingSystem == OSPlatform.Windows)
     {
         if (!Directory.Exists(windowsMasterDir))
         {
@@ -85,7 +81,7 @@ else
         }
     }
 
-    ServerInfo.ServerRuntimeContext.DataDir = osType == OSPlatform.Windows
+    ServerInfo.ServerRuntimeContext.DataDir = ServerInfo.OperatingSystem == OSPlatform.Windows
         ? ServerInfo.ServerRuntimeContext.IsMaster
             ? windowsMasterDir
             : windowsReplicaDir
