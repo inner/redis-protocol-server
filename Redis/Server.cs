@@ -1,7 +1,6 @@
 using System.Net;
 using System.Runtime.InteropServices;
 using Redis;
-using Redis.Common;
 using Redis.Nodes;
 
 var programArgs = args
@@ -12,7 +11,7 @@ var port = Array.IndexOf(programArgs, "--port") != -1
     ? int.Parse(programArgs[Array.IndexOf(programArgs, "--port") + 1])
     : Array.IndexOf(programArgs, "-p") != -1
         ? int.Parse(programArgs[Array.IndexOf(programArgs, "-p") + 1])
-        : Constants.DefaultRedisPort;
+        : ServerInfo.DefaultRedisPort;
 
 var masterHostString = Array.IndexOf(programArgs, "--replicaof") != -1
     ? programArgs[Array.IndexOf(programArgs, "--replicaof") + 1]
@@ -27,7 +26,7 @@ if (!string.IsNullOrEmpty(masterHostString))
     masterHost = masterHostParts[0];
     masterPort = masterHostParts.Length > 1
         ? int.Parse(masterHostParts[1])
-        : Constants.DefaultRedisPort;
+        : ServerInfo.DefaultRedisPort;
     
     ServerInfo.ServerRuntimeContext.IsMaster = false;
 }
@@ -52,39 +51,39 @@ else
 {
     if (ServerInfo.OperatingSystem == OSPlatform.Windows)
     {
-        if (!Directory.Exists(Constants.WindowsMasterDir))
+        if (!Directory.Exists(ServerInfo.WindowsMasterDir))
         {
-            Directory.CreateDirectory(Constants.WindowsMasterDir);
+            Directory.CreateDirectory(ServerInfo.WindowsMasterDir);
         }
 
-        if (!Directory.Exists(Constants.WindowsReplicaDir))
+        if (!Directory.Exists(ServerInfo.WindowsReplicaDir))
         {
-            Directory.CreateDirectory(Constants.WindowsReplicaDir);
+            Directory.CreateDirectory(ServerInfo.WindowsReplicaDir);
         }
     }
     else
     {
-        if (!Directory.Exists(Constants.LinuxMasterDir))
+        if (!Directory.Exists(ServerInfo.LinuxMasterDir))
         {
-            Directory.CreateDirectory(Constants.LinuxMasterDir);
+            Directory.CreateDirectory(ServerInfo.LinuxMasterDir);
         }
 
-        if (!Directory.Exists(Constants.LinuxReplicaDir))
+        if (!Directory.Exists(ServerInfo.LinuxReplicaDir))
         {
-            Directory.CreateDirectory(Constants.LinuxReplicaDir);
+            Directory.CreateDirectory(ServerInfo.LinuxReplicaDir);
         }
     }
 
     ServerInfo.ServerRuntimeContext.DataDir = ServerInfo.OperatingSystem == OSPlatform.Windows
         ? ServerInfo.ServerRuntimeContext.IsMaster
-            ? Constants.WindowsMasterDir
-            : Constants.WindowsReplicaDir
+            ? ServerInfo.WindowsMasterDir
+            : ServerInfo.WindowsReplicaDir
         : ServerInfo.ServerRuntimeContext.IsMaster
-            ? Constants.LinuxMasterDir
-            : Constants.LinuxReplicaDir;
+            ? ServerInfo.LinuxMasterDir
+            : ServerInfo.LinuxReplicaDir;
 
     ServerInfo.ServerRuntimeContext.DbFilename = ServerInfo.ServerRuntimeContext.IsMaster
-        ? $"master{(port != 0 ? port : Constants.DefaultRedisPort)}.rdb"
+        ? $"master{(port != 0 ? port : ServerInfo.DefaultRedisPort)}.rdb"
         : $"replica{port}.rdb";
 }
 
