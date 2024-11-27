@@ -7,6 +7,20 @@ public class Replconf : Base
 {
     public override bool CanBePropagated => false;
 
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                "REPLCONF",
+                new()
+                {
+                    {"summary", "An internal command for configuring the replication stream."}
+                }
+            }
+        };
+    }
+
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var result = RespBuilder.SimpleString("OK");
