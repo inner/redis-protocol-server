@@ -13,7 +13,7 @@ public class Echo : Base
         return new()
         {
             {
-                GetName(),
+                Name,
                 new()
                 {
                     {"summary", "Returns the given string."},

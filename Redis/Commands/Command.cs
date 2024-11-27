@@ -72,7 +72,7 @@ public class Command : Base
         
         var docs = commandDocs
             .GroupBy(d => d.Key)
-            .ToDictionary(g => g.Key, g => g.SelectMany(d => d.Value)
+            .ToDictionary(g => g.Key.ToUpper(), g => g.SelectMany(d => d.Value)
                 .ToDictionary(d => d.Key, d => d.Value));
 
         return docs;

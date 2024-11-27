@@ -14,7 +14,7 @@ public class Get : Base
         return new()
         {
             {
-                GetName(),
+                Name,
                 new()
                 {
                     { "summary", "Returns the string value of a key." },

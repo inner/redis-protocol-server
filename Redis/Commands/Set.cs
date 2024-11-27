@@ -13,7 +13,7 @@ public class Set : Base
         return new()
         {
             {
-                GetName(),
+                Name,
                 new()
                 {
                     {

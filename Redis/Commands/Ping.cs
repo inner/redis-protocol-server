@@ -13,7 +13,7 @@ public class Ping : Base
         return new()
         {
             {
-                GetName(),
+                Name,
                 new()
                 {
                     { "summary", "Returns the server's liveliness response." },

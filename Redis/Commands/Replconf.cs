@@ -13,7 +13,7 @@ public class Replconf : Base
         return new()
         {
             {
-                GetName(),
+                Name,
                 new()
                 {
                     {"summary", "An internal command for configuring the replication stream."}
