@@ -10,6 +10,7 @@ public record StreamKeyWithEntryId(string Key, string EntryId);
 
 public class Xread : Base
 {
+    protected override string Name => nameof(Xread);
     public override bool CanBePropagated => false;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

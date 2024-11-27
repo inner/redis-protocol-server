@@ -6,6 +6,7 @@ namespace Redis.Commands;
 
 public class Get : Base
 {
+    protected override string Name => nameof(Get);
     public override bool CanBePropagated => false;
     
     public override Dictionary<string, Dictionary<string, string>> Docs()
@@ -13,7 +14,7 @@ public class Get : Base
         return new()
         {
             {
-                "GET",
+                GetName(),
                 new()
                 {
                     { "summary", "Returns the string value of a key." },

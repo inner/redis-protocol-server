@@ -5,6 +5,7 @@ namespace Redis.Commands;
 
 public class Multi : Base
 {
+    protected override string Name => nameof(Multi);
     public override bool CanBePropagated => true;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

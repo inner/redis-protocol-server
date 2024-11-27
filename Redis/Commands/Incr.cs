@@ -6,6 +6,7 @@ namespace Redis.Commands;
 
 public class Incr : Base
 {
+    protected override string Name => nameof(Incr);
     public override bool CanBePropagated => true;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

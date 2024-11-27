@@ -4,6 +4,9 @@ namespace Redis.Commands.Common;
 
 public abstract class Base
 {
+    protected abstract string Name { get; }
+    protected string GetName() => Name.ToUpper();
+    
     public abstract bool CanBePropagated { get; }
 
     public virtual Dictionary<string, Dictionary<string, string>> Docs()

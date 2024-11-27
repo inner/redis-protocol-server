@@ -5,6 +5,7 @@ namespace Redis.Commands;
 
 public class Echo : Base
 {
+    protected override string Name => nameof(Echo);
     public override bool CanBePropagated => false;
 
     public override Dictionary<string, Dictionary<string, string>> Docs()
@@ -12,7 +13,7 @@ public class Echo : Base
         return new()
         {
             {
-                "ECHO",
+                GetName(),
                 new()
                 {
                     {"summary", "Returns the given string."},

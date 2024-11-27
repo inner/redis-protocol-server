@@ -6,6 +6,7 @@ namespace Redis.Commands;
 // spec: https://redis.io/docs/latest/commands/exists/
 public class Exists : Base
 {
+    protected override string Name => nameof(Exists);
     public override bool CanBePropagated => false;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

@@ -5,6 +5,7 @@ namespace Redis.Commands;
 
 public class Discard : Base
 {
+    protected override string Name => nameof(Discard);
     public override bool CanBePropagated => true;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

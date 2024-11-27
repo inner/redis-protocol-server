@@ -5,6 +5,7 @@ namespace Redis.Commands;
 
 public class Quit : Base
 {
+    protected override string Name => nameof(Quit);
     public override bool CanBePropagated => false;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

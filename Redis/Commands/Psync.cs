@@ -5,6 +5,7 @@ namespace Redis.Commands;
 
 public class Psync : Base
 {
+    protected override string Name => nameof(Psync);
     public override bool CanBePropagated => false;
 
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)

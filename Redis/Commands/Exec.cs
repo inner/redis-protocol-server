@@ -7,6 +7,7 @@ namespace Redis.Commands;
 
 public class Exec : Base
 {
+    protected override string Name => nameof(Exec);
     public override bool CanBePropagated => true;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

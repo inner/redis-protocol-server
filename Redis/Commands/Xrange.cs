@@ -8,6 +8,7 @@ namespace Redis.Commands;
 
 public class Xrange : Base
 {
+    protected override string Name => nameof(Xrange);
     public override bool CanBePropagated => false;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

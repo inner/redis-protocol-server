@@ -6,6 +6,7 @@ namespace Redis.Commands;
 
 public class Wait : Base
 {
+    protected override string Name => nameof(Wait);
     public override bool CanBePropagated => false;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

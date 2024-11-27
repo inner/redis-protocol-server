@@ -7,6 +7,7 @@ namespace Redis.Commands;
 
 public class Keys : Base
 {
+    protected override string Name => nameof(Keys);
     public override bool CanBePropagated => false;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

@@ -6,13 +6,14 @@ namespace Redis.Commands;
 
 public class Set : Base
 {
+    protected override string Name => nameof(Set);
     public override bool CanBePropagated => true;
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
         return new()
         {
             {
-                "SET",
+                GetName(),
                 new()
                 {
                     {

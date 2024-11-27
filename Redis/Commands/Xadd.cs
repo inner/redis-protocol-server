@@ -7,6 +7,7 @@ namespace Redis.Commands;
 
 public class Xadd : Base
 {
+    protected override string Name => nameof(Xadd);
     public override bool CanBePropagated => true;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)

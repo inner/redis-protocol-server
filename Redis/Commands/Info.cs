@@ -5,6 +5,7 @@ namespace Redis.Commands;
 
 public class Info : Base
 {
+    protected override string Name => nameof(Info);
     public override bool CanBePropagated => false;
 
     public override Dictionary<string, Dictionary<string, string>> Docs()

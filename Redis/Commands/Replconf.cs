@@ -5,6 +5,7 @@ namespace Redis.Commands;
 
 public class Replconf : Base
 {
+    protected override string Name => nameof(Replconf);
     public override bool CanBePropagated => false;
 
     public override Dictionary<string, Dictionary<string, string>> Docs()
@@ -12,7 +13,7 @@ public class Replconf : Base
         return new()
         {
             {
-                "REPLCONF",
+                GetName(),
                 new()
                 {
                     {"summary", "An internal command for configuring the replication stream."}

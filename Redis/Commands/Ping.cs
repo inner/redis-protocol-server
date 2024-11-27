@@ -5,6 +5,7 @@ namespace Redis.Commands;
 
 public class Ping : Base
 {
+    protected override string Name => nameof(Ping);
     public override bool CanBePropagated => false;
 
     public override Dictionary<string, Dictionary<string, string>> Docs()
@@ -12,7 +13,7 @@ public class Ping : Base
         return new()
         {
             {
-                "PING",
+                GetName(),
                 new()
                 {
                     { "summary", "Returns the server's liveliness response." },

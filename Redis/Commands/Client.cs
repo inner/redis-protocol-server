@@ -5,6 +5,7 @@ namespace Redis.Commands;
 
 public class Client : Base
 {
+    protected override string Name => nameof(Client);
     public override bool CanBePropagated => false;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
