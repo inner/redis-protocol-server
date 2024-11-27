@@ -19,13 +19,12 @@ public class ReceiverBase
             }
             else
             {
-                throw new ArgumentException("Invalid data type.");
+                throw new ArgumentException("Unknown RESP data type.");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Some exception occured: {ex.Message}, stack: {ex.StackTrace}");
-            throw;
+            socket.SendCommand(RespBuilder.Error(ex.Message));
         }
     }
 }

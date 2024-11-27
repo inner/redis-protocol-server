@@ -7,6 +7,22 @@ namespace Redis.Commands;
 public class Get : Base
 {
     public override bool CanBePropagated => false;
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                "GET",
+                new()
+                {
+                    { "summary", "Returns the string value of a key." },
+                    { "since", "1.0.0" },
+                    { "group", "string" }
+                }
+            }
+        };
+    }
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {

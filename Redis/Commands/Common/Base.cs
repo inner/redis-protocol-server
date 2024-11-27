@@ -5,6 +5,12 @@ namespace Redis.Commands.Common;
 public abstract class Base
 {
     public abstract bool CanBePropagated { get; }
+
+    public virtual Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new Dictionary<string, Dictionary<string, string>>();
+    }
+    
     private bool TransactionStarted { get; set; }
 
     protected virtual Task<string> OnMasterNodeExecute(CommandContext commandContext)

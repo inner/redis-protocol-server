@@ -30,32 +30,9 @@ public class Command : Base
         return resp;
     }
 
-    private static Task<string> GetDocsResp(string? commandKey = null)
+    private Task<string> GetDocsResp(string? commandKey = null)
     {
-        var commands = new Dictionary<string, Dictionary<string, string>>
-        {
-            {
-                "GET",
-                new Dictionary<string, string>
-                {
-                    { "summary", "Returns the string value of a key." },
-                    { "since", "1.0.0" },
-                    { "group", "string" }
-                }
-            },
-            {
-                "SET",
-                new Dictionary<string, string>
-                {
-                    {
-                        "summary",
-                        "Sets the string value of a key, ignoring its type. The key is created if it doesn't exist."
-                    },
-                    { "since", "1.0.0" },
-                    { "group", "string" }
-                }
-            }
-        };
+        var commands = Docs();
 
         var commandsFiltered = commandKey == null
             ? commands
@@ -81,5 +58,22 @@ public class Command : Base
         }
 
         return Task.FromResult(sb.ToString());
+    }
+
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        var commands = typeof(Base).Assembly.GetTypes()
+            .Where(t => t is { IsClass: true, IsAbstract: false } && t.IsSubclassOf(typeof(Base)) &&
+                        t.Name != nameof(Command))
+            .Select(t => (Base)Activator.CreateInstance(t)!);
+
+        var commandDocs = commands.SelectMany(c => c.Docs()).ToList();
+        
+        var docs = commandDocs
+            .GroupBy(d => d.Key)
+            .ToDictionary(g => g.Key, g => g.SelectMany(d => d.Value)
+                .ToDictionary(d => d.Key, d => d.Value));
+
+        return docs;
     }
 }

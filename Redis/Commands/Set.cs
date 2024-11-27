@@ -7,6 +7,24 @@ namespace Redis.Commands;
 public class Set : Base
 {
     public override bool CanBePropagated => true;
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                "SET",
+                new()
+                {
+                    {
+                        "summary",
+                        "Sets the string value of a key, ignoring its type. The key is created if it doesn't exist."
+                    },
+                    { "since", "1.0.0" },
+                    { "group", "string" }
+                }
+            }
+        };
+    }
 
     private readonly string okResp = RespBuilder.SimpleString("OK");
 
