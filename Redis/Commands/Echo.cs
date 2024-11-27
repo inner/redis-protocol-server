@@ -7,6 +7,21 @@ public class Echo : Base
 {
     public override bool CanBePropagated => false;
 
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                "ECHO",
+                new()
+                {
+                    {"summary", "Returns the given string."},
+                    {"usage", "redis-cli ECHO mystring"}
+                }
+            }
+        };
+    }
+
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);

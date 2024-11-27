@@ -19,8 +19,7 @@ public class Set : Base
                         "summary",
                         "Sets the string value of a key, ignoring its type. The key is created if it doesn't exist."
                     },
-                    { "since", "1.0.0" },
-                    { "group", "string" }
+                    { "usage", "redis-cli SET key1 val1" }
                 }
             }
         };

@@ -17,8 +17,7 @@ public class Get : Base
                 new()
                 {
                     { "summary", "Returns the string value of a key." },
-                    { "since", "1.0.0" },
-                    { "group", "string" }
+                    { "usage", "redis-cli GET key1" }
                 }
             }
         };
