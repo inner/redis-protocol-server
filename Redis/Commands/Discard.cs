@@ -21,7 +21,8 @@ public class Discard : Base
                     { "usage #2", "MULTI" },
                     { "usage #3", "SET mykey1 myval1" },
                     { "usage #4", "INCR someotherkey" },
-                    { "usage #5", "DISCARD" }
+                    { "usage #5", "DISCARD" },
+                    { "usage #6", "GET mykey1" }
                 }
             }
         };

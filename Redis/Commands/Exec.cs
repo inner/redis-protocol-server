@@ -10,6 +10,26 @@ public class Exec : Base
     protected override string Name => nameof(Exec);
     public override bool CanBePropagated => true;
 
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                "exec",
+                new()
+                {
+                    { "summary", "Discards a transaction." },
+                    { "usage #1", "redis-cli" },
+                    { "usage #2", "MULTI" },
+                    { "usage #3", "SET mykey1 myval1" },
+                    { "usage #4", "INCR someotherkey" },
+                    { "usage #5", "EXEC" },
+                    { "usage #6", "GET mykey1" }
+                }
+            }
+        };
+    }
+
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);

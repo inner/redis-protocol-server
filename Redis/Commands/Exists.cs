@@ -9,6 +9,21 @@ public class Exists : Base
     protected override string Name => nameof(Exists);
     public override bool CanBePropagated => false;
 
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    {"summary", "Determines whether one or more keys exist."},
+                    {"usage", "redis-cli EXISTS mykey1"}
+                }
+            }
+        };
+    }
+
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
@@ -21,6 +36,7 @@ public class Exists : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
+        // hardcoding the response to 1
         var result = RespBuilder.Integer(1);
         commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
