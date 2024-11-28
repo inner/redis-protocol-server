@@ -1,3 +1,4 @@
+using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
 
@@ -18,7 +19,9 @@ public class Exists : Base
                 new()
                 {
                     {"summary", "Determines whether one or more keys exist."},
-                    {"usage", "redis-cli EXISTS mykey1"}
+                    {"usage #1", "redis-cli SET mykey1 myval1"},
+                    {"usage #2", "redis-cli SET mykey2 myval2"},
+                    {"usage #3", "redis-cli EXISTS mykey1 mykey2 nosuchkey"}
                 }
             }
         };
@@ -36,8 +39,12 @@ public class Exists : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        // hardcoding the response to 1
-        var result = RespBuilder.Integer(1);
+        var keys = commandContext.CommandDetails.CommandParts[3..]
+            .Where(x => !x.StartsWith("$"))
+            .Distinct();
+
+        var count = DataCache.CountKeys(keys.ToArray());
+        var result = RespBuilder.Integer(count);
         commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
     }

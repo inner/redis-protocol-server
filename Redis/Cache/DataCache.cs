@@ -88,4 +88,9 @@ public static class DataCache
         Cache.TryGetValue(key, out var value);
         return value;
     }
+
+    public static int CountKeys(params string[] keys)
+    {
+        return Cache.Count(x => keys.Contains(x.Key));
+    }
 }
