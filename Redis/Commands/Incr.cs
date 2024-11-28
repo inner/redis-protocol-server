@@ -9,6 +9,21 @@ public class Incr : Base
     protected override string Name => nameof(Incr);
     public override bool CanBePropagated => true;
 
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist." },
+                    { "usage", "redis-cli INCR mykey1" }
+                }
+            }
+        };
+    }
+
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);

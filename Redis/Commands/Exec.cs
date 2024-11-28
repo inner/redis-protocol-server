@@ -15,7 +15,7 @@ public class Exec : Base
         return new()
         {
             {
-                "exec",
+                Name,
                 new()
                 {
                     { "summary", "Discards a transaction." },
