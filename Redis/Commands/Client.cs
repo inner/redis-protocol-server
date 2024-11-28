@@ -8,6 +8,20 @@ public class Client : Base
     protected override string Name => nameof(Client);
     public override bool CanBePropagated => false;
 
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "A container for client connection commands." }
+                }
+            }
+        };
+    }
+
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);

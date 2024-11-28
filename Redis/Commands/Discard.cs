@@ -8,6 +8,25 @@ public class Discard : Base
     protected override string Name => nameof(Discard);
     public override bool CanBePropagated => true;
 
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "Discards a transaction." },
+                    { "usage #1", "redis-cli" },
+                    { "usage #2", "MULTI" },
+                    { "usage #3", "SET mykey1 myval1" },
+                    { "usage #4", "INCR someotherkey" },
+                    { "usage #5", "DISCARD" }
+                }
+            }
+        };
+    }
+
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
