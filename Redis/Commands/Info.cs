@@ -13,7 +13,7 @@ public class Info : Base
         return new()
         {
             {
-                "INFO",
+                Name,
                 new()
                 {
                     { "summary", "Returns information and statistics about the server." },

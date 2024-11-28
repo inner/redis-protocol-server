@@ -8,25 +8,39 @@ public class Psync : Base
     protected override string Name => nameof(Psync);
     public override bool CanBePropagated => false;
 
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "An internal command used in replication." }
+                }
+            }
+        };
+    }
+
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var fullResync = RespBuilder.SimpleString($"FULLRESYNC {ServerInfo.ServerRuntimeContext.MasterReplId} 0");
         commandContext.Socket.SendCommand(fullResync);
-        
+
         var rdbFile = GetHardcodedEmptyRdbFile();
         var rdbResynchronizationFileMsg = $"${rdbFile.Length}\r\n".AsBytes()
             .Concat(rdbFile)
             .ToArray();
-        
+
         commandContext.Socket.Send(rdbResynchronizationFileMsg);
-        
+
         ServerInfo.ServerRuntimeContext.Replicas.TryAdd(
             commandContext.Socket.RemoteEndPoint!.ToString()!,
             commandContext.Socket);
-        
+
         return Task.FromResult(string.Empty);
     }
-    
+
     private static byte[] GetHardcodedEmptyRdbFile()
     {
         return Convert.FromBase64String(

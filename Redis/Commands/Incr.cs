@@ -17,7 +17,8 @@ public class Incr : Base
                 Name,
                 new()
                 {
-                    { "summary", "Increments the integer value of a key by one. Uses 0 as initial value if the key doesn't exist." },
+                    { "summary", "Increments the integer value of a key by one. " +
+                                 "Uses 0 as initial value if the key doesn't exist." },
                     { "usage", "redis-cli INCR mykey1" }
                 }
             }
