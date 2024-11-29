@@ -16,7 +16,7 @@ public class Replconf : Base
                 Name,
                 new()
                 {
-                    {"summary", "An internal command for configuring the replication stream."}
+                    { "summary", "An internal command for configuring the replication stream." }
                 }
             }
         };
@@ -25,24 +25,19 @@ public class Replconf : Base
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var result = RespBuilder.SimpleString("OK");
+        var replconfArg = commandContext.CommandDetails.CommandParts[4];
 
-        if (string.Equals(commandContext.CommandDetails.CommandParts[4], "listening-port",
-                StringComparison.InvariantCultureIgnoreCase) ||
-            string.Equals(commandContext.CommandDetails.CommandParts[4], "capa",
-                StringComparison.InvariantCultureIgnoreCase))
+        string[] handshakeArgs = ["listening-port", "capa"];
+        string[] ackArgs = ["ack"];
+
+        if (handshakeArgs.Contains(replconfArg, StringComparer.InvariantCultureIgnoreCase))
         {
             commandContext.Socket.SendCommand(result);
         }
 
-        if (string.Equals(commandContext.CommandDetails.CommandParts[4], "ack",
-                StringComparison.InvariantCultureIgnoreCase))
+        if (ackArgs.Contains(replconfArg, StringComparer.InvariantCultureIgnoreCase))
         {
             ServerInfo.Replication.IncrementReplicaAcksReceived();
-
-            Console.WriteLine($"Received ACK from replica '{commandContext.Socket.RemoteEndPoint}', " +
-                              $"bytes received: {commandContext.CommandDetails.CommandParts[6]}.");
-
-            Console.WriteLine($"Replica ACKs received: {ServerInfo.Replication.ReplicaAcksReceived}.");
         }
 
         return Task.FromResult(result);
@@ -50,16 +45,17 @@ public class Replconf : Base
 
     protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
+        var replconfArg1 = commandContext.CommandDetails.CommandParts[4];
+        var replconfArg2 = commandContext.CommandDetails.CommandParts[6];
+
         var resp = RespBuilder
             .ArrayFromCommands(
                 "REPLCONF",
                 "ACK",
                 ServerInfo.Replication.ReplicaBytesReceived.ToString());
 
-        if (string.Equals(commandContext.CommandDetails.CommandParts[4], "GETACK",
-                StringComparison.InvariantCultureIgnoreCase) &&
-            string.Equals(commandContext.CommandDetails.CommandParts[6], "*",
-                StringComparison.InvariantCultureIgnoreCase))
+        if (string.Equals(replconfArg1, "GETACK", StringComparison.InvariantCultureIgnoreCase) &&
+            string.Equals(replconfArg2, "*", StringComparison.InvariantCultureIgnoreCase))
         {
             commandContext.Socket.SendCommand(resp);
         }
