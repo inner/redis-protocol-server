@@ -4,7 +4,6 @@ using Redis.Common;
 
 namespace Redis.Commands;
 
-// https://redis.io/docs/latest/commands/wait/
 public class Wait : Base
 {
     protected override string Name => nameof(Wait);
