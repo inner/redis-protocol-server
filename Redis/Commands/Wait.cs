@@ -41,16 +41,7 @@ public class Wait : Base
         var msToWait = commandContext.CommandDetails.CommandParts[6];
 
         var getAckResp = RespBuilder.ArrayFromCommands("REPLCONF", "GETACK", "*");
-
-        var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
-            .Where(x => x.Value.Connected);
-
-        var tasks = connectedReplicas
-            .Select(replica =>
-                Task.Run(() =>
-                    replica.Value.SendCommand(getAckResp)));
-
-        await Task.WhenAll(tasks);
+        await ServerRuntimeContext.ExecuteOnConnectedReplicas(getAckResp);
 
         var startTimestamp = Stopwatch.GetTimestamp();
         while ((int)Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds < int.Parse(msToWait))

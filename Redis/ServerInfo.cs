@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Redis.Common;
 
 namespace Redis;
 
@@ -37,6 +38,19 @@ public class ServerRuntimeContext
         {
             return Replicas.Count(x => x.Value.Connected);
         }
+    }
+    
+    public static async Task ExecuteOnConnectedReplicas(string resp)
+    {
+        var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
+            .Where(x => x.Value.Connected);
+
+        var tasks = connectedReplicas
+            .Select(replica =>
+                Task.Run(() =>
+                    replica.Value.SendCommand(resp)));
+        
+        await Task.WhenAll(tasks);
     }
 }
 

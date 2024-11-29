@@ -1,6 +1,5 @@
 using System.Net.Sockets;
 using Redis.Commands.Common;
-using Redis.Common;
 
 namespace Redis.Receivers;
 
@@ -38,20 +37,8 @@ public static class ReceiverExtensions
             return result;
         }
 
-        ExecuteOnReplicas(commandDetails.Resp);
-
+        await ServerRuntimeContext.ExecuteOnConnectedReplicas(commandDetails.Resp);
         return result;
-    }
-
-    private static void ExecuteOnReplicas(string resp)
-    {
-        foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
-        {
-            Console.WriteLine($"Propagating command '{resp[..^1]}' " +
-                              $"to replica '{replica.Value.RemoteEndPoint}'.");
-
-            replica.Value.SendCommand(resp);
-        }
     }
 
     private static bool ShouldReplicateCommand(Base command, CommandDetails commandDetails)
