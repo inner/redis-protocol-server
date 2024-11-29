@@ -73,7 +73,7 @@ public class Xadd : Base
         {
             EntryIdType.Preset => GetEntryIdValueForPreset(entryId, existingEntryId),
             EntryIdType.AutoSequence => GetEntryIdValueForAutoSequence(entryId, existingEntryId),
-            EntryIdType.Auto => GetEntryIdValueForAuto(existingEntryId),
+            EntryIdType.Auto => GetEntryIdValueForAuto(),
             _ => throw new Exception("invalid stream ID specified")
         };
 
@@ -173,35 +173,12 @@ public class Xadd : Base
         return value;
     }
 
-    private static StreamCacheItemValueItem GetEntryIdValueForAuto(string? existingEntryId)
+    private static StreamCacheItemValueItem GetEntryIdValueForAuto()
     {
         StreamCacheItemValueItem value = new();
 
-        long? existingLastEntryIdTimestamp = existingEntryId != null
-            ? long.Parse(existingEntryId.Split('-')[0])
-            : null;
-
-        long? existingLastEntryIdSequence = existingEntryId != null
-            ? long.Parse(existingEntryId.Split('-')[1])
-            : null;
-
-        if (existingEntryId != null)
-        {
-            var newTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            newTimestamp = (long)(newTimestamp < existingLastEntryIdTimestamp
-                ? existingLastEntryIdTimestamp + 1
-                : newTimestamp);
-
-            var newSequence = existingLastEntryIdSequence + 1;
-
-            value.Id = $"{newTimestamp}-{newSequence}";
-        }
-        else if (existingEntryId == null)
-        {
-            var newTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            value.Id = $"{newTimestamp}-0";
-        }
-
+        var newTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        value.Id = $"{newTimestamp}-0";
         return value;
     }
 
