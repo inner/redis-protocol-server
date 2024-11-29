@@ -106,6 +106,13 @@ public class Xrange : Base
                         return false;
                     }
                 }
+                else if (endTimestamp.HasValue && !endSequence.HasValue)
+                {
+                    if (x.Timestamp > endTimestamp.Value)
+                    {
+                        return false;
+                    }
+                }
 
                 return true;
             })
