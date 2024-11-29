@@ -20,7 +20,7 @@ public class Xrange : Base
     {
         return await GenerateCommonResponse(commandContext);
     }
-    
+
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         string result;
@@ -72,52 +72,9 @@ public class Xrange : Base
         }
 
         var streamEntries = streamCacheItem.Value
-            .Where(x =>
-            {
-                if (startTimestamp.HasValue && startSequence.HasValue)
-                {
-                    if (x.Timestamp < startTimestamp.Value)
-                    {
-                        return false;
-                    }
-
-                    if (x.Timestamp == startTimestamp.Value && x.Sequence < startSequence.Value)
-                    {
-                        return false;
-                    }
-                }
-                else if (startTimestamp.HasValue && !startSequence.HasValue)
-                {
-                    if (x.Timestamp < startTimestamp.Value)
-                    {
-                        return false;
-                    }
-                }
-
-                if (endTimestamp.HasValue && endSequence.HasValue)
-                {
-                    if (x.Timestamp > endTimestamp.Value)
-                    {
-                        return false;
-                    }
-
-                    if (x.Timestamp == endTimestamp.Value && x.Sequence > endSequence.Value)
-                    {
-                        return false;
-                    }
-                }
-                else if (endTimestamp.HasValue && !endSequence.HasValue)
-                {
-                    if (x.Timestamp > endTimestamp.Value)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            })
+            .Where(StreamEntriesFilter(startTimestamp, startSequence, endTimestamp, endSequence))
             .ToList();
-        
+
         var sb = new StringBuilder($"*{streamEntries.Count}\r\n");
         foreach (var streamEntry in streamEntries)
         {
@@ -132,12 +89,61 @@ public class Xrange : Base
         }
 
         result = sb.ToString();
-        
+
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.SendCommand(result);   
+            commandContext.Socket.SendCommand(result);
         }
-        
+
         return Task.FromResult(result);
+    }
+
+    private static Func<StreamCacheItemValueItem, bool> StreamEntriesFilter(long? startTimestamp, long? startSequence,
+        long? endTimestamp, long? endSequence)
+    {
+        return x =>
+        {
+            if (startTimestamp.HasValue && startSequence.HasValue)
+            {
+                if (x.Timestamp < startTimestamp.Value)
+                {
+                    return false;
+                }
+
+                if (x.Timestamp == startTimestamp.Value && x.Sequence < startSequence.Value)
+                {
+                    return false;
+                }
+            }
+            else if (startTimestamp.HasValue && !startSequence.HasValue)
+            {
+                if (x.Timestamp < startTimestamp.Value)
+                {
+                    return false;
+                }
+            }
+
+            if (endTimestamp.HasValue && endSequence.HasValue)
+            {
+                if (x.Timestamp > endTimestamp.Value)
+                {
+                    return false;
+                }
+
+                if (x.Timestamp == endTimestamp.Value && x.Sequence > endSequence.Value)
+                {
+                    return false;
+                }
+            }
+            else if (endTimestamp.HasValue && !endSequence.HasValue)
+            {
+                if (x.Timestamp > endTimestamp.Value)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        };
     }
 }
