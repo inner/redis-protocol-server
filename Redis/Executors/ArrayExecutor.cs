@@ -30,9 +30,10 @@ public class ArrayExecutor : IRespDataTypeExecutor
             skip += 2;
         }
 
-        foreach (var respCommand in respCommands)
+        // assuming if multiple commands are sent in a single RESP array,
+        // they need to be executed in the same order, not asynchronously
+        foreach (var commandDetails in respCommands.Select(respCommand => respCommand.BuildCommandDetails()))
         {
-            var commandDetails = respCommand.BuildCommandDetails();
             await receiver.ExecuteCommand(socket, commandDetails, commandQueue);
         }
     }

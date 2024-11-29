@@ -12,7 +12,7 @@ public static class ServerInfo
     public const string WindowsReplicaDir = @"C:\redis-rdb\replica";
     public const string LinuxMasterDir = "/tmp/redis-rdb";
     public const string LinuxReplicaDir = "/tmp/redis-rdb/replica";
-    
+
     public static OSPlatform OperatingSystem =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? OSPlatform.Windows
@@ -24,22 +24,14 @@ public static class ServerInfo
 
 public class ServerRuntimeContext
 {
-    private static readonly object ReplicasLockObject = new();
     public bool IsMaster { get; set; } = true;
     public string MasterReplId { get; set; } = string.Empty;
     public readonly ConcurrentDictionary<string, Socket> Replicas = new();
     public string DataDir { get; set; } = null!;
     public string DbFilename { get; set; } = null!;
     public bool DbFileExists { get; set; }
+    public int GetConnectedReplicas() => Replicas.Count(x => x.Value.Connected);
 
-    public int GetConnectedReplicas()
-    {
-        lock (ReplicasLockObject)
-        {
-            return Replicas.Count(x => x.Value.Connected);
-        }
-    }
-    
     public static async Task ExecuteOnConnectedReplicas(string resp)
     {
         var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
@@ -49,33 +41,17 @@ public class ServerRuntimeContext
             .Select(replica =>
                 Task.Run(() =>
                     replica.Value.SendCommand(resp)));
-        
+
         await Task.WhenAll(tasks);
     }
 }
 
 public class Replication
 {
-    private static readonly object ReplicaAcksReceivedLockObject = new();
-    private static readonly object ReplicaBytesReceivedLockObject = new();
     public bool ReplicaHandshakeCompleted { get; set; }
     public bool ReplicaFirstByteReceived { get; set; }
     public int ReplicaBytesReceived { get; private set; }
     public int ReplicaAcksReceived { get; set; }
-
-    public void IncrementReplicaAcksReceived()
-    {
-        lock (ReplicaAcksReceivedLockObject)
-        {
-            ReplicaAcksReceived += 1;
-        }
-    }
-
-    public void IncrementReplicaBytesReceived(int bytesReceived)
-    {
-        lock (ReplicaBytesReceivedLockObject)
-        {
-            ReplicaBytesReceived += bytesReceived;
-        }
-    }
+    public void IncrementReplicaAcksReceived() => ReplicaAcksReceived += 1;
+    public void IncrementReplicaBytesReceived(int bytesReceived) => ReplicaBytesReceived += bytesReceived;
 }
