@@ -19,14 +19,16 @@ public class Wait : Base
                 new()
                 {
                     {
-                        "summary", "Blocks until the asynchronous replication of all preceding " +
-                                   "write commands sent by the connection is completed."
+                        "summary",
+                        "Blocks until the asynchronous replication of all preceding " +
+                        "write commands sent by the connection is completed."
                     },
-                    { "usage #1", "redis-cli SET mykey1 myval1" },
-                    { "usage #2", "redis-cli TYPE mykey1" },
-                    { "usage #4", "redis-cli TYPE nosuchkey" },
-                    { "usage #5", "redis-cli XADD stream1 * mykey1 myval1" },
-                    { "usage #6", "redis-cli TYPE stream1" }
+                    { "documentation", "https://redis.io/docs/latest/commands/wait/" },
+                    { "usage #1", "redis-cli" },
+                    { "usage #2", "SET mykey1 myval1" },
+                    { "usage #4", "SET mykey2 myval2" },
+                    { "usage #5", "SET mykey3 myval3" },
+                    { "usage #6", "WAIT 4 2000" }
                 }
             }
         };
