@@ -50,8 +50,10 @@ public class Xrange : Base
         long? startSequence = null;
         long? endTimestamp = null;
         long? endSequence = null;
-
-        if (Regex.IsMatch(startEntryId, @"^\d+-\d+$"))
+        
+        const string entryIdPattern = @"^\d+-\d+$";
+        
+        if (Regex.IsMatch(startEntryId, entryIdPattern))
         {
             startTimestamp = long.Parse(startEntryId.Split('-')[0]);
             startSequence = long.Parse(startEntryId.Split('-')[1]);
@@ -61,7 +63,7 @@ public class Xrange : Base
             startTimestamp = startEntryIdNumber;
         }
 
-        if (Regex.IsMatch(endEntryId, @"^\d+-\d+$"))
+        if (Regex.IsMatch(endEntryId, entryIdPattern))
         {
             endTimestamp = long.Parse(endEntryId.Split('-')[0]);
             endSequence = long.Parse(endEntryId.Split('-')[1]);
