@@ -4,10 +4,33 @@ using Redis.Common;
 
 namespace Redis.Commands;
 
+// https://redis.io/docs/latest/commands/wait/
 public class Wait : Base
 {
     protected override string Name => nameof(Wait);
     public override bool CanBePropagated => false;
+
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    {
+                        "summary", "Blocks until the asynchronous replication of all preceding " +
+                                   "write commands sent by the connection is completed."
+                    },
+                    { "usage #1", "redis-cli SET mykey1 myval1" },
+                    { "usage #2", "redis-cli TYPE mykey1" },
+                    { "usage #4", "redis-cli TYPE nosuchkey" },
+                    { "usage #5", "redis-cli XADD stream1 * mykey1 myval1" },
+                    { "usage #6", "redis-cli TYPE stream1" }
+                }
+            }
+        };
+    }
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
@@ -16,17 +39,15 @@ public class Wait : Base
         var numberOfReplicasToWaitFor = commandContext.CommandDetails.CommandParts[4];
         var msToWait = commandContext.CommandDetails.CommandParts[6];
 
-        var tasks = new List<Task>();
         var getAckResp = RespBuilder.ArrayFromCommands("REPLCONF", "GETACK", "*");
 
         var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
             .Where(x => x.Value.Connected);
 
-        foreach (var replica in connectedReplicas)
-        {
-            tasks.Add(Task.Run(() =>
-                replica.Value.SendCommand(getAckResp)));
-        }
+        var tasks = connectedReplicas
+            .Select(replica =>
+                Task.Run(() =>
+                    replica.Value.SendCommand(getAckResp)));
 
         await Task.WhenAll(tasks);
 
