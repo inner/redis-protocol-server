@@ -239,7 +239,6 @@ public class Xadd : Base
         switch (long.Parse(entryIdParts[0]))
         {
             case < 0 when long.Parse(entryIdParts[1]) < 0:
-                throw new Exception(errorMessage);
             case 0 when long.Parse(entryIdParts[1]) < 1:
                 throw new Exception(errorMessage);
         }
