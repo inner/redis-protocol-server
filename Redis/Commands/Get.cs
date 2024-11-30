@@ -40,6 +40,7 @@ public class Get : Base
         var cacheItem = DataCache.Get(cacheKey);
 
         string response;
+        
         if (cacheItem?.Value == null)
         {
             response = RespBuilder.Null();

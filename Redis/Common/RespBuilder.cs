@@ -29,7 +29,7 @@ public static class RespBuilder
     
     public static string SimpleString(string value)
     {
-        // ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(value);
         return $"+{value}\r\n";
     }
 
