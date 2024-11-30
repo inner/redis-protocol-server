@@ -8,7 +8,7 @@ public class Get : Base
 {
     protected override string Name => nameof(Get);
     public override bool CanBePropagated => false;
-    
+
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
         return new()
@@ -39,15 +39,24 @@ public class Get : Base
         var cacheKey = commandContext.CommandDetails.CommandParts[4];
         var cacheItem = DataCache.Get(cacheKey);
 
-        var response = cacheItem is null or { Value: null }
-            ? RespBuilder.Null()
-            : RespBuilder.BulkString(cacheItem.Value);
+        string response;
+        if (cacheItem?.Value == null)
+        {
+            response = RespBuilder.Null();
+            Send(commandContext, response);
+            return Task.FromResult(response);
+        }
 
+        response = RespBuilder.BulkString(cacheItem.Value);
+        Send(commandContext, response);
+        return Task.FromResult(response);
+    }
+
+    private static void Send(CommandContext commandContext, string response)
+    {
         if (commandContext is { ReplicaConnection: false, CommandDetails.FromTransaction: false })
         {
             commandContext.Socket.SendCommand(response);
         }
-        
-        return Task.FromResult(RespBuilder.SimpleString(cacheItem?.Value!));
     }
 }
