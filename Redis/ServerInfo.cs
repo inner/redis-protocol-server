@@ -32,7 +32,7 @@ public class ServerRuntimeContext
     public bool DbFileExists { get; set; }
     public int GetConnectedReplicas() => Replicas.Count(x => x.Value.Connected);
 
-    public static async Task ExecuteOnConnectedReplicas(string resp)
+    public static async Task ExecuteOnReplicas(string resp)
     {
         var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
             .Where(x => x.Value.Connected);

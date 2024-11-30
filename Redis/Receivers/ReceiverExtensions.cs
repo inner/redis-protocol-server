@@ -37,7 +37,7 @@ public static class ReceiverExtensions
             return result;
         }
 
-        await ServerRuntimeContext.ExecuteOnConnectedReplicas(commandDetails.Resp);
+        await ServerRuntimeContext.ExecuteOnReplicas(commandDetails.Resp);
         return result;
     }
 
