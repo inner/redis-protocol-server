@@ -29,7 +29,6 @@ public static class RespBuilder
     
     public static string SimpleString(string value)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(value);
         return $"+{value}\r\n";
     }
 
