@@ -91,6 +91,6 @@ public static class DataCache
 
     public static int CountKeys(params string[] keys)
     {
-        return Cache.Count(x => keys.Contains(x.Key));
+        return Cache.Count(x => keys.Distinct().Contains(x.Key));
     }
 }
