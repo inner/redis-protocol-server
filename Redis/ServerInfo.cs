@@ -7,7 +7,7 @@ namespace Redis;
 
 public static class ServerInfo
 {
-    public const int DefaultRedisPort = 63799;
+    public const int DefaultRedisPort = 6379;
     public const string WindowsMasterDir = @"C:\redis-rdb";
     public const string WindowsReplicaDir = @"C:\redis-rdb\replica";
     public const string LinuxMasterDir = "/tmp/redis-rdb";
