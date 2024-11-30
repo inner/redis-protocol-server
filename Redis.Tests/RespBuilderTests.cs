@@ -12,6 +12,13 @@ public class RespBuilderTests
         Assert.Equal($"-ERR {message}\r\n", resp);
         Assert.Contains(message, resp);
     }
+    
+    [Fact]
+    public void Error_MessageNull_CorrectRespGenerated()
+    {
+        const string message = null!;
+        Assert.Throws<ArgumentNullException>(() => RespBuilder.Error(message!));
+    }
 
     [Fact]
     public void Null_MessagePassed_CorrectRespGenerated()
@@ -49,6 +56,13 @@ public class RespBuilderTests
     }
     
     [Fact]
+    public void SimpleString_MessageNull_CorrectRespGenerated()
+    {
+        const string message = null!;
+        Assert.Throws<ArgumentNullException>(() => RespBuilder.SimpleString(message!));
+    }
+    
+    [Fact]
     public void BulkString_MessagePassed_CorrectRespGenerated()
     {
         const string message = "message";
@@ -57,6 +71,13 @@ public class RespBuilderTests
 
         Assert.Equal($"${message.Length}\r\n{message}\r\n", resp);
         Assert.Contains(message, resp);
+    }
+    
+    [Fact]
+    public void BulkString_MessageNull_CorrectRespGenerated()
+    {
+        const string message = null!;
+        Assert.Throws<ArgumentNullException>(() => RespBuilder.BulkString(message!));
     }
     
     [Fact]

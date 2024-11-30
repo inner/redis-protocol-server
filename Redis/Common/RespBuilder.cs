@@ -9,6 +9,7 @@ public static class RespBuilder
         var sb = new StringBuilder($"*{commands.Length}\r\n");
         foreach (var command in commands)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(command);
             sb.Append($"${command.Length}\r\n{command}\r\n");
         }
         
@@ -22,11 +23,13 @@ public static class RespBuilder
 
     public static string BulkString(string value)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
         return $"${value.Length}\r\n{value}\r\n";
     }
     
     public static string SimpleString(string value)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
         return $"+{value}\r\n";
     }
 
@@ -37,6 +40,7 @@ public static class RespBuilder
 
     public static string Error(string value)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
         return $"-ERR {value}\r\n";
     }
     
