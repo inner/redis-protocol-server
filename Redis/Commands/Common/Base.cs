@@ -6,12 +6,7 @@ public abstract class Base
 {
     protected abstract string Name { get; }
     public abstract bool CanBePropagated { get; }
-
-    public virtual Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new Dictionary<string, Dictionary<string, string>>();
-    }
-    
+    public abstract Dictionary<string, Dictionary<string, string>> Docs();
     private bool TransactionStarted { get; set; }
 
     protected virtual Task<string> OnMasterNodeExecute(CommandContext commandContext)
@@ -73,7 +68,7 @@ public abstract class Base
             RespType = commandType,
             Resp = commandString
         });
-        
+
         commandContext.Socket.SendCommand(RespBuilder.SimpleString("QUEUED"));
         return true;
     }

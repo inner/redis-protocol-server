@@ -232,4 +232,18 @@ public class Xadd : Base
                 throw new Exception(errorMessage);
         }
     }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "Appends a new entry to a stream." }
+                }
+            }
+        };
+    }
 }

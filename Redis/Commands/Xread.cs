@@ -242,4 +242,18 @@ public class Xread : Base
 
         return streamKeysWithEntryIds;
     }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "Appends a new entry to a stream." }
+                }
+            }
+        };
+    }
 }
