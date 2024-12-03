@@ -16,33 +16,14 @@ public class Xread : Base
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var blockIndex = Array.IndexOf(commandContext.CommandDetails.CommandParts, "block") + 1;
-        if (blockIndex != -1 &&
-            int.TryParse(commandContext.CommandDetails.CommandParts[blockIndex + 1], out var blockTime))
+        
+        if (blockIndex != -1 && int.TryParse(
+                commandContext.CommandDetails.CommandParts[blockIndex + 1], out var blockTime))
         {
             await Task.Delay(blockTime);
         }
 
-        if (blockIndex != -1 && (commandContext.CommandDetails.CommandParts[6] == "\\x00" ||
-                                 commandContext.CommandDetails.CommandParts[6] == "0"))
-        {
-            return await GenerateCommonResponse(commandContext, noTimeout: true);
-        }
-
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        var blockIndex = Array.IndexOf(commandContext.CommandDetails.CommandParts, "block") + 1;
-
-        if (blockIndex != -1 &&
-            int.TryParse(commandContext.CommandDetails.CommandParts[blockIndex + 1], out var blockTime))
-        {
-            await Task.Delay(blockTime);
-        }
-
-        if (blockIndex != -1 && (commandContext.CommandDetails.CommandParts[6] == "\\x00" ||
-                                 commandContext.CommandDetails.CommandParts[6] == "0"))
+        if (blockIndex != -1 && commandContext.CommandDetails.CommandParts[6] == "0")
         {
             return await GenerateCommonResponse(commandContext, noTimeout: true);
         }
