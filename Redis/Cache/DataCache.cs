@@ -93,4 +93,9 @@ public static class DataCache
     {
         return Cache.Count(x => keys.Distinct().Contains(x.Key));
     }
+    
+    public static int DelKeys(params string[] keys)
+    {
+        return keys.Count(key => Cache.TryRemove(key, out _));
+    }
 }

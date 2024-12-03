@@ -7,6 +7,7 @@ public enum RespType
     Quit,
     Set,
     Get,
+    Del,
     Info,
     Replconf,
     Psync,
