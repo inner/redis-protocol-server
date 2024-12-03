@@ -241,7 +241,12 @@ public class Xadd : Base
                 Name,
                 new()
                 {
-                    { "summary", "Appends a new entry to a stream." }
+                    { "summary", "Appends a new entry to a stream." },
+                    { "usage #1", "redis-cli XADD weather_in_london 1-0 temperature 20 humidity 95" },
+                    { "usage #2", "redis-cli XADD weather_in_london 1-* temperature 19 humidity 70" },
+                    { "usage #3", "redis-cli XADD weather_in_london 2-* temperature 24 humidity 78" },
+                    { "usage #4", "redis-cli XADD weather_in_london 2-* temperature 24 humidity 78" },
+                    { "usage #5", "redis-cli XADD weather_in_london * temperature 25 humidity 90" }
                 }
             }
         };

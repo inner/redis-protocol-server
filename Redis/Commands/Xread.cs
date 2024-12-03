@@ -251,7 +251,10 @@ public class Xread : Base
                 Name,
                 new()
                 {
-                    { "summary", "Appends a new entry to a stream." }
+                    { "summary", "Returns messages from multiple streams with IDs " +
+                                 "greater than the ones requested. Blocks until a " +
+                                 "message is available otherwise." },
+                    { "usage CLI #1", "redis-cli XREAD block 10000 streams weather_in_london 2-0" },
                 }
             }
         };
