@@ -12,6 +12,7 @@ public class Xread : Base
 {
     protected override string Name => nameof(Xread);
     public override bool CanBePropagated => false;
+    private const string EntryIdPattern = @"^\d+-\d+$";
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
@@ -149,7 +150,7 @@ public class Xread : Base
             long? startTimestamp = null;
             long? startSequence = null;
 
-            if (Regex.IsMatch(streamKey.EntryId, @"^\d+-\d+$"))
+            if (Regex.IsMatch(streamKey.EntryId, EntryIdPattern))
             {
                 startTimestamp = long.Parse(streamKey.EntryId.Split('-')[0]);
                 startSequence = long.Parse(streamKey.EntryId.Split('-')[1]);
@@ -201,13 +202,13 @@ public class Xread : Base
         }
 
         streamKeys.AddRange(commandDetails.CommandParts.Skip(isBlocking ? 9 : 5)
-            .Where(x => !Regex.IsMatch(x, @"^\$\d+$") && !Regex.IsMatch(x, @"^\d+-\d+$")));
+            .Where(x => !Regex.IsMatch(x, @"^\$\d+$") && !Regex.IsMatch(x, EntryIdPattern)));
 
         var streamKeyEntryIds = new List<string>();
         var index = commandDetails.CommandParts.ToList().IndexOf(streamKeys.Last());
         for (var i = index + 1; i < commandDetails.CommandParts.Length; i++)
         {
-            if (Regex.IsMatch(commandDetails.CommandParts[i], @"^\d+-\d+$"))
+            if (Regex.IsMatch(commandDetails.CommandParts[i], EntryIdPattern))
             {
                 streamKeyEntryIds.Add(commandDetails.CommandParts[i]);
             }
