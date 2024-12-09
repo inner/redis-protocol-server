@@ -98,8 +98,8 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
     private static void CloseTcpClient(string connectionId, TcpClient? tcpClient)
     {
         if (tcpClient is not { Connected: true }) return;
-        
-        tcpClient.Client.Close();
+
+        tcpClient.Client?.Close();
         
         Console.WriteLine($"TCP Connection [{connectionId}] closed");
     }
