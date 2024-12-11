@@ -8,21 +8,6 @@ public class Info : Base
     protected override string Name => nameof(Info);
     public override bool CanBePropagated => false;
 
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Returns information and statistics about the server." },
-                    { "usage", "redis-cli INFO" }
-                }
-            }
-        };
-    }
-
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var infoValues = new Dictionary<string, string>
@@ -73,5 +58,20 @@ public class Info : Base
         }
         
         return Task.FromResult(response);
+    }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "Returns information and statistics about the server." },
+                    { "usage", "redis-cli INFO" }
+                }
+            }
+        };
     }
 }
