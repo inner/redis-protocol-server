@@ -9,25 +9,6 @@ public class Type : Base
     protected override string Name => nameof(Type);
     public override bool CanBePropagated => false;
 
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Determines the type of value stored at a key." },
-                    { "usage #1", "redis-cli SET mykey1 myval1" },
-                    { "usage #2", "redis-cli TYPE mykey1" },
-                    { "usage #4", "redis-cli TYPE nosuchkey" },
-                    { "usage #5", "redis-cli XADD stream1 * mykey1 myval1" },
-                    { "usage #6", "redis-cli TYPE stream1" }
-                }
-            }
-        };
-    }
-
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
@@ -73,5 +54,24 @@ public class Type : Base
         result = RespBuilder.SimpleString("none");
         commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
+    }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "Determines the type of value stored at a key." },
+                    { "usage #1", "redis-cli SET mykey1 myval1" },
+                    { "usage #2", "redis-cli TYPE mykey1" },
+                    { "usage #4", "redis-cli TYPE nosuchkey" },
+                    { "usage #5", "redis-cli XADD stream1 * mykey1 myval1" },
+                    { "usage #6", "redis-cli TYPE stream1" }
+                }
+            }
+        };
     }
 }

@@ -10,21 +10,6 @@ public class Keys : Base
     protected override string Name => nameof(Keys);
     public override bool CanBePropagated => false;
 
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    {"summary", "Returns all key names that match a pattern."},
-                    {"usage", "redis-cli KEYS *"}
-                }
-            }
-        };
-    }
-
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
@@ -57,5 +42,20 @@ public class Keys : Base
         }
 
         return Task.FromResult(result);
+    }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    {"summary", "Returns all key names that match a pattern."},
+                    {"usage", "redis-cli KEYS *"}
+                }
+            }
+        };
     }
 }

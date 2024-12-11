@@ -8,20 +8,6 @@ public class Psync : Base
     protected override string Name => nameof(Psync);
     public override bool CanBePropagated => false;
 
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "An internal command used in replication." }
-                }
-            }
-        };
-    }
-
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var fullResync = RespBuilder.SimpleString($"FULLRESYNC {ServerInfo.ServerRuntimeContext.MasterReplId} 0");
@@ -46,5 +32,19 @@ public class Psync : Base
         return Convert.FromBase64String(
             "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3Rpb" +
             "WXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==");
+    }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "An internal command used in replication." }
+                }
+            }
+        };
     }
 }

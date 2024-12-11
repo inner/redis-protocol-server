@@ -8,21 +8,6 @@ public class Quit : Base
     protected override string Name => nameof(Quit);
     public override bool CanBePropagated => false;
 
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Closes the connection." },
-                    { "usage", "redis-cli QUIT" }
-                }
-            }
-        };
-    }
-
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
@@ -43,5 +28,20 @@ public class Quit : Base
         }
 
         return Task.FromResult(result);
+    }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "Closes the connection." },
+                    { "usage", "redis-cli QUIT" }
+                }
+            }
+        };
     }
 }
