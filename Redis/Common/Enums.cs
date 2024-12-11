@@ -17,6 +17,7 @@ public enum RespType
     Xadd,
     Xrange,
     Xread,
+    Xread2,
     Config,
     Keys,
     Incr,
