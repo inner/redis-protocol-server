@@ -8,26 +8,6 @@ public class Discard : Base
     protected override string Name => nameof(Discard);
     public override bool CanBePropagated => true;
 
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Discards a transaction." },
-                    { "usage #1", "redis-cli" },
-                    { "usage #2", "MULTI" },
-                    { "usage #3", "SET mykey1 myval1" },
-                    { "usage #4", "INCR someotherkey" },
-                    { "usage #5", "DISCARD" },
-                    { "usage #6", "GET mykey1" }
-                }
-            }
-        };
-    }
-
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
@@ -54,5 +34,25 @@ public class Discard : Base
 
         commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
+    }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "Discards a transaction." },
+                    { "usage #1", "redis-cli" },
+                    { "usage #2", "MULTI" },
+                    { "usage #3", "SET mykey1 myval1" },
+                    { "usage #4", "INCR someotherkey" },
+                    { "usage #5", "DISCARD" },
+                    { "usage #6", "GET mykey1" }
+                }
+            }
+        };
     }
 }

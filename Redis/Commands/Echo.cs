@@ -8,21 +8,6 @@ public class Echo : Base
     protected override string Name => nameof(Echo);
     public override bool CanBePropagated => false;
 
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    {"summary", "Returns the given string."},
-                    {"usage", "redis-cli ECHO mystring"}
-                }
-            }
-        };
-    }
-
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
@@ -47,5 +32,20 @@ public class Echo : Base
         }
 
         return Task.FromResult(response);
+    }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    {"summary", "Returns the given string."},
+                    {"usage", "redis-cli ECHO mystring"}
+                }
+            }
+        };
     }
 }

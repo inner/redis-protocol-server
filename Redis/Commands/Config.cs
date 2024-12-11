@@ -8,20 +8,6 @@ public class Config : Base
     protected override string Name => nameof(Config);
     public override bool CanBePropagated => false;
 
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "A container for server configuration commands." }
-                }
-            }
-        };
-    }
-
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
@@ -68,5 +54,19 @@ public class Config : Base
         }
 
         return Task.FromResult(resp);
+    }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "A container for server configuration commands." }
+                }
+            }
+        };
     }
 }

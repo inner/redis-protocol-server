@@ -8,25 +8,6 @@ public class Set : Base
 {
     protected override string Name => nameof(Set);
     public override bool CanBePropagated => true;
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    {
-                        "summary",
-                        "Sets the string value of a key, ignoring its type. The key is created if it doesn't exist."
-                    },
-                    { "usage #1", "redis-cli SET key1 val1" },
-                    { "usage #2", "redis-cli SET key1 val1 PX 5000" }
-                }
-            }
-        };
-    }
-
     private readonly string okResp = RespBuilder.SimpleString("OK");
 
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
@@ -88,5 +69,24 @@ public class Set : Base
         DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
 
         return Task.FromResult(okResp);
+    }
+
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    {
+                        "summary",
+                        "Sets the string value of a key, ignoring its type. The key is created if it doesn't exist."
+                    },
+                    { "usage #1", "redis-cli SET key1 val1" },
+                    { "usage #2", "redis-cli SET key1 val1 PX 5000" }
+                }
+            }
+        };
     }
 }
