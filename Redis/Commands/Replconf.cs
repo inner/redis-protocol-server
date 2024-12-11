@@ -8,20 +8,6 @@ public class Replconf : Base
     protected override string Name => nameof(Replconf);
     public override bool CanBePropagated => false;
 
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "An internal command for configuring the replication stream." }
-                }
-            }
-        };
-    }
-
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var result = RespBuilder.SimpleString("OK");
@@ -61,5 +47,19 @@ public class Replconf : Base
         }
 
         return Task.FromResult(resp);
+    }
+    
+    public override Dictionary<string, Dictionary<string, string>> Docs()
+    {
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "An internal command for configuring the replication stream." }
+                }
+            }
+        };
     }
 }
