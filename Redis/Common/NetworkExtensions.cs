@@ -98,7 +98,7 @@ public static class NetworkExtensions
         var buffer = new byte[1];
         while (true)
         {
-            var bytesRead = await stream.ReadAsync(buffer, 0, 1);
+            var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, 1));
             if (bytesRead == 0)
             {
                 throw new Exception("Unexpected end of stream.");
