@@ -52,7 +52,7 @@ public static class NetworkExtensions
 
         // read FULLRESYNC response
         // e.g., +FULLRESYNC <replication_id> <offset>
-        var fullResyncResponse = ReadLine(stream)
+        var fullResyncResponse = stream.ReadLine()
             .ConfigureAwait(false)
             .GetAwaiter()
             .GetResult();
@@ -64,7 +64,7 @@ public static class NetworkExtensions
 
         // read the RDB length
         // e.g. $<length>
-        var rdbLengthStr = ReadLine(stream)
+        var rdbLengthStr = stream.ReadLine()
             .ConfigureAwait(false)
             .GetAwaiter()
             .GetResult();
@@ -92,7 +92,7 @@ public static class NetworkExtensions
         Console.WriteLine("Received RDB file of length: " + rdbLength);
     }
 
-    private static async Task<string> ReadLine(NetworkStream stream)
+    private static async Task<string> ReadLine(this NetworkStream stream)
     {
         var sb = new StringBuilder();
         var buffer = new byte[1];
