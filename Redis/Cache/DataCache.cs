@@ -4,6 +4,8 @@ using Redis.Common;
 
 namespace Redis.Cache;
 
+// article for refactoring
+// https://stackoverflow.com/questions/9625246/what-are-the-underlying-data-structures-used-for-redis
 public static class DataCache
 {
     private static ConcurrentDictionary<string, string> Cache { get; } = new();
