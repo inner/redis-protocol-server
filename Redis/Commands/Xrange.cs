@@ -77,7 +77,7 @@ public class Xrange : Base
             .Where(StreamEntriesFilter(startTimestamp, startSequence, endTimestamp, endSequence))
             .ToList();
 
-        var sb = new StringBuilder($"*{streamEntries.Count}\r\n");
+        var sb = new StringBuilder(RespBuilder.InitArray(streamEntries.Count));
         foreach (var streamEntry in streamEntries)
         {
             var flattened = streamEntry.Value
