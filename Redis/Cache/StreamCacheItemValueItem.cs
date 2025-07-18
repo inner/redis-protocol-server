@@ -7,5 +7,5 @@ public class StreamCacheItemValueItem
     public long Timestamp => long.Parse(Id.Split('-')[0]);
     public long Sequence => long.Parse(Id.Split('-')[1]);
     public List<StreamCacheItemValueItemValue> Value { get; set; } = null!;
-    public string[] FlattenedKeys => Value.Select(x => x.Key).ToArray();
+    public string[] Flattened => Value.SelectMany(x => new[] { x.Key, x.Value }).ToArray();
 }

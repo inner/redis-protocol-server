@@ -82,11 +82,11 @@ public class Xrange : Base
         {
             sb.Append(RespBuilder.InitArray(2));
             sb.Append(RespBuilder.BulkString(streamEntry.Id));
-            sb.Append(RespBuilder.InitArray(streamEntry.FlattenedKeys.Length));
-            for (var i = 0; i < streamEntry.FlattenedKeys.Length; i += 2)
+            sb.Append(RespBuilder.InitArray(streamEntry.Flattened.Length));
+            for (var i = 0; i < streamEntry.Flattened.Length; i += 2)
             {
-                sb.Append(RespBuilder.BulkString(streamEntry.FlattenedKeys[i]));
-                sb.Append(RespBuilder.BulkString(streamEntry.FlattenedKeys[i + 1]));
+                sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i]));
+                sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i + 1]));
             }
         }
 
