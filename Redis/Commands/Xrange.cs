@@ -80,17 +80,13 @@ public class Xrange : Base
         var sb = new StringBuilder(RespBuilder.InitArray(streamEntries.Count));
         foreach (var streamEntry in streamEntries)
         {
-            var flattened = streamEntry.Value
-                .SelectMany(x => new[] { x.Key, x.Value })
-                .ToArray();
-            
             sb.Append(RespBuilder.InitArray(2));
             sb.Append(RespBuilder.BulkString(streamEntry.Id));
-            sb.Append(RespBuilder.InitArray(flattened.Length));
-            for (var i = 0; i < flattened.Length; i += 2)
+            sb.Append(RespBuilder.InitArray(streamEntry.FlattenedKeys.Length));
+            for (var i = 0; i < streamEntry.FlattenedKeys.Length; i += 2)
             {
-                sb.Append(RespBuilder.BulkString(flattened[i]));
-                sb.Append(RespBuilder.BulkString(flattened[i + 1]));
+                sb.Append(RespBuilder.BulkString(streamEntry.FlattenedKeys[i]));
+                sb.Append(RespBuilder.BulkString(streamEntry.FlattenedKeys[i + 1]));
             }
         }
 
