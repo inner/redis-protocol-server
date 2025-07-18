@@ -80,13 +80,17 @@ public class Xrange : Base
         var sb = new StringBuilder($"*{streamEntries.Count}\r\n");
         foreach (var streamEntry in streamEntries)
         {
+            var streamItems = streamEntry.Value
+                .SelectMany(x => new[] { x.Key, x.Value })
+                .ToArray();
+            
             sb.Append($"*{streamEntry.Value.Count}\r\n");
             sb.Append($"${streamEntry.Id.Length}\r\n{streamEntry.Id}\r\n");
-            sb.Append($"*{streamEntry.Value.Count * 2}\r\n");
-            foreach (var cacheItemValueItemValue in streamEntry.Value)
+            sb.Append($"*{streamItems.Length}\r\n");
+            for (var i = 0; i < streamItems.Length; i += 2)
             {
-                sb.Append($"${cacheItemValueItemValue.Key.Length}\r\n{cacheItemValueItemValue.Key}\r\n");
-                sb.Append($"${cacheItemValueItemValue.Value.Length}\r\n{cacheItemValueItemValue.Value}\r\n");
+                sb.Append($"${streamItems[i].Length}\r\n{streamItems[i]}\r\n");
+                sb.Append($"${streamItems[i + 1].Length}\r\n{streamItems[i + 1]}\r\n");
             }
         }
 
