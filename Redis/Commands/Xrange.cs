@@ -77,6 +77,18 @@ public class Xrange : Base
             .Where(StreamEntriesFilter(startTimestamp, startSequence, endTimestamp, endSequence))
             .ToList();
 
+        result = BuildResp(streamEntries);
+
+        if (!commandContext.ReplicaConnection)
+        {
+            commandContext.Socket.SendCommand(result);
+        }
+
+        return Task.FromResult(result);
+    }
+
+    private static string BuildResp(List<StreamCacheItemValueItem> streamEntries)
+    {
         var sb = new StringBuilder(RespBuilder.InitArray(streamEntries.Count));
         foreach (var streamEntry in streamEntries)
         {
@@ -89,15 +101,8 @@ public class Xrange : Base
                 sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i + 1]));
             }
         }
-
-        result = sb.ToString();
-
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(result);
-        }
-
-        return Task.FromResult(result);
+        
+        return sb.ToString();
     }
 
     private static Func<StreamCacheItemValueItem, bool> StreamEntriesFilter(long? startTimestamp, long? startSequence,
