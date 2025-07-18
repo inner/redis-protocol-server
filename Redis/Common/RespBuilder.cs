@@ -20,6 +20,16 @@ public static class RespBuilder
     {
         return "*0\r\n";
     }
+    
+    public static string InitArray(int count)
+    {
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be negative.");
+        }
+        
+        return $"*{count}\r\n";
+    }
 
     public static string BulkString(string value)
     {
