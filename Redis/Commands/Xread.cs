@@ -101,20 +101,19 @@ public class Xread : Base
             return Task.FromResult(result);
         }
 
-        var sb = new StringBuilder($"*{streamEntries.Count}\r\n");
+        var sb = new StringBuilder(RespBuilder.InitArray(1));
         foreach (var streamEntry in streamEntries)
         {
-            sb.Append("*2\r\n");
+            sb.Append(RespBuilder.InitArray(2));
             sb.Append($"${streamEntry.Key.Length}\r\n{streamEntry.Key}\r\n");
-            sb.Append("*1\r\n");
-            sb.Append("*2\r\n");
-            sb.Append($"${streamEntry.Id.Length}\r\n{streamEntry.Id}\r\n");
-            sb.Append($"*{streamEntry.Value.Count}\r\n");
-
-            foreach (var cacheItemValueItemValue in streamEntry.Value)
+            sb.Append(RespBuilder.InitArray(1));
+            sb.Append(RespBuilder.InitArray(2));
+            sb.Append(RespBuilder.BulkString(streamEntry.Id));
+            sb.Append(RespBuilder.InitArray(streamEntry.Flattened.Length));
+            for (var i = 0; i < streamEntry.Flattened.Length; i += 2)
             {
-                sb.Append($"${cacheItemValueItemValue.Key.Length}\r\n{cacheItemValueItemValue.Key}\r\n");
-                sb.Append($"${cacheItemValueItemValue.Value.Length}\r\n{cacheItemValueItemValue.Value}\r\n");
+                sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i]));
+                sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i + 1]));
             }
         }
 
