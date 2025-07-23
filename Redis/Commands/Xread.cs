@@ -13,10 +13,11 @@ public class Xread : Base
     protected override string Name => nameof(Xread);
     public override bool CanBePropagated => false;
     private const string EntryIdPattern = @"^\d+-\d+$";
+    private const string Block = "block";
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        var blockIndex = Array.IndexOf(commandContext.CommandDetails.CommandParts, "block");
+        var blockIndex = Array.IndexOf(commandContext.CommandDetails.CommandParts, Block);
         
         if (blockIndex != -1 && int.TryParse(
                 commandContext.CommandDetails.CommandParts[blockIndex + 2], out var blockTime))
@@ -35,7 +36,7 @@ public class Xread : Base
     private static Task<string> GenerateCommonResponse(CommandContext commandContext, bool noTimeout = false)
     {
         string result;
-        var isBlocking = Array.IndexOf(commandContext.CommandDetails.CommandParts, "block") != -1;
+        var isBlocking = Array.IndexOf(commandContext.CommandDetails.CommandParts, Block) != -1;
         List<StreamCacheItemValueItem> streamEntries = [];
 
         if (noTimeout)
