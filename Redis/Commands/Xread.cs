@@ -102,6 +102,18 @@ public class Xread : Base
             return Task.FromResult(result);
         }
 
+        result = BuildResp(streamEntries);
+
+        if (!commandContext.ReplicaConnection)
+        {
+            commandContext.Socket.SendCommand(result);
+        }
+
+        return Task.FromResult(result);
+    }
+
+    private static string BuildResp(List<StreamCacheItemValueItem> streamEntries)
+    {
         var sb = new StringBuilder(RespBuilder.InitArray(streamEntries.Count));
         foreach (var streamEntry in streamEntries)
         {
@@ -117,15 +129,8 @@ public class Xread : Base
                 sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i + 1]));
             }
         }
-
-        result = sb.ToString();
-
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(result);
-        }
-
-        return Task.FromResult(result);
+        
+        return sb.ToString();
     }
 
     private static List<StreamCacheItemValueItem> BuildStreamEntries(List<StreamKeyWithEntryId> streamKeys)
