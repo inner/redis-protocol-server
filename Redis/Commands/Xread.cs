@@ -112,27 +112,6 @@ public class Xread : Base
         return Task.FromResult(result);
     }
 
-    private static string BuildResp(List<StreamCacheItemValueItem> streamEntries)
-    {
-        var sb = new StringBuilder(RespBuilder.InitArray(streamEntries.Count));
-        foreach (var streamEntry in streamEntries)
-        {
-            sb.Append(RespBuilder.InitArray(2));
-            sb.Append(RespBuilder.BulkString(streamEntry.Key));
-            sb.Append(RespBuilder.InitArray(1));
-            sb.Append(RespBuilder.InitArray(2));
-            sb.Append(RespBuilder.BulkString(streamEntry.Id));
-            sb.Append(RespBuilder.InitArray(streamEntry.Flattened.Length));
-            for (var i = 0; i < streamEntry.Flattened.Length; i += 2)
-            {
-                sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i]));
-                sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i + 1]));
-            }
-        }
-        
-        return sb.ToString();
-    }
-
     private static List<StreamCacheItemValueItem> BuildStreamEntries(List<StreamKeyWithEntryId> streamKeys)
     {
         var streamEntries = new List<StreamCacheItemValueItem>();
@@ -228,6 +207,27 @@ public class Xread : Base
         }
 
         return streamKeysWithEntryIds;
+    }
+    
+    private static string BuildResp(List<StreamCacheItemValueItem> streamEntries)
+    {
+        var sb = new StringBuilder(RespBuilder.InitArray(streamEntries.Count));
+        foreach (var streamEntry in streamEntries)
+        {
+            sb.Append(RespBuilder.InitArray(2));
+            sb.Append(RespBuilder.BulkString(streamEntry.Key));
+            sb.Append(RespBuilder.InitArray(1));
+            sb.Append(RespBuilder.InitArray(2));
+            sb.Append(RespBuilder.BulkString(streamEntry.Id));
+            sb.Append(RespBuilder.InitArray(streamEntry.Flattened.Length));
+            for (var i = 0; i < streamEntry.Flattened.Length; i += 2)
+            {
+                sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i]));
+                sb.Append(RespBuilder.BulkString(streamEntry.Flattened[i + 1]));
+            }
+        }
+        
+        return sb.ToString();
     }
     
     public override Dictionary<string, Dictionary<string, string>> Docs()
