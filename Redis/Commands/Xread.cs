@@ -101,11 +101,11 @@ public class Xread : Base
             return Task.FromResult(result);
         }
 
-        var sb = new StringBuilder(RespBuilder.InitArray(1));
+        var sb = new StringBuilder(RespBuilder.InitArray(streamEntries.Count));
         foreach (var streamEntry in streamEntries)
         {
             sb.Append(RespBuilder.InitArray(2));
-            sb.Append($"${streamEntry.Key.Length}\r\n{streamEntry.Key}\r\n");
+            sb.Append(RespBuilder.BulkString(streamEntry.Key));
             sb.Append(RespBuilder.InitArray(1));
             sb.Append(RespBuilder.InitArray(2));
             sb.Append(RespBuilder.BulkString(streamEntry.Id));
