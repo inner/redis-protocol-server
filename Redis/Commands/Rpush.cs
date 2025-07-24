@@ -6,21 +6,27 @@ namespace Redis.Commands;
 public class Rpush : Base
 {
     protected override string Name => nameof(Rpush);
-    public override bool CanBePropagated => false;
+    public override bool CanBePropagated => true;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse();
+        return await GenerateCommonResponse(commandContext);
     }
 
     protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
-        return await GenerateCommonResponse();
+        return await GenerateCommonResponse(commandContext);
     }
 
-    private static Task<string> GenerateCommonResponse()
+    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         var result = RespBuilder.Integer(1);
+        
+        if (!commandContext.ReplicaConnection)
+        {
+            commandContext.Socket.SendCommand(result);
+        }
+        
         return Task.FromResult(result);
     }
 
