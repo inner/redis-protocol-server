@@ -25,7 +25,8 @@ public enum RespType
     Exec,
     Command,
     Discard,
-    Exists
+    Exists,
+    Rpush
 }
 
 public enum DataType
