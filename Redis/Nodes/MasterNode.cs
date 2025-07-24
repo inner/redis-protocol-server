@@ -27,12 +27,10 @@ public class MasterNode : NodeBase
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-        var result = new string(
+        return new string(
             Enumerable.Repeat(chars, 40)
                 .Select(s => s[new Random().Next(s.Length)])
                 .ToArray()
         );
-
-        return result;
     }
 }

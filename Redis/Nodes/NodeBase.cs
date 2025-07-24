@@ -62,10 +62,9 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
 
                 while (true)
                 {
-                    var resp = client
-                        .GetStream()
-                        .ReadResponse();
-
+                    var resp = client.GetStream()
+                        .AsString();
+                    
                     if (string.IsNullOrEmpty(resp))
                     {
                         client.Client.SendCommand(RespBuilder.Null());
@@ -97,10 +96,12 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
 
     private static void CloseTcpClient(string connectionId, TcpClient? tcpClient)
     {
-        if (tcpClient is not { Connected: true }) return;
+        if (tcpClient is not { Connected: true })
+        {
+            return;
+        }
 
-        tcpClient.Client?.Close();
-        
+        tcpClient.Client.Close();
         Console.WriteLine($"TCP Connection [{connectionId}] closed");
     }
 }

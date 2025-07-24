@@ -13,7 +13,7 @@ public static class NetworkExtensions
         EnsureExpectedResponse(
             nameof(SendPing),
             RespBuilder.SimpleString("PONG"),
-            stream.ReadResponse());
+            AsString(stream));
 
         return stream;
     }
@@ -26,7 +26,7 @@ public static class NetworkExtensions
         EnsureExpectedResponse(
             nameof(SendReplconfListeningPort),
             RespBuilder.SimpleString("OK"),
-            stream.ReadResponse());
+            AsString(stream));
 
         return stream;
     }
@@ -39,7 +39,7 @@ public static class NetworkExtensions
         EnsureExpectedResponse(
             nameof(SendReplconfCapaPsync2),
             RespBuilder.SimpleString("OK"),
-            stream.ReadResponse());
+            AsString(stream));
 
         return stream;
     }
@@ -123,7 +123,7 @@ public static class NetworkExtensions
         return sb.ToString();
     }
 
-    public static string ReadResponse(this NetworkStream stream)
+    public static string AsString(this NetworkStream stream)
     {
         using var memoryStream = new MemoryStream();
         var buffer = new byte[1024];
