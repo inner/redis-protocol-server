@@ -12,6 +12,7 @@ public static class ServerInfo
     public const string WindowsReplicaDir = @"C:\redis-rdb\replica";
     public const string LinuxMasterDir = "/tmp/redis-rdb";
     public const string LinuxReplicaDir = "/tmp/redis-rdb/replica";
+    public const string RdbExtension = ".rdb";
 
     public static OSPlatform OperatingSystem =>
         RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

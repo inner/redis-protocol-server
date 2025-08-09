@@ -83,8 +83,8 @@ else
             : ServerInfo.LinuxReplicaDir;
 
     ServerInfo.ServerRuntimeContext.DbFilename = ServerInfo.ServerRuntimeContext.IsMaster
-        ? $"master{(port != 0 ? port : ServerInfo.DefaultRedisPort)}.rdb"
-        : $"replica{port}.rdb";
+        ? $"master{(port != 0 ? port : ServerInfo.DefaultRedisPort)}{ServerInfo.RdbExtension}"
+        : $"replica{port}{ServerInfo.RdbExtension}";
 }
 
 if (Array.IndexOf(programArgs, "--dbfilename") != -1)
