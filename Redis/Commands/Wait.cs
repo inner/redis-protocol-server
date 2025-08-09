@@ -29,7 +29,7 @@ public class Wait : Base
         }
 
         var acksReceived = ServerInfo.Replication.ReplicaAcksReceived == 0
-            ? ServerInfo.ServerRuntimeContext.GetConnectedReplicas()
+            ? ServerInfo.ServerRuntimeContext.ConnectedReplicasCount
             : ServerInfo.Replication.ReplicaAcksReceived;
 
         var acksReceivedResp = RespBuilder.Integer(acksReceived);

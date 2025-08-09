@@ -31,7 +31,7 @@ public class ServerRuntimeContext
     public string DataDir { get; set; } = null!;
     public string DbFilename { get; set; } = null!;
     public bool DbFileExists { get; set; }
-    public int GetConnectedReplicas() => Replicas.Count(x => x.Value.Connected);
+    public int ConnectedReplicasCount => Replicas.Count(x => x.Value.Connected);
 
     public static async Task ExecuteOnReplicas(string resp)
     {

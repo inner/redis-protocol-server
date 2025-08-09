@@ -15,7 +15,7 @@ public class Info : Base
             { "role", "master" },
             { "master_replid", ServerInfo.ServerRuntimeContext.MasterReplId },
             { "master_repl_offset", "0" },
-            { "connected_slaves", ServerInfo.ServerRuntimeContext.GetConnectedReplicas().ToString() },
+            { "connected_slaves", ServerInfo.ServerRuntimeContext.ConnectedReplicasCount.ToString() },
             { "second_repl_offset", "-1" },
             { "repl_backlog_active", "0" },
             { "repl_backlog_size", "1048576" },
