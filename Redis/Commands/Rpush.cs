@@ -21,19 +21,22 @@ public class Rpush : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var key = commandContext.CommandDetails.CommandParts[4];
-        var values = commandContext.CommandDetails.CommandParts.Skip(6)
+        var commands = commandContext.CommandDetails.CommandParts;
+
+        var key = commands[4];
+        var values = commands.Skip(6)
             .Where((_, i) => i % 2 == 0)
             .ToArray();
 
-        var result = RespBuilder.Integer(DataCache.Rpush(key, values));
-
+        var result = DataCache.Rpush(key, values);
+        var resp = RespBuilder.Integer(result);
+        
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.SendCommand(result);
+            commandContext.Socket.SendCommand(resp);
         }
 
-        return Task.FromResult(result);
+        return Task.FromResult(resp);
     }
 
     public override Dictionary<string, Dictionary<string, string>> Docs()
