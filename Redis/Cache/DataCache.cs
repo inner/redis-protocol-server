@@ -123,7 +123,10 @@ public static class DataCache
             end += list.Count;
         }
 
-        return list.Skip(start).Take(end - start + 1).ToList();
+        return list
+            .Skip(start)
+            .Take(end - start + 1)
+            .ToList();
     }
 
     public static string? Fetch(string key)
