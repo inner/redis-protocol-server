@@ -108,20 +108,15 @@ public static class DataCache
         var listItem = Fetch(listKey);
         
         if (string.IsNullOrEmpty(listItem))
-        {
             return [];
-        }
 
         var list = listItem.Deserialize<List<string>>() ?? [];
+        
         if (start < 0)
-        {
             start += list.Count;
-        }
 
         if (end < 0)
-        {
             end += list.Count;
-        }
 
         return list
             .Skip(start)
