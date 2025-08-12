@@ -21,15 +21,22 @@ public class Rpush : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var result = RespBuilder.Integer(DataCache.Rpush(
-            commandContext.CommandDetails.CommandParts[4],
-            commandContext.CommandDetails.CommandParts[6]));
-        
+        var key = commandContext.CommandDetails.CommandParts[4];
+
+        var values = commandContext.CommandDetails.CommandParts[6..]
+            .Where((x, i) =>
+                !int.TryParse(
+                    commandContext.CommandDetails.CommandParts[i]
+                        .Replace("$", string.Empty), out _))
+            .ToArray();
+
+        var result = RespBuilder.Integer(DataCache.Rpush(key, values));
+
         if (!commandContext.ReplicaConnection)
         {
             commandContext.Socket.SendCommand(result);
         }
-        
+
         return Task.FromResult(result);
     }
 
@@ -41,10 +48,10 @@ public class Rpush : Base
                 Name,
                 new()
                 {
-                    {"summary", "Appends one or more elements to a list. Creates the key if it doesn't exist."},
-                    {"usage #1", "RPUSH mylist \"hello\""},
-                    {"usage #2", "RPUSH mylist \"world\""},
-                    {"usage #3", "LRANGE mylist 0 -1"}
+                    { "summary", "Appends one or more elements to a list. Creates the key if it doesn't exist." },
+                    { "usage #1", "RPUSH mylist \"hello\"" },
+                    { "usage #2", "RPUSH mylist \"world\"" },
+                    { "usage #3", "LRANGE mylist 0 -1" }
                 }
             }
         };

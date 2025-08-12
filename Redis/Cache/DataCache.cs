@@ -85,19 +85,20 @@ public static class DataCache
         return entryId;
     }
 
-    public static int Rpush(string listKey, string listValue)
+    public static int Rpush(string listKey, params string[] listValues)
     {
         var listItem = Fetch(listKey);
+        List<string> list = [];
 
         if (string.IsNullOrEmpty(listItem))
         {
-            var newList = new List<string> { listValue };
-            Cache[listKey] = JsonSerializer.Serialize(newList);
-            return 1;
+            list.AddRange(listValues);
+            Cache[listKey] = JsonSerializer.Serialize(list);
+            return list.Count;
         }
 
-        var list = listItem.Deserialize<List<string>>() ?? [];
-        list.Add(listValue);
+        list = listItem.Deserialize<List<string>>() ?? [];
+        list.AddRange(listValues);
         Cache[listKey] = JsonSerializer.Serialize(list);
         return list.Count;
     }
