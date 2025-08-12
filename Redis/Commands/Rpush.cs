@@ -22,12 +22,8 @@ public class Rpush : Base
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         var key = commandContext.CommandDetails.CommandParts[4];
-
-        var values = commandContext.CommandDetails.CommandParts[6..]
-            .Where((x, i) =>
-                !int.TryParse(
-                    commandContext.CommandDetails.CommandParts[i]
-                        .Replace("$", string.Empty), out _))
+        var values = commandContext.CommandDetails.CommandParts.Skip(6)
+            .Where((_, i) => i % 2 == 0)
             .ToArray();
 
         var result = RespBuilder.Integer(DataCache.Rpush(key, values));
