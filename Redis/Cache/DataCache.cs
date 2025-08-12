@@ -50,7 +50,7 @@ public static class DataCache
         }
 
         pattern = pattern.Replace("*", string.Empty);
-        
+
         return Cache
             .Where(x => x.Key.StartsWith(pattern))
             .Select(x => x.Key)
@@ -85,6 +85,23 @@ public static class DataCache
         return entryId;
     }
 
+    public static int Rpush(string listKey, string listValue)
+    {
+        var listItem = Fetch(listKey);
+
+        if (string.IsNullOrEmpty(listItem))
+        {
+            var newList = new List<string> { listValue };
+            Cache[listKey] = JsonSerializer.Serialize(newList);
+            return 1;
+        }
+
+        var list = listItem.Deserialize<List<string>>() ?? [];
+        list.Add(listValue);
+        Cache[listKey] = JsonSerializer.Serialize(list);
+        return list.Count;
+    }
+
     public static string? Fetch(string key)
     {
         Cache.TryGetValue(key, out var value);
@@ -95,7 +112,7 @@ public static class DataCache
     {
         return Cache.Count(x => keys.Distinct().Contains(x.Key));
     }
-    
+
     public static int DelKeys(params string[] keys)
     {
         return keys.Count(key => Cache.TryRemove(key, out _));

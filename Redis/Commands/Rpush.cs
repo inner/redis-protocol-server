@@ -1,3 +1,4 @@
+using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
 
@@ -20,7 +21,9 @@ public class Rpush : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var result = RespBuilder.Integer(1);
+        var result = RespBuilder.Integer(DataCache.Rpush(
+            commandContext.CommandDetails.CommandParts[4],
+            commandContext.CommandDetails.CommandParts[6]));
         
         if (!commandContext.ReplicaConnection)
         {
