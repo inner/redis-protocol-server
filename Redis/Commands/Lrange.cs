@@ -29,7 +29,9 @@ public class Lrange : Base
         var end = int.Parse(commands[8]);
 
         var result = DataCache.Lrange(key, start, end);
-        var sb = new StringBuilder(RespBuilder.InitArray(result.Count));
+        
+        var sb = new StringBuilder(
+            RespBuilder.InitArray(result.Count));
         
         foreach (var item in result)
         {
