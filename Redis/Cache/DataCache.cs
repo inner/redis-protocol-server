@@ -102,6 +102,29 @@ public static class DataCache
         Cache[listKey] = JsonSerializer.Serialize(list);
         return list.Count;
     }
+    
+    public static IList<string> Lrange(string listKey, int start, int end)
+    {
+        var listItem = Fetch(listKey);
+        
+        if (string.IsNullOrEmpty(listItem))
+        {
+            return [];
+        }
+
+        var list = listItem.Deserialize<List<string>>() ?? [];
+        if (start < 0)
+        {
+            start += list.Count;
+        }
+
+        if (end < 0)
+        {
+            end += list.Count;
+        }
+
+        return list.Skip(start).Take(end - start + 1).ToList();
+    }
 
     public static string? Fetch(string key)
     {

@@ -26,7 +26,8 @@ public enum RespType
     Command,
     Discard,
     Exists,
-    Rpush
+    Rpush,
+    Lrange
 }
 
 public enum DataType
