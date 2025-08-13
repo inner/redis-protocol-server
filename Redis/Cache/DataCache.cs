@@ -152,12 +152,29 @@ public static class DataCache
     public static int Llen(string listKey)
     {
         var listItem = Fetch(listKey);
-        
+
         if (string.IsNullOrEmpty(listItem))
             return 0;
 
         var list = listItem.Deserialize<List<string>>() ?? [];
         return list.Count;
+    }
+
+    public static string? Lpop(string listKey)
+    {
+        var listItem = Fetch(listKey);
+
+        if (string.IsNullOrEmpty(listItem))
+            return null;
+
+        var list = listItem.Deserialize<List<string>>() ?? [];
+        if (list.Count == 0)
+            return null;
+
+        var value = list[0];
+        list.RemoveAt(0);
+        Cache[listKey] = JsonSerializer.Serialize(list);
+        return value;
     }
 
     public static string? Fetch(string key)

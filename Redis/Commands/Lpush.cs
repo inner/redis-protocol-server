@@ -41,6 +41,17 @@ public class Lpush : Base
 
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
-        throw new NotImplementedException();
+        return new()
+        {
+            {
+                Name,
+                new()
+                {
+                    { "summary", "Prepends one or multiple values to the beginning of a list." },
+                    { "usage #1", "LPUSH mylist value1 value2" },
+                    { "usage #2", "LPUSH anotherlist value3" }
+                }
+            }
+        };
     }
 }

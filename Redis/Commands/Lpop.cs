@@ -4,10 +4,10 @@ using Redis.Common;
 
 namespace Redis.Commands;
 
-public class Llen : Base
+public class Lpop : Base
 {
-    protected override string Name => nameof(Llen);
-    public override bool CanBePropagated => false;
+    protected override string Name => nameof(Lpop);
+    public override bool CanBePropagated => true;
 
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
@@ -25,8 +25,14 @@ public class Llen : Base
 
         var key = commands[4];
 
-        var result = DataCache.Llen(key);
-        var resp = RespBuilder.Integer(result);
+        var result = DataCache.Lpop(key);
+
+        if (string.IsNullOrEmpty(result))
+        {
+            return Task.FromResult(RespBuilder.Null());
+        }
+
+        var resp = RespBuilder.SimpleString(result);
 
         if (!commandContext.ReplicaConnection)
         {
@@ -44,9 +50,10 @@ public class Llen : Base
                 Name,
                 new()
                 {
-                    { "summary", "Returns the length of a list." },
-                    { "usage #1", "LLEN mylist" },
-                    { "usage #2", "LLEN anotherlist" }
+                    { "summary", "Returns a range of elements from a list." },
+                    { "usage #1", "LRANGE mylist 0 -1" },
+                    { "usage #2", "LRANGE mylist 0 1" },
+                    { "usage #3", "LRANGE mylist 1 2" }
                 }
             }
         };

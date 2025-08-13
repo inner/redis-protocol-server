@@ -29,7 +29,8 @@ public enum RespType
     Rpush,
     Lpush,
     Lrange,
-    Llen
+    Llen,
+    Lpop
 }
 
 public enum DataType

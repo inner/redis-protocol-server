@@ -30,7 +30,7 @@ public class Rpush : Base
 
         var result = DataCache.Rpush(key, values);
         var resp = RespBuilder.Integer(result);
-        
+
         if (!commandContext.ReplicaConnection)
         {
             commandContext.Socket.SendCommand(resp);
@@ -47,10 +47,9 @@ public class Rpush : Base
                 Name,
                 new()
                 {
-                    { "summary", "Appends one or more elements to a list. Creates the key if it doesn't exist." },
-                    { "usage #1", "RPUSH mylist \"hello\"" },
-                    { "usage #2", "RPUSH mylist \"world\"" },
-                    { "usage #3", "LRANGE mylist 0 -1" }
+                    { "summary", "Appends one or multiple values to the end of a list." },
+                    { "usage #1", "RPUSH mylist value1 value2" },
+                    { "usage #2", "RPUSH anotherlist value3" }
                 }
             }
         };
