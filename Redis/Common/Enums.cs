@@ -28,7 +28,8 @@ public enum RespType
     Exists,
     Rpush,
     Lpush,
-    Lrange
+    Lrange,
+    Llen
 }
 
 public enum DataType

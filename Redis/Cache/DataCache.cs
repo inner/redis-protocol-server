@@ -107,17 +107,17 @@ public static class DataCache
     {
         var listItem = Fetch(listKey);
         List<string> list = [];
-        var listValuesReversed = listValues.Reverse();
+        var reversed = listValues.Reverse();
 
         if (string.IsNullOrEmpty(listItem))
         {
-            list.AddRange(listValuesReversed);
+            list.AddRange(reversed);
             Cache[listKey] = JsonSerializer.Serialize(list);
             return list.Count;
         }
 
         list = listItem.Deserialize<List<string>>() ?? [];
-        list.InsertRange(0, listValuesReversed);
+        list.InsertRange(0, reversed);
         Cache[listKey] = JsonSerializer.Serialize(list);
         return list.Count;
     }
@@ -136,7 +136,7 @@ public static class DataCache
 
         if (start < 0)
             start = list.Count + start;
-        
+
         if (stop >= list.Count)
             stop = list.Count - 1;
 
@@ -147,6 +147,17 @@ public static class DataCache
             .Skip(start)
             .Take(stop - start + 1)
             .ToList();
+    }
+
+    public static int Llen(string listKey)
+    {
+        var listItem = Fetch(listKey);
+        
+        if (string.IsNullOrEmpty(listItem))
+            return 0;
+
+        var list = listItem.Deserialize<List<string>>() ?? [];
+        return list.Count;
     }
 
     public static string? Fetch(string key)
