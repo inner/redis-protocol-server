@@ -48,12 +48,10 @@ public class Lpop : Base
         {
             {
                 Name,
-                new()
+                new Dictionary<string, string>
                 {
-                    { "summary", "Returns a range of elements from a list." },
-                    { "usage #1", "LRANGE mylist 0 -1" },
-                    { "usage #2", "LRANGE mylist 0 1" },
-                    { "usage #3", "LRANGE mylist 1 2" }
+                    { "description", "Removes and returns the first element of the list stored at key." },
+                    { "syntax", "LPOP key" }
                 }
             }
         };
