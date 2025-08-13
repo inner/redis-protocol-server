@@ -117,7 +117,7 @@ public static class DataCache
         }
 
         list = listItem.Deserialize<List<string>>() ?? [];
-        list.AddRange(listValuesReversed);
+        list.InsertRange(0, listValuesReversed);
         Cache[listKey] = JsonSerializer.Serialize(list);
         return list.Count;
     }
