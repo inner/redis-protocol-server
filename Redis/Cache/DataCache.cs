@@ -102,25 +102,50 @@ public static class DataCache
         Cache[listKey] = JsonSerializer.Serialize(list);
         return list.Count;
     }
-    
-    public static IList<string> Lrange(string listKey, int start, int end)
+
+    public static int Lpush(string listKey, params string[] listValues)
     {
         var listItem = Fetch(listKey);
-        
+        List<string> list = [];
+        var listValuesReversed = listValues.Reverse();
+
+        if (string.IsNullOrEmpty(listItem))
+        {
+            list.AddRange(listValuesReversed);
+            Cache[listKey] = JsonSerializer.Serialize(list);
+            return list.Count;
+        }
+
+        list = listItem.Deserialize<List<string>>() ?? [];
+        list.AddRange(listValuesReversed);
+        Cache[listKey] = JsonSerializer.Serialize(list);
+        return list.Count;
+    }
+
+    public static IList<string> Lrange(string listKey, int start, int stop)
+    {
+        var listItem = Fetch(listKey);
+
         if (string.IsNullOrEmpty(listItem))
             return [];
 
         var list = listItem.Deserialize<List<string>>() ?? [];
-        
-        if (start < 0)
-            start += list.Count;
 
-        if (end < 0)
-            end += list.Count;
+        if (start >= list.Count)
+            return [];
+
+        if (start < 0)
+            start = list.Count + start;
+        
+        if (stop >= list.Count)
+            stop = list.Count - 1;
+
+        if (stop < 0)
+            stop = list.Count + stop;
 
         return list
             .Skip(start)
-            .Take(end - start + 1)
+            .Take(stop - start + 1)
             .ToList();
     }
 

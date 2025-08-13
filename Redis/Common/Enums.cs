@@ -27,6 +27,7 @@ public enum RespType
     Discard,
     Exists,
     Rpush,
+    Lpush,
     Lrange
 }
 
