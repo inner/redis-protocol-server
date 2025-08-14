@@ -160,21 +160,36 @@ public static class DataCache
         return list.Count;
     }
 
-    public static string? Lpop(string listKey)
+    public static string[] Lpop(string listKey, int? count = null)
     {
         var listItem = Fetch(listKey);
 
         if (string.IsNullOrEmpty(listItem))
-            return null;
+            return [];
 
         var list = listItem.Deserialize<List<string>>() ?? [];
         if (list.Count == 0)
-            return null;
+            return [];
 
-        var value = list[0];
-        list.RemoveAt(0);
+        string[] values;
+        
+        if (count == null)
+        {
+            values = [list[0]];
+            list.RemoveAt(0);
+        }
+        else
+        {
+            var itemsToRemove = Math.Min(count.Value, list.Count);
+            
+            values = list.Take(itemsToRemove)
+                .ToArray();
+            
+            list.RemoveRange(0, itemsToRemove);
+        }
+        
         Cache[listKey] = JsonSerializer.Serialize(list);
-        return value;
+        return values;
     }
 
     public static string? Fetch(string key)

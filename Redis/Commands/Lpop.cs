@@ -1,3 +1,4 @@
+using System.Text;
 using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
@@ -24,15 +25,26 @@ public class Lpop : Base
         var commands = commandContext.CommandDetails.CommandParts;
 
         var key = commands[4];
+        int? count = commands.Length > 6
+            ? int.Parse(commands[6])
+            : null;
 
-        var result = DataCache.Lpop(key);
+        var result = DataCache.Lpop(key, count ?? null);
 
-        if (string.IsNullOrEmpty(result))
+        if (result.Length == 0)
         {
             return Task.FromResult(RespBuilder.Null());
         }
 
-        var resp = RespBuilder.SimpleString(result);
+        var sb = new StringBuilder(
+            RespBuilder.InitArray(result.Length));
+        
+        foreach (var item in result)
+        {
+            sb.Append(RespBuilder.SimpleString(item));
+        }
+        
+        var resp = sb.ToString();
 
         if (!commandContext.ReplicaConnection)
         {
