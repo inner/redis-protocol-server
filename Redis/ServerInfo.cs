@@ -28,6 +28,7 @@ public class ServerRuntimeContext
     public bool IsMaster { get; set; } = true;
     public string MasterReplId { get; set; } = string.Empty;
     public readonly ConcurrentDictionary<string, Socket> Replicas = new();
+    public Socket? MasterSocket { get; set; }
     public string DataDir { get; set; } = null!;
     public string DbFilename { get; set; } = null!;
     public bool DbFileExists { get; set; }

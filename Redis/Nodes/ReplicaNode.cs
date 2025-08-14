@@ -28,6 +28,8 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
                 .SendPsync();
 
             ServerInfo.Replication.ReplicaHandshakeCompleted = true;
+            ServerInfo.ServerRuntimeContext.MasterSocket = tcpClient.Client;
+            
             Task.Run(() => { _ = HandleConnection(tcpClient); });
             
             Console.WriteLine($"[{NodeName}] Handshake completed");
