@@ -36,15 +36,24 @@ public class Lpop : Base
             return Task.FromResult(RespBuilder.Null());
         }
 
-        var sb = new StringBuilder(
-            RespBuilder.InitArray(result.Length));
+        string resp;
         
-        foreach (var item in result)
+        if (count == null)
         {
-            sb.Append(RespBuilder.SimpleString(item));
+            resp = RespBuilder.SimpleString(result[0]);
         }
+        else
+        {
+            var sb = new StringBuilder(
+                RespBuilder.InitArray(result.Length));
         
-        var resp = sb.ToString();
+            foreach (var item in result)
+            {
+                sb.Append(RespBuilder.SimpleString(item));
+            }
+        
+            resp = sb.ToString();   
+        }
 
         if (!commandContext.ReplicaConnection)
         {
