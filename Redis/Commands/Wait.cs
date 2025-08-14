@@ -36,7 +36,7 @@ public class Wait : Base
         commandContext.Socket.SendCommand(acksReceivedResp);
         return acksReceivedResp;
     }
-    
+
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
         return new()
