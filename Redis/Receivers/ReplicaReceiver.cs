@@ -8,7 +8,8 @@ public class ReplicaReceiver : ReceiverBase
 {
     public override async Task Receive(Socket socket, string resp, List<CommandQueueItem> commandQueue)
     {
-        if (!ServerInfo.Replication.ReplicaHandshakeCompleted) return;
+        if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
+            return;
         
         if (!ServerInfo.Replication.ReplicaFirstByteReceived)
         {
