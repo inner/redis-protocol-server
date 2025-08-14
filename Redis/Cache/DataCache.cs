@@ -194,7 +194,7 @@ public static class DataCache
     
     // timeout = 0 means blocking forever
     // timeout > 0 means blocking for that many seconds
-    public static async Task<string[]> Blpop(string listKey, int timeout = 0)
+    public static async Task<string[]> Blpop(string listKey, double timeout = 0.0)
     {
         var listItem = Fetch(listKey);
 
@@ -210,11 +210,11 @@ public static class DataCache
             }
             else
             {
-                var startTime = DateTimeOffset.Now.ToUnixTimeSeconds();
-                
+                var startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 while (string.IsNullOrEmpty(listItem) &&
-                       DateTimeOffset.Now.ToUnixTimeSeconds() - startTime < timeout)
+                       DateTimeOffset.Now.ToUnixTimeMilliseconds() - startTime < timeout * 1000)
                 {
+                    await Task.Delay(10);
                     listItem = Fetch(listKey);
                 }
             }

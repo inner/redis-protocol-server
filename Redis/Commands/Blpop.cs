@@ -25,14 +25,22 @@ public class Blpop : Base
         var commands = commandContext.CommandDetails.CommandParts;
         var key = commands[4];
         var timeout = commands.Length > 6
-            ? int.Parse(commands[6])
-            : 0;
+            ? double.Parse(commands[6])
+            : 0.0;
         
         var result = await DataCache.Blpop(key, timeout);
+        string resp;
 
         if (result.Length == 0)
         {
-            return RespBuilder.Null();
+            resp = RespBuilder.Null();
+            
+            if (!commandContext.ReplicaConnection)
+            {
+                commandContext.Socket.SendCommand(resp);
+            }
+
+            return resp;
         }
 
         var sb = new StringBuilder(
@@ -43,7 +51,7 @@ public class Blpop : Base
             sb.Append(RespBuilder.SimpleString(item));
         }
 
-        var resp = sb.ToString();
+        resp = sb.ToString();
 
         if (!commandContext.ReplicaConnection)
         {
