@@ -192,8 +192,6 @@ public static class DataCache
         return values;
     }
     
-    // timeout = 0 means blocking forever
-    // timeout > 0 means blocking for that many seconds
     public static async Task<string[]> Blpop(string listKey, double timeout = 0.0)
     {
         var listItem = Fetch(listKey);
