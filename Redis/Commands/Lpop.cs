@@ -37,7 +37,7 @@ public class Lpop : Base
         }
 
         string resp;
-        
+
         if (count == null)
         {
             resp = RespBuilder.SimpleString(result[0]);
@@ -46,13 +46,13 @@ public class Lpop : Base
         {
             var sb = new StringBuilder(
                 RespBuilder.InitArray(result.Length));
-        
+
             foreach (var item in result)
             {
                 sb.Append(RespBuilder.SimpleString(item));
             }
-        
-            resp = sb.ToString();   
+
+            resp = sb.ToString();
         }
 
         if (!commandContext.ReplicaConnection)
