@@ -191,6 +191,45 @@ public static class DataCache
         Cache[listKey] = JsonSerializer.Serialize(list);
         return values;
     }
+    
+    // timeout = 0 means blocking forever
+    // timeout > 0 means blocking for that many seconds
+    public static string[] Blpop(string listKey, int timeout = 0)
+    {
+        var listItem = Fetch(listKey);
+
+        if (string.IsNullOrEmpty(listItem))
+        {
+            if (timeout == 0)
+            {
+                while (string.IsNullOrEmpty(listItem))
+                {
+                    listItem = Fetch(listKey);
+                }
+            }
+            else
+            {
+                var startTime = DateTimeOffset.Now.ToUnixTimeSeconds();
+                while (string.IsNullOrEmpty(listItem) &&
+                       DateTimeOffset.Now.ToUnixTimeSeconds() - startTime < timeout)
+                {
+                    listItem = Fetch(listKey);
+                }
+            }
+        }
+
+        if (string.IsNullOrEmpty(listItem))
+            return [];
+
+        var list = listItem.Deserialize<List<string>>() ?? [];
+        if (list.Count == 0)
+            return [];
+
+        var value = list[0];
+        list.RemoveAt(0);
+        Cache[listKey] = JsonSerializer.Serialize(list);
+        return [listKey, value];
+    }
 
     public static string? Fetch(string key)
     {
