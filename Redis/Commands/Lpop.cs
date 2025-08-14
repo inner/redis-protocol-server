@@ -23,7 +23,7 @@ public class Lpop : Base
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         var commands = commandContext.CommandDetails.CommandParts;
-
+        
         var key = commands[4];
         int? count = commands.Length > 6
             ? int.Parse(commands[6])

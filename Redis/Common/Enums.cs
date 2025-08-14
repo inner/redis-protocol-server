@@ -31,7 +31,8 @@ public enum RespType
     Lrange,
     Llen,
     Lpop,
-    Blpop
+    Blpop,
+    Subscribe
 }
 
 public enum DataType
