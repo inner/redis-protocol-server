@@ -20,19 +20,19 @@ public class Blpop : Base
         return await GenerateCommonResponse(commandContext);
     }
 
-    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
+    private static async Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         var commands = commandContext.CommandDetails.CommandParts;
         var key = commands[4];
-        var timeout = commands.Length > 5
-            ? int.Parse(commands[5])
+        var timeout = commands.Length > 6
+            ? int.Parse(commands[6])
             : 0;
         
-        var result = DataCache.Blpop(key, timeout);
+        var result = await DataCache.Blpop(key, timeout);
 
         if (result.Length == 0)
         {
-            return Task.FromResult(RespBuilder.Null());
+            return RespBuilder.Null();
         }
 
         var sb = new StringBuilder(
@@ -50,7 +50,7 @@ public class Blpop : Base
             commandContext.Socket.SendCommand(resp);
         }
 
-        return Task.FromResult(resp);
+        return resp;
     }
 
     public override Dictionary<string, Dictionary<string, string>> Docs()
