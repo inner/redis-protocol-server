@@ -33,7 +33,7 @@ public class Psync : Base
             "UkVESVMwMDEx+glyZWRpcy12ZXIFNy4yLjD6CnJlZGlzLWJpdHPAQPoFY3Rpb" +
             "WXCbQi8ZfoIdXNlZC1tZW3CsMQQAPoIYW9mLWJhc2XAAP/wbjv+wP9aog==");
     }
-    
+
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
         return new()
