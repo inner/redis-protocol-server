@@ -41,11 +41,11 @@ public class Subscribe : Base
 
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
-        return new Dictionary<string, Dictionary<string, string>>()
+        return new()
         {
             {
                 "Subscribe",
-                new Dictionary<string, string>()
+                new()
                 {
                     { "description", "Subscribes to a channel to receive messages." },
                     { "syntax", "SUBSCRIBE channel" },
