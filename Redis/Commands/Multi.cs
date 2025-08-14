@@ -22,18 +22,15 @@ public class Multi : Base
     {
         if (commandContext.CommandQueue.All(x => x.RespType != RespType.Multi))
         {
-            commandContext.CommandQueue.Add(new CommandQueueItem
-            {
-                RespType = RespType.Multi,
-                Resp = string.Empty
-            });
+            commandContext.CommandQueue.Add(
+                new CommandQueueItem { RespType = RespType.Multi, Resp = string.Empty });
         }
 
         var result = RespBuilder.SimpleString("OK");
         commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
     }
-    
+
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
         return new()
