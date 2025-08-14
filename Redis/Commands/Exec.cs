@@ -51,11 +51,11 @@ public class Exec : Base
 
             var commandDetails = commandInQueue.Resp.BuildCommandDetails();
             commandDetails.FromTransaction = true;
-
-            var commandResult = await commandContext.Receiver.ExecuteCommand(
-                commandContext.Socket, commandDetails, []);
             
-            commandResults.Add(commandResult);
+            commandResults.Add(
+                await commandContext.Receiver
+                    .ExecuteCommand(
+                        commandContext.Socket, commandDetails, []));
         }
 
         var sb = new StringBuilder($"*{commandResults.Count}\r\n");
