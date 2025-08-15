@@ -24,7 +24,7 @@ public abstract class Base
         if (commandContext.Subscriptions.Count > 0)
         {
             var respType = commandContext.CommandDetails.RespType;
-            if (!allowedWhenInSubscribeMode.Contains(respType))
+            if (!AllowedWhenInSubscribeMode.Contains(respType))
             {
                 commandContext.Socket.Send(
                     RespBuilder.Error(
@@ -87,7 +87,7 @@ public abstract class Base
         return true;
     }
 
-    private static RespType[] allowedWhenInSubscribeMode =
+    private static readonly RespType[] AllowedWhenInSubscribeMode =
     [
         RespType.Subscribe,
         RespType.Unsubscribe,
