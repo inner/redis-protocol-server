@@ -21,7 +21,7 @@ public class Psync : Base
         commandContext.Socket.Send(rdbResynchronizationFileMsg);
 
         ServerInfo.ServerRuntimeContext.Replicas.TryAdd(
-            commandContext.Socket.RemoteEndPoint!.ToString()!,
+            commandContext.ClientId,
             commandContext.Socket);
 
         return Task.FromResult(string.Empty);

@@ -24,14 +24,6 @@ public class Subscribe : Base
         var commands = commandContext.CommandDetails.CommandParts;
         var channel = commands[4];
 
-        var clientId = commandContext.Socket.RemoteEndPoint!.ToString();
-        if (clientId == null)
-        {
-            var msg = "Client ID is not available.";
-            commandContext.Socket.SendCommand(RespBuilder.Error(msg));
-            return Task.FromResult(RespBuilder.Error(msg));
-        }
-
         if (!commandContext.Subscriptions.Contains(channel))
         {
             commandContext.Subscriptions.Add(channel);
