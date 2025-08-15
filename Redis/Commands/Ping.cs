@@ -10,16 +10,18 @@ public class Ping : Base
 
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
-        var pong = RespBuilder.SimpleString("PONG");
-        
+        var resp = commandContext.Subscriptions.Count > 0
+            ? RespBuilder.ArrayFromCommands("PONG", string.Empty)
+            : RespBuilder.SimpleString("PONG");
+
         if (!commandContext.ReplicaConnection)
         {
-            commandContext.Socket.SendCommand(pong);
+            commandContext.Socket.SendCommand(resp);
         }
 
-        return Task.FromResult(pong);
+        return Task.FromResult(resp);
     }
-    
+
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
         return new()
