@@ -7,7 +7,7 @@ namespace Redis.Executors;
 public class IntegerExecutor : IRespDataTypeExecutor
 {
     public Task Execute(Socket socket, string resp, List<CommandQueueItem> commandQueue,
-        List<string> subscribedChannels, ReceiverBase receiver)
+        List<string> subscriptions, ReceiverBase receiver)
     {
         return Task.CompletedTask;
     }

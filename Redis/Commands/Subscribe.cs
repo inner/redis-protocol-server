@@ -32,15 +32,15 @@ public class Subscribe : Base
             return Task.FromResult(RespBuilder.Error(msg));
         }
 
-        if (!commandContext.SubscribedChannels.Contains(channel))
+        if (!commandContext.Subscriptions.Contains(channel))
         {
-            commandContext.SubscribedChannels.Add(channel);
+            commandContext.Subscriptions.Add(channel);
         }
         
         var sb = new StringBuilder(RespBuilder.InitArray(3));
         sb.Append(RespBuilder.SimpleString(nameof(Subscribe).ToLower()));
         sb.Append(RespBuilder.SimpleString(channel));
-        sb.Append(RespBuilder.Integer(commandContext.SubscribedChannels.Count));
+        sb.Append(RespBuilder.Integer(commandContext.Subscriptions.Count));
         
         var resp = sb.ToString();
         
