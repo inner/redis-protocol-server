@@ -8,7 +8,9 @@ namespace Redis.Executors;
 
 public class ArrayExecutor : IRespDataTypeExecutor
 {
-    public async Task Execute(Socket socket, string resp, List<CommandQueueItem> commandQueue, ReceiverBase receiver)
+    public async Task Execute(
+        Socket socket, string resp, List<CommandQueueItem> commandQueue,
+        List<string> subscribedChannels, ReceiverBase receiver)
     {
         var multiRespSplit = Regex.Split(resp, @"(\*\d+\\r\\n)")
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -34,7 +36,7 @@ public class ArrayExecutor : IRespDataTypeExecutor
         // they need to be executed in the same order, not asynchronously
         foreach (var commandDetails in respCommands.Select(respCommand => respCommand.BuildCommandDetails()))
         {
-            await receiver.ExecuteCommand(socket, commandDetails, commandQueue);
+            await receiver.ExecuteCommand(socket, commandDetails, commandQueue, subscribedChannels);
         }
     }
 }

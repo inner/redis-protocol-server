@@ -7,7 +7,8 @@ namespace Redis.Executors;
 
 public class BulkStringExecutor : IRespDataTypeExecutor
 {
-    public Task Execute(Socket socket, string resp, List<CommandQueueItem> commandQueue, ReceiverBase receiver)
+    public Task Execute(Socket socket, string resp, List<CommandQueueItem> commandQueue,
+        List<string> subscribedChannels, ReceiverBase receiver)
     {
         return Task.CompletedTask;
     }

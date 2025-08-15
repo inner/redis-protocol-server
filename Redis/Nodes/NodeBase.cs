@@ -52,6 +52,8 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
     protected async Task HandleConnection(TcpClient client)
     {
         List<CommandQueueItem> commandQueue = [];
+        List<string> subscribedChannels = [];
+        
         var connectionId = $"{client.Client.LocalEndPoint}->{client.Client.RemoteEndPoint}";
 
         while (client.Connected)
@@ -71,7 +73,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
                         continue;
                     }
 
-                    await receiver.Receive(client.Client, resp, commandQueue);
+                    await receiver.Receive(client.Client, resp, commandQueue, subscribedChannels);
                     LogReceivedCommand(resp);
                 }
             }

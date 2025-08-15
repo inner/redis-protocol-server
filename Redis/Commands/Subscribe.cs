@@ -6,7 +6,6 @@ namespace Redis.Commands;
 
 public class Subscribe : Base
 {
-    private static readonly Dictionary<string, HashSet<string>> ClientChannels = new();
     protected override string Name => nameof(Subscribe);
     public override bool CanBePropagated => false;
     
@@ -32,20 +31,16 @@ public class Subscribe : Base
             commandContext.Socket.SendCommand(RespBuilder.Error(msg));
             return Task.FromResult(RespBuilder.Error(msg));
         }
-        
-        if (ClientChannels.TryGetValue(clientId, out var channels))
+
+        if (!commandContext.SubscribedChannels.Contains(channel))
         {
-            channels.Add(channel);
-        }
-        else
-        {
-            ClientChannels[clientId] = [channel];
+            commandContext.SubscribedChannels.Add(channel);
         }
         
         var sb = new StringBuilder(RespBuilder.InitArray(3));
         sb.Append(RespBuilder.SimpleString(nameof(Subscribe).ToLower()));
         sb.Append(RespBuilder.SimpleString(channel));
-        sb.Append(RespBuilder.Integer(1));
+        sb.Append(RespBuilder.Integer(commandContext.SubscribedChannels.Count));
         
         var resp = sb.ToString();
         
@@ -55,11 +50,6 @@ public class Subscribe : Base
         }
         
         return Task.FromResult(resp);
-    }
-    
-    public static HashSet<string>? GetChannels(string clientId)
-    {
-        return ClientChannels.GetValueOrDefault(clientId);
     }
 
     public override Dictionary<string, Dictionary<string, string>> Docs()

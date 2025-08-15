@@ -9,7 +9,8 @@ public static class ReceiverExtensions
         this ReceiverBase receiver,
         Socket socket,
         CommandDetails commandDetails,
-        List<CommandQueueItem> commandQueue)
+        List<CommandQueueItem> commandQueue,
+        List<string> subscribedChannels)
     {
         var className = $"Redis.Commands.{commandDetails.RespType}";
 
@@ -26,6 +27,7 @@ public static class ReceiverExtensions
             Socket = socket,
             CommandDetails = commandDetails,
             CommandQueue = commandQueue,
+            SubscribedChannels = subscribedChannels,
             Receiver = receiver,
             ReplicaConnection = false
         };
