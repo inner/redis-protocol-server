@@ -27,6 +27,13 @@ public static class DataCache
         }
     }
 
+    public static int GetSubscriptionCount(string channel)
+    {
+        return Subscriptions.TryGetValue(channel, out var value)
+            ? value.Count
+            : 0;
+    }
+
     public static void SendToSubscribers(string channel, string message)
     {
         if (!Subscriptions.TryGetValue(channel, out var sockets))

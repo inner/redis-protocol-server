@@ -35,7 +35,8 @@ public enum RespType
     Subscribe,
     Unsubscribe,
     Psubscribe,
-    Punsubscribe
+    Punsubscribe,
+    Publish
 }
 
 public enum DataType
