@@ -11,7 +11,7 @@ public class Ping : Base
     protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         var resp = commandContext.Subscriptions.Count > 0
-            ? RespBuilder.ArrayFromCommands("PONG", string.Empty)
+            ? RespBuilder.ArrayFromCommands("pong", string.Empty)
             : RespBuilder.SimpleString("PONG");
 
         if (!commandContext.ReplicaConnection)
