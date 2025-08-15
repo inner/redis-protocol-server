@@ -23,11 +23,12 @@ public abstract class Base
     {
         if (commandContext.Subscriptions.Count > 0)
         {
-            if (!allowedWhenInSubscribeMode.Contains(commandContext.CommandDetails.RespType))
+            var respType = commandContext.CommandDetails.RespType;
+            if (!allowedWhenInSubscribeMode.Contains(respType))
             {
                 commandContext.Socket.Send(
                     RespBuilder.Error(
-                        $"Can't execute '{commandContext.CommandDetails.RespType.ToString().ToLower()}': " +
+                        $"Can't execute '{respType.ToString().ToLower()}': " +
                         "only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in " +
                         "this context").AsBytes());
                 
