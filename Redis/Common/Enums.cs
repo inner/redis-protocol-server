@@ -32,7 +32,10 @@ public enum RespType
     Llen,
     Lpop,
     Blpop,
-    Subscribe
+    Subscribe,
+    Unsubscribe,
+    Psubscribe,
+    Punsubscribe
 }
 
 public enum DataType

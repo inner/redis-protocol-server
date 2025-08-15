@@ -1,4 +1,5 @@
 using System.Text;
+using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
 
@@ -28,6 +29,8 @@ public class Subscribe : Base
         {
             commandContext.Subscriptions.Add(channel);
         }
+        
+        DataCache.AddSubscription(channel, commandContext.Socket);
         
         var sb = new StringBuilder(RespBuilder.InitArray(3));
         sb.Append(RespBuilder.SimpleString(nameof(Subscribe).ToLower()));

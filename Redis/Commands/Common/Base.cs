@@ -21,6 +21,20 @@ public abstract class Base
 
     public async Task<string> Execute(CommandContext commandContext)
     {
+        if (commandContext.Subscriptions.Count > 0)
+        {
+            if (!allowedWhenInSubscribeMode.Contains(commandContext.CommandDetails.RespType))
+            {
+                commandContext.Socket.Send(
+                    RespBuilder.Error(
+                        $"Can't execute '{commandContext.CommandDetails.RespType.ToString().ToLower()}': " +
+                        "only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in " +
+                        "this context").AsBytes());
+                
+                return string.Empty;
+            }
+        }
+
         if (TransactionEnabled(commandContext))
         {
             return string.Empty;
@@ -62,7 +76,7 @@ public abstract class Base
 
         var commandString = string.Join(
             Constants.VerbatimNewLine, commandContext.CommandDetails.CommandParts);
-        
+
         var commandType = commandContext.CommandDetails.CommandParts[2].ToCommandType();
 
         commandContext.CommandQueue.Add(
@@ -71,4 +85,14 @@ public abstract class Base
         commandContext.Socket.SendCommand(RespBuilder.SimpleString("QUEUED"));
         return true;
     }
+
+    private static RespType[] allowedWhenInSubscribeMode =
+    [
+        RespType.Subscribe,
+        RespType.Unsubscribe,
+        RespType.Psubscribe,
+        RespType.Punsubscribe,
+        RespType.Ping,
+        RespType.Quit
+    ];
 }

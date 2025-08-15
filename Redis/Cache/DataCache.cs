@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Net.Sockets;
+using System.Text;
 using System.Text.Json;
 using Redis.Common;
 
@@ -9,6 +11,50 @@ namespace Redis.Cache;
 public static class DataCache
 {
     private static ConcurrentDictionary<string, string> Cache { get; } = new();
+    private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
+
+    public static void AddSubscription(string channel, Socket socket)
+    {
+        if (!Subscriptions.TryGetValue(channel, out var value))
+        {
+            value = [];
+            Subscriptions[channel] = value;
+        }
+
+        if (!value.Contains(socket))
+        {
+            value.Add(socket);
+        }
+    }
+
+    public static void SendToSubscribers(string channel, string message)
+    {
+        if (!Subscriptions.TryGetValue(channel, out var sockets))
+        {
+            return;
+        }
+        
+        Parallel.ForEach(sockets, socket =>
+        {
+            try
+            {
+                if (socket.Connected)
+                {
+                    // fix
+                    var messageBytes = Encoding.UTF8.GetBytes(message);
+                    socket.Send(messageBytes);
+                }
+            }
+            catch (SocketException)
+            {
+                Subscriptions[channel].Remove(socket);
+            }
+            catch (ObjectDisposedException)
+            {
+                Subscriptions[channel].Remove(socket);
+            }
+        });
+    }
 
     public static void Set(string key, string value, long? expiry = null)
     {
@@ -172,7 +218,7 @@ public static class DataCache
             return [];
 
         string[] values;
-        
+
         if (count == null)
         {
             values = [list[0]];
@@ -181,17 +227,17 @@ public static class DataCache
         else
         {
             var itemsToRemove = Math.Min(count.Value, list.Count);
-            
+
             values = list.Take(itemsToRemove)
                 .ToArray();
-            
+
             list.RemoveRange(0, itemsToRemove);
         }
-        
+
         Cache[listKey] = JsonSerializer.Serialize(list);
         return values;
     }
-    
+
     public static async Task<string[]> Blpop(string listKey, double timeout = 0.0)
     {
         var listItem = Fetch(listKey);
