@@ -23,7 +23,7 @@ public class Publish : Base
     {
         var commands = commandContext.CommandDetails.CommandParts;
         var channel = commands[4];
-        var message = commands[6];
+        // var message = commands[6];
         
         var subscribers = DataCache.GetSubscriptionCount(channel);
         var resp = RespBuilder.Integer(subscribers);

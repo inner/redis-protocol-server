@@ -18,7 +18,7 @@ public static class DataCache
         if (!Subscriptions.TryGetValue(channel, out var value))
         {
             value = [];
-            Subscriptions[channel] = value;
+            Subscriptions.TryAdd(channel, value);
         }
 
         if (!value.Contains(socket))
@@ -29,9 +29,7 @@ public static class DataCache
 
     public static int GetSubscriptionCount(string channel)
     {
-        return Subscriptions.TryGetValue(channel, out var value)
-            ? value.Count
-            : 0;
+        return Subscriptions.Count(x => x.Key == channel);
     }
 
     public static void SendToSubscribers(string channel, string message)
