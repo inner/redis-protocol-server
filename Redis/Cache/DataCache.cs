@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
-using System.Text;
 using System.Text.Json;
 using Redis.Common;
 
@@ -27,14 +26,26 @@ public static class DataCache
         }
     }
 
-    public static int GetSubscriptionCount(string channel)
+    public static int GetSubscriptions(string channel)
     {
         return Subscriptions.TryGetValue(channel, out var value)
             ? value.Count
             : 0;
     }
+    
+    public static void RemoveSubscription(string channel, Socket socket)
+    {
+        if (Subscriptions.TryGetValue(channel, out var sockets))
+        {
+            sockets.Remove(socket);
+            if (sockets.Count == 0)
+            {
+                Subscriptions.TryRemove(channel, out _);
+            }
+        }
+    }
 
-    public static void SendToSubscribers(string channel, string message)
+    public static void Publish(string channel, string message)
     {
         if (!Subscriptions.TryGetValue(channel, out var sockets))
         {
@@ -47,9 +58,7 @@ public static class DataCache
             {
                 if (socket.Connected)
                 {
-                    // fix
-                    var messageBytes = Encoding.UTF8.GetBytes(message);
-                    socket.Send(messageBytes);
+                    socket.Send(message.AsBytes());
                 }
             }
             catch (SocketException)

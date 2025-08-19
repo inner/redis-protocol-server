@@ -5,53 +5,53 @@ using Redis.Common;
 
 namespace Redis.Commands;
 
-public class Publish : Base
+public class Unsubscribe : Base
 {
-    protected override string Name => nameof(Publish);
-    public override bool CanBePropagated => true;
-
+    protected override string Name => nameof(Unsubscribe);
+    public override bool CanBePropagated => false;
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
     }
-
+    
     protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
     }
-
+    
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var commands = commandContext.CommandDetails.CommandParts;
-        var channel = commands[4];
-        var message = commands[6];
-        
-        var subscribers = DataCache.GetSubscriptions(channel);
-        var resp = RespBuilder.Integer(subscribers);
-        commandContext.Socket.SendCommand(resp);
-        
+        var channel = commandContext.CommandDetails.CommandParts[4];
+
+        if (commandContext.Subscriptions.Contains(channel))
+        {
+            commandContext.Subscriptions.Remove(channel);
+            DataCache.RemoveSubscription(channel, commandContext.Socket);
+        }
+
         var sb = new StringBuilder(RespBuilder.InitArray(3));
-        sb.Append(RespBuilder.BulkString("message"));
+        sb.Append(RespBuilder.BulkString(nameof(Unsubscribe).ToLower()));
         sb.Append(RespBuilder.BulkString(channel));
-        sb.Append(RespBuilder.BulkString(message));
+        sb.Append(RespBuilder.Integer(commandContext.Subscriptions.Count));
+        var resp = sb.ToString();
         
-        DataCache.Publish(channel, sb.ToString());
+        commandContext.Socket.SendCommand(resp);
 
         return Task.FromResult(resp);
     }
-
+    
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
         return new()
         {
             {
-                "Publish",
+                "Unsubscribe",
                 new()
                 {
-                    { "description", "Publishes a message to a channel." },
-                    { "syntax", "PUBLISH channel message" },
+                    { "description", "Unsubscribes from a channel." },
+                    { "syntax", "UNSUBSCRIBE [channel]" },
                     { "group", "Pub/Sub" },
-                    { "complexity", "O(N) where N is the number of subscribers to the channel." }
+                    { "complexity", "O(N) where N is the number of subscriptions to the channel." }
                 }
             }
         };
