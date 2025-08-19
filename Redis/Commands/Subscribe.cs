@@ -33,8 +33,8 @@ public class Subscribe : Base
         DataCache.AddSubscription(channel, commandContext.Socket);
         
         var sb = new StringBuilder(RespBuilder.InitArray(3));
-        sb.Append(RespBuilder.SimpleString(nameof(Subscribe).ToLower()));
-        sb.Append(RespBuilder.SimpleString(channel));
+        sb.Append(RespBuilder.BulkString(nameof(Subscribe).ToLower()));
+        sb.Append(RespBuilder.BulkString(channel));
         sb.Append(RespBuilder.Integer(commandContext.Subscriptions.Count));
         
         var resp = sb.ToString();
@@ -43,6 +43,35 @@ public class Subscribe : Base
         {
             commandContext.Socket.SendCommand(resp);
         }
+        
+        // try
+        // {
+        //     while (commandContext.Socket.Connected)
+        //     {
+        //         using var memoryStream = new MemoryStream();
+        //         var buffer = new byte[1024];
+        //         int bytesRead;
+        //         
+        //         while ((bytesRead = commandContext.Socket.Receive(buffer)) > 0)
+        //         {
+        //             memoryStream.Write(buffer, 0, bytesRead);
+        //             if (bytesRead < buffer.Length)
+        //             {
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
+        // catch (SocketException)
+        // {
+        //     // Handle socket exceptions, e.g., client disconnected
+        //     // DataCache.RemoveSubscription(channel, commandContext.Socket);
+        // }
+        // catch (ObjectDisposedException)
+        // {
+        //     // Handle object disposed exceptions, e.g., socket closed
+        //     // DataCache.RemoveSubscription(channel, commandContext.Socket);
+        // }
         
         return Task.FromResult(resp);
     }

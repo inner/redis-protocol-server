@@ -1,3 +1,4 @@
+using System.Text;
 using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
@@ -23,11 +24,18 @@ public class Publish : Base
     {
         var commands = commandContext.CommandDetails.CommandParts;
         var channel = commands[4];
-        // var message = commands[6];
+        var message = commands[6];
         
         var subscribers = DataCache.GetSubscriptionCount(channel);
         var resp = RespBuilder.Integer(subscribers);
         commandContext.Socket.SendCommand(resp);
+        
+        var sb = new StringBuilder(RespBuilder.InitArray(3));
+        sb.Append(RespBuilder.BulkString("message"));
+        sb.Append(RespBuilder.BulkString(channel));
+        sb.Append(RespBuilder.BulkString(message));
+        
+        DataCache.SendToSubscribers(channel, sb.ToString());
 
         return Task.FromResult(resp);
     }
