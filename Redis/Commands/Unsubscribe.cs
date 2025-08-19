@@ -9,16 +9,17 @@ public class Unsubscribe : Base
 {
     protected override string Name => nameof(Unsubscribe);
     public override bool CanBePropagated => false;
+
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
     }
-    
+
     protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
     }
-    
+
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
         var channel = commandContext.CommandDetails.CommandParts[4];
@@ -34,12 +35,12 @@ public class Unsubscribe : Base
         sb.Append(RespBuilder.BulkString(channel));
         sb.Append(RespBuilder.Integer(commandContext.Subscriptions.Count));
         var resp = sb.ToString();
-        
+
         commandContext.Socket.SendCommand(resp);
 
         return Task.FromResult(resp);
     }
-    
+
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
         return new()

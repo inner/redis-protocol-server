@@ -31,7 +31,7 @@ public class Publish : Base
         commandContext.Socket.SendCommand(resp);
         
         var sb = new StringBuilder(RespBuilder.InitArray(3));
-        sb.Append(RespBuilder.BulkString("message"));
+        sb.Append(RespBuilder.BulkString(nameof(message).ToLower()));
         sb.Append(RespBuilder.BulkString(channel));
         sb.Append(RespBuilder.BulkString(message));
         

@@ -32,16 +32,18 @@ public static class DataCache
             ? value.Count
             : 0;
     }
-    
+
     public static void RemoveSubscription(string channel, Socket socket)
     {
-        if (Subscriptions.TryGetValue(channel, out var sockets))
+        if (!Subscriptions.TryGetValue(channel, out var sockets))
         {
-            sockets.Remove(socket);
-            if (sockets.Count == 0)
-            {
-                Subscriptions.TryRemove(channel, out _);
-            }
+            return;
+        }
+
+        sockets.Remove(socket);
+        if (sockets.Count == 0)
+        {
+            Subscriptions.TryRemove(channel, out _);
         }
     }
 
@@ -51,7 +53,7 @@ public static class DataCache
         {
             return;
         }
-        
+
         Parallel.ForEach(sockets, socket =>
         {
             try
