@@ -295,6 +295,32 @@ public static class DataCache
         return [listKey, value];
     }
 
+    public static int Zadd(string key, double score, string member)
+    {
+        var fetchItem = Fetch(key);
+
+        if (!string.IsNullOrEmpty(fetchItem))
+        {
+            var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>() ?? new Dictionary<string, double>();
+            if (sortedSet.ContainsKey(member) && sortedSet.ContainsValue(score))
+            {
+                return sortedSet.Count;
+            }
+
+            sortedSet[member] = score;
+            Cache[key] = JsonSerializer.Serialize(sortedSet);
+            return sortedSet.Count;
+        }
+
+        var newSortedSet = new Dictionary<string, double>
+        {
+            { member, score }
+        };
+
+        Cache[key] = JsonSerializer.Serialize(newSortedSet);
+        return 1;
+    }
+
     public static string? Fetch(string key)
     {
         Cache.TryGetValue(key, out var value);
