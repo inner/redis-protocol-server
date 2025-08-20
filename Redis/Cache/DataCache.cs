@@ -298,18 +298,22 @@ public static class DataCache
     public static int Zadd(string key, double score, string member)
     {
         var fetchItem = Fetch(key);
+        var addedCount = 0;
 
         if (!string.IsNullOrEmpty(fetchItem))
         {
-            var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>() ?? new Dictionary<string, double>();
-            if (sortedSet.ContainsKey(member) && sortedSet.ContainsValue(score))
+            var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>()
+                            ?? new Dictionary<string, double>();
+            
+            if (!sortedSet.TryAdd(member, score))
             {
-                return sortedSet.Count;
+                return addedCount;
             }
 
-            sortedSet[member] = score;
             Cache[key] = JsonSerializer.Serialize(sortedSet);
-            return sortedSet.Count;
+            addedCount++;
+            
+            return addedCount;
         }
 
         var newSortedSet = new Dictionary<string, double>
