@@ -309,7 +309,12 @@ public static class DataCache
             {
                 return addedCount;
             }
-
+            
+            sortedSet = sortedSet
+                .OrderBy(x => x.Value)
+                .ThenBy(x => x.Key)
+                .ToDictionary(x => x.Key, x => x.Value);
+            
             Cache[key] = JsonSerializer.Serialize(sortedSet);
             addedCount++;
             
