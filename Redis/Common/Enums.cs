@@ -40,7 +40,8 @@ public enum RespType
     Zadd,
     Zrank,
     Zrange,
-    Zcard
+    Zcard,
+    Zscore
 }
 
 public enum DataType

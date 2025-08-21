@@ -394,7 +394,27 @@ public static class DataCache
         }
         
         var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        
         return sortedSet?.Count ?? 0;
+    }
+    
+    public static double? Zscore(string key, string member)
+    {
+        var fetchItem = Fetch(key);
+        
+        if (string.IsNullOrEmpty(fetchItem))
+        {
+            return null;
+        }
+
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        
+        if (sortedSet == null || !sortedSet.TryGetValue(member, out var score))
+        {
+            return null;
+        }
+
+        return score;
     }
 
     public static string? Fetch(string key)

@@ -31,7 +31,7 @@ public static class RespBuilder
         return $"*{count}\r\n";
     }
 
-    public static string BulkString(string value)
+    public static string BulkString(string? value)
     {
         ArgumentNullException.ThrowIfNull(value);
         return $"${value.Length}\r\n{value}\r\n";
