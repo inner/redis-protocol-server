@@ -353,6 +353,40 @@ public static class DataCache
             : null;
     }
 
+    public static IList<string> Zrange(string key, int start, int stop)
+    {
+        var fetchItem = Fetch(key);
+        if (string.IsNullOrEmpty(fetchItem))
+        {
+            return [];
+        }
+
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        if (sortedSet == null || sortedSet.Count == 0)
+        {
+            return [];
+        }
+
+        if (start >= sortedSet.Count)
+            return [];
+
+        if (start < 0)
+            start = sortedSet.Count + start;
+
+        if (stop >= sortedSet.Count)
+            stop = sortedSet.Count - 1;
+
+        if (stop < 0)
+            stop = sortedSet.Count + stop;
+        
+        var members = sortedSet.Keys
+            .Skip(start)
+            .Take(stop - start + 1)
+            .ToList();
+
+        return members;
+    }
+
     public static string? Fetch(string key)
     {
         Cache.TryGetValue(key, out var value);
