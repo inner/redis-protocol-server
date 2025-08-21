@@ -27,10 +27,10 @@ public class Zrank : Base
         var member = commands[6];
         
         var result = DataCache.Zrank(key, member);
-        
-        var resp = result >= 0
-            ? RespBuilder.Integer(result)
-            : RespBuilder.Null();
+
+        var resp = result == null
+            ? RespBuilder.Null()
+            : RespBuilder.Integer(result.Value);
         
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
