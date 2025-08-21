@@ -256,7 +256,7 @@ public static class DataCache
         return values;
     }
 
-    public static Task<string[]> Blpop(string listKey, double timeout = 0.0)
+    public static async Task<string[]> Blpop(string listKey, double timeout = 0.0)
     {
         var listItem = Fetch(listKey);
 
@@ -264,7 +264,7 @@ public static class DataCache
         {
             while (string.IsNullOrEmpty(listItem) || listItem == "[]")
             {
-                // await Task.Delay(5);
+                await Task.Delay(5);
                 listItem = Fetch(listKey);
             }
         }
@@ -274,22 +274,22 @@ public static class DataCache
             while (string.IsNullOrEmpty(listItem) &&
                    DateTimeOffset.Now.ToUnixTimeMilliseconds() - startTime < timeout * 1000)
             {
-                // await Task.Delay(5);
+                await Task.Delay(5);
                 listItem = Fetch(listKey);
             }
         }
 
         if (string.IsNullOrEmpty(listItem))
-            return Task.FromResult<string[]>([]);
+            return [];
 
         var list = listItem.Deserialize<List<string>>() ?? [];
         if (list.Count == 0)
-            return Task.FromResult<string[]>([]);
+            return [];
 
         var value = list[0];
         list.RemoveAt(0);
         Cache[listKey] = JsonSerializer.Serialize(list);
-        return Task.FromResult<string[]>([listKey, value]);
+        return [listKey, value];
     }
 
     public static int Zadd(string key, double score, string member)
