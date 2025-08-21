@@ -304,18 +304,15 @@ public static class DataCache
         {
             var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>()
                             ?? new Dictionary<string, double>();
-
+            
             if (!sortedSet.TryAdd(member, score))
             {
+                sortedSet[member] = score;
+                UpdateSortedSet(key, sortedSet);
                 return addedCount;
             }
-
-            sortedSet = sortedSet
-                .OrderBy(x => x.Value)
-                .ThenBy(x => x.Key)
-                .ToDictionary(x => x.Key, x => x.Value);
-
-            Cache[key] = JsonSerializer.Serialize(sortedSet);
+            
+            UpdateSortedSet(key, sortedSet);
             addedCount++;
 
             return addedCount;
@@ -328,6 +325,16 @@ public static class DataCache
 
         Cache[key] = JsonSerializer.Serialize(newSortedSet);
         return 1;
+        
+        void UpdateSortedSet(string cacheKey, Dictionary<string, double> sortedSet)
+        {
+            sortedSet = sortedSet
+                .OrderBy(x => x.Value)
+                .ThenBy(x => x.Key)
+                .ToDictionary(x => x.Key, x => x.Value);
+
+            Cache[cacheKey] = JsonSerializer.Serialize(sortedSet);
+        }
     }
 
     public static int? Zrank(string key, string member)
