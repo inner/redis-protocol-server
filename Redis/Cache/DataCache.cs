@@ -424,6 +424,31 @@ public static class DataCache
         return score;
     }
 
+    public static int Zrem(string key, string member)
+    {
+        var fetchItem = Fetch(key);
+        
+        if (string.IsNullOrEmpty(fetchItem))
+        {
+            return 0;
+        }
+
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        if (sortedSet == null || !sortedSet.Remove(member))
+        {
+            return 0;
+        }
+
+        if (sortedSet.Count == 0)
+        {
+            Cache.TryRemove(key, out _);
+            return 1;
+        }
+
+        Cache[key] = JsonSerializer.Serialize(sortedSet);
+        return 1;
+    }
+
     public static string? Fetch(string key)
     {
         Cache.TryGetValue(key, out var value);

@@ -41,7 +41,8 @@ public enum RespType
     Zrank,
     Zrange,
     Zcard,
-    Zscore
+    Zscore,
+    Zrem
 }
 
 public enum DataType
