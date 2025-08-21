@@ -264,7 +264,7 @@ public static class DataCache
         {
             while (string.IsNullOrEmpty(listItem) || listItem == "[]")
             {
-                await Task.Delay(5);
+                await Task.Delay(10);
                 listItem = Fetch(listKey);
             }
         }
@@ -274,7 +274,7 @@ public static class DataCache
             while (string.IsNullOrEmpty(listItem) &&
                    DateTimeOffset.Now.ToUnixTimeMilliseconds() - startTime < timeout * 1000)
             {
-                await Task.Delay(5);
+                await Task.Delay(10);
                 listItem = Fetch(listKey);
             }
         }
