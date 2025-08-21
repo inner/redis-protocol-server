@@ -304,20 +304,20 @@ public static class DataCache
         {
             var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>()
                             ?? new Dictionary<string, double>();
-            
+
             if (!sortedSet.TryAdd(member, score))
             {
                 return addedCount;
             }
-            
+
             sortedSet = sortedSet
                 .OrderBy(x => x.Value)
                 .ThenBy(x => x.Key)
                 .ToDictionary(x => x.Key, x => x.Value);
-            
+
             Cache[key] = JsonSerializer.Serialize(sortedSet);
             addedCount++;
-            
+
             return addedCount;
         }
 
@@ -347,7 +347,7 @@ public static class DataCache
         var rank = sortedSet.Keys
             .ToList()
             .IndexOf(member);
-        
+
         return rank >= 0
             ? rank
             : null;
@@ -362,13 +362,10 @@ public static class DataCache
         }
 
         var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
-        if (sortedSet == null || sortedSet.Count == 0)
+        if (sortedSet == null || sortedSet.Count == 0 || start >= sortedSet.Count)
         {
             return [];
         }
-
-        if (start >= sortedSet.Count)
-            return [];
 
         if (start < 0)
             start = sortedSet.Count + start;
@@ -378,7 +375,7 @@ public static class DataCache
 
         if (stop < 0)
             stop = sortedSet.Count + stop;
-        
+
         var members = sortedSet.Keys
             .Skip(start)
             .Take(stop - start + 1)
