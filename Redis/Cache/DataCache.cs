@@ -330,6 +330,27 @@ public static class DataCache
         return 1;
     }
 
+    public static int Zrank(string key, string member)
+    {
+        var fetchItem = Fetch(key);
+        if (string.IsNullOrEmpty(fetchItem))
+        {
+            return -1;
+        }
+
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        if (sortedSet == null || !sortedSet.ContainsKey(member))
+        {
+            return -1;
+        }
+
+        var rank = sortedSet.Keys
+            .ToList()
+            .IndexOf(member);
+        
+        return rank >= 0 ? rank : -1;
+    }
+
     public static string? Fetch(string key)
     {
         Cache.TryGetValue(key, out var value);
