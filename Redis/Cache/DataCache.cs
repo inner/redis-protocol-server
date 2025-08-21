@@ -256,43 +256,40 @@ public static class DataCache
         return values;
     }
 
-    public static async Task<string[]> Blpop(string listKey, double timeout = 0.0)
+    public static Task<string[]> Blpop(string listKey, double timeout = 0.0)
     {
         var listItem = Fetch(listKey);
 
-        if (string.IsNullOrEmpty(listItem))
+        if (timeout == 0)
         {
-            if (timeout == 0)
+            while (string.IsNullOrEmpty(listItem) || listItem == "[]")
             {
-                while (string.IsNullOrEmpty(listItem))
-                {
-                    await Task.Delay(5);
-                    listItem = Fetch(listKey);
-                }
+                // await Task.Delay(5);
+                listItem = Fetch(listKey);
             }
-            else
+        }
+        else
+        {
+            var startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            while (string.IsNullOrEmpty(listItem) &&
+                   DateTimeOffset.Now.ToUnixTimeMilliseconds() - startTime < timeout * 1000)
             {
-                var startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                while (string.IsNullOrEmpty(listItem) &&
-                       DateTimeOffset.Now.ToUnixTimeMilliseconds() - startTime < timeout * 1000)
-                {
-                    await Task.Delay(10);
-                    listItem = Fetch(listKey);
-                }
+                // await Task.Delay(5);
+                listItem = Fetch(listKey);
             }
         }
 
         if (string.IsNullOrEmpty(listItem))
-            return [];
+            return Task.FromResult<string[]>([]);
 
         var list = listItem.Deserialize<List<string>>() ?? [];
         if (list.Count == 0)
-            return [];
+            return Task.FromResult<string[]>([]);
 
         var value = list[0];
         list.RemoveAt(0);
         Cache[listKey] = JsonSerializer.Serialize(list);
-        return [listKey, value];
+        return Task.FromResult<string[]>([listKey, value]);
     }
 
     public static int Zadd(string key, double score, string member)
