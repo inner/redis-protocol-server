@@ -260,22 +260,25 @@ public static class DataCache
     {
         var listItem = Fetch(listKey);
 
-        if (timeout == 0)
+        if (string.IsNullOrEmpty(listItem))
         {
-            while (string.IsNullOrEmpty(listItem) || listItem == "[]")
+            if (timeout == 0)
             {
-                await Task.Delay(10);
-                listItem = Fetch(listKey);
+                while (string.IsNullOrEmpty(listItem))
+                {
+                    await Task.Delay(5);
+                    listItem = Fetch(listKey);
+                }
             }
-        }
-        else
-        {
-            var startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            while (string.IsNullOrEmpty(listItem) &&
-                   DateTimeOffset.Now.ToUnixTimeMilliseconds() - startTime < timeout * 1000)
+            else
             {
-                await Task.Delay(10);
-                listItem = Fetch(listKey);
+                var startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                while (string.IsNullOrEmpty(listItem) &&
+                       DateTimeOffset.Now.ToUnixTimeMilliseconds() - startTime < timeout * 1000)
+                {
+                    await Task.Delay(10);
+                    listItem = Fetch(listKey);
+                }
             }
         }
 
@@ -301,14 +304,14 @@ public static class DataCache
         {
             var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>()
                             ?? new Dictionary<string, double>();
-            
+
             if (!sortedSet.TryAdd(member, score))
             {
                 sortedSet[member] = score;
                 UpdateSortedSet(key, sortedSet);
                 return addedCount;
             }
-            
+
             UpdateSortedSet(key, sortedSet);
             addedCount++;
 
@@ -322,7 +325,7 @@ public static class DataCache
 
         Cache[key] = JsonSerializer.Serialize(newSortedSet);
         return 1;
-        
+
         void UpdateSortedSet(string cacheKey, Dictionary<string, double> sortedSet)
         {
             sortedSet = sortedSet
@@ -391,28 +394,28 @@ public static class DataCache
     public static int Zcard(string key)
     {
         var fetchItem = Fetch(key);
-        
+
         if (string.IsNullOrEmpty(fetchItem))
         {
             return 0;
         }
-        
+
         var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
-        
+
         return sortedSet?.Count ?? 0;
     }
-    
+
     public static double? Zscore(string key, string member)
     {
         var fetchItem = Fetch(key);
-        
+
         if (string.IsNullOrEmpty(fetchItem))
         {
             return null;
         }
 
         var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
-        
+
         if (sortedSet == null || !sortedSet.TryGetValue(member, out var score))
         {
             return null;
@@ -424,7 +427,6 @@ public static class DataCache
     public static int Zrem(string key, string member)
     {
         var fetchItem = Fetch(key);
-        
         if (string.IsNullOrEmpty(fetchItem))
         {
             return 0;
