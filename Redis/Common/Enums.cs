@@ -39,7 +39,8 @@ public enum RespType
     Publish,
     Zadd,
     Zrank,
-    Zrange
+    Zrange,
+    Zcard
 }
 
 public enum DataType

@@ -384,6 +384,19 @@ public static class DataCache
         return members;
     }
 
+    public static int Zcard(string key)
+    {
+        var fetchItem = Fetch(key);
+        
+        if (string.IsNullOrEmpty(fetchItem))
+        {
+            return 0;
+        }
+        
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        return sortedSet?.Count ?? 0;
+    }
+
     public static string? Fetch(string key)
     {
         Cache.TryGetValue(key, out var value);

@@ -1,13 +1,12 @@
-using System.Text;
 using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
 
 namespace Redis.Commands;
 
-public class Zrange : Base
+public class Zcard : Base
 {
-    protected override string Name => nameof(Zrange);
+    protected override string Name => nameof(Zcard);
     public override bool CanBePropagated => false;
     
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
@@ -25,30 +24,11 @@ public class Zrange : Base
         var commands = commandContext.CommandDetails.CommandParts;
         
         var key = commands[4];
-        var start = int.Parse(commands[6]);
-        var stop = int.Parse(commands[8]);
         
-        var result = DataCache.Zrange(key, start, stop);
-
-        string resp;
-        
-        if (result.Count == 0)
-        {
-            resp = RespBuilder.EmptyArray();
-        }
-        else
-        {
-            var sb = new StringBuilder(RespBuilder.InitArray(result.Count));
-            foreach (var item in result)
-            {
-                sb.Append(RespBuilder.BulkString(item));
-            }
-            
-            resp = sb.ToString();
-        }
+        var result = DataCache.Zcard(key);
+        var resp = RespBuilder.Integer(result);
         
         commandContext.Socket.SendCommand(resp);
-        
         return Task.FromResult(resp);
     }
 
@@ -57,13 +37,13 @@ public class Zrange : Base
         return new()
         {
             {
-                "ZRANGE",
+                "ZCARD",
                 new()
                 {
-                    { "description", "Returns a range of members in a sorted set, by index." },
-                    { "syntax", "ZRANGE key start stop" },
+                    { "description", "Returns the number of members in a sorted set." },
+                    { "syntax", "ZCARD key" },
                     { "group", "Sorted Sets" },
-                    { "complexity", "O(log(N) + M) where N is the number of elements in the sorted set and M is the number of elements returned." }
+                    { "complexity", "O(1)" }
                 }
             }
         };
