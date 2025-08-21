@@ -37,7 +37,8 @@ public enum RespType
     Psubscribe,
     Punsubscribe,
     Publish,
-    Zadd
+    Zadd,
+    Zrank
 }
 
 public enum DataType
