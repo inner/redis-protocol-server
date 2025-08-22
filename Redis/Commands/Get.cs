@@ -40,7 +40,7 @@ public class Get : Base
 
     private static void Send(CommandContext commandContext, string response)
     {
-        if (commandContext is { ReplicaConnection: false, CommandDetails.FromTransaction: false })
+        if (commandContext is { CommandDetails.FromTransaction: false })
         {
             commandContext.Socket.SendCommand(response);
         }

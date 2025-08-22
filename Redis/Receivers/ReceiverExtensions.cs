@@ -28,8 +28,7 @@ public static class ReceiverExtensions
             CommandDetails = commandDetails,
             CommandQueue = commandQueue,
             Subscriptions = subscriptions,
-            Receiver = receiver,
-            ReplicaConnection = false
+            Receiver = receiver
         };
 
         var result = await command.Execute(commandContext);

@@ -35,7 +35,7 @@ public class Xread : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext, bool noTimeout = false)
     {
-        string result;
+        string resp;
         var isBlocking = Array.IndexOf(commandContext.CommandDetails.CommandParts, Block) != -1;
         List<StreamCacheItemValueItem> streamEntries = [];
 
@@ -77,14 +77,10 @@ public class Xread : Base
             var streamKeys = GetStreamKeysFromCommand(commandContext.CommandDetails, isBlocking);
             if (streamKeys.Count == 0)
             {
-                result = RespBuilder.Null();
+                resp = RespBuilder.Null();
+                commandContext.Socket.SendCommand(resp);
 
-                if (!commandContext.ReplicaConnection)
-                {
-                    commandContext.Socket.SendCommand(result);
-                }
-
-                return Task.FromResult(result);
+                return Task.FromResult(resp);
             }
 
             streamEntries.AddRange(BuildStreamEntries(streamKeys));
@@ -92,24 +88,16 @@ public class Xread : Base
 
         if (streamEntries.Count == 0)
         {
-            result = RespBuilder.Null();
+            resp = RespBuilder.Null();
+            commandContext.Socket.SendCommand(resp);
 
-            if (!commandContext.ReplicaConnection)
-            {
-                commandContext.Socket.SendCommand(result);
-            }
-
-            return Task.FromResult(result);
+            return Task.FromResult(resp);
         }
 
-        result = BuildResp(streamEntries);
+        resp = BuildResp(streamEntries);
+        commandContext.Socket.SendCommand(resp);
 
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(result);
-        }
-
-        return Task.FromResult(result);
+        return Task.FromResult(resp);
     }
 
     private static List<StreamCacheItemValueItem> BuildStreamEntries(List<StreamKeyWithEntryId> streamKeys)

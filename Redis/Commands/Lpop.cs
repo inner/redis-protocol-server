@@ -55,11 +55,7 @@ public class Lpop : Base
             resp = sb.ToString();
         }
 
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(resp);
-        }
-
+        commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
 

@@ -25,12 +25,8 @@ public class Info : Base
         
         var infoValue = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
         var response = RespBuilder.BulkString(infoValue);
-
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(response);
-        }
         
+        commandContext.Socket.SendCommand(response);
         return Task.FromResult(response);
     }
 
@@ -51,12 +47,8 @@ public class Info : Base
         
         var infoValue = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
         var response = RespBuilder.BulkString(infoValue);
-
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(response);
-        }
         
+        commandContext.Socket.SendCommand(response);
         return Task.FromResult(response);
     }
     

@@ -22,7 +22,7 @@ public class Xadd : Base
 
     private Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        string result;
+        string resp;
         var key = commandContext.CommandDetails.CommandParts[4];
         var entryId = commandContext.CommandDetails.CommandParts[6];
 
@@ -31,22 +31,18 @@ public class Xadd : Base
             var values = BuildEntryValue(key, entryId, commandContext.CommandDetails);
             var newOrExistingEntryId = DataCache.Xadd(key, values);
 
-            result = RespBuilder.BulkString(newOrExistingEntryId);
+            resp = RespBuilder.BulkString(newOrExistingEntryId);
+            commandContext.Socket.SendCommand(resp);
 
-            if (!commandContext.ReplicaConnection)
-            {
-                commandContext.Socket.SendCommand(result);
-            }
-
-            return Task.FromResult(result);
+            return Task.FromResult(resp);
         }
         catch (Exception ex)
         {
-            result = RespBuilder.Error(ex.Message);
-            commandContext.Socket.SendCommand(result);
+            resp = RespBuilder.Error(ex.Message);
+            commandContext.Socket.SendCommand(resp);
         }
 
-        return Task.FromResult(result);
+        return Task.FromResult(resp);
     }
 
     private StreamCacheItemValueItem BuildEntryValue(string key, string entryId, CommandDetails commandDetails)

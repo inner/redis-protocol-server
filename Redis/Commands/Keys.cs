@@ -35,11 +35,7 @@ public class Keys : Base
         }
 
         var result = sb.ToString();
-
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(result);
-        }
+        commandContext.Socket.SendCommand(result);
 
         return Task.FromResult(result);
     }

@@ -42,10 +42,7 @@ public class Type : Base
                     StringComparison.InvariantCultureIgnoreCase))
             {
                 result = RespBuilder.SimpleString("stream");
-                if (!commandContext.ReplicaConnection)
-                {
-                    commandContext.Socket.SendCommand(result);
-                }
+                commandContext.Socket.SendCommand(result);
 
                 return Task.FromResult(result);
             }

@@ -20,14 +20,10 @@ public class Client : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var result = RespBuilder.SimpleString("OK");
-        
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(result);
-        }
+        var resp = RespBuilder.SimpleString("OK");
+        commandContext.Socket.SendCommand(resp);
 
-        return Task.FromResult(result);
+        return Task.FromResult(resp);
     }
     
     public override Dictionary<string, Dictionary<string, string>> Docs()

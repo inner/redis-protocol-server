@@ -20,14 +20,10 @@ public class Quit : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var result = RespBuilder.SimpleString("OK");
+        var resp = RespBuilder.SimpleString("OK");
+        commandContext.Socket.SendCommand(resp);
 
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(result);
-        }
-
-        return Task.FromResult(result);
+        return Task.FromResult(resp);
     }
     
     public override Dictionary<string, Dictionary<string, string>> Docs()

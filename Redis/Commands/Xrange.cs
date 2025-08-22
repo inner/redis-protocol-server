@@ -23,24 +23,24 @@ public class Xrange : Base
 
     private static Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        string result;
+        string resp;
         var key = commandContext.CommandDetails.CommandParts[4];
 
         var fetchItem = DataCache.Fetch(key);
 
         if (string.IsNullOrEmpty(fetchItem))
         {
-            result = RespBuilder.Null();
-            commandContext.Socket.SendCommand(result);
-            return Task.FromResult(result);
+            resp = RespBuilder.Null();
+            commandContext.Socket.SendCommand(resp);
+            return Task.FromResult(resp);
         }
 
         var streamCacheItem = fetchItem.Deserialize<StreamCacheItem>();
         if (streamCacheItem == null)
         {
-            result = RespBuilder.Null();
-            commandContext.Socket.SendCommand(result);
-            return Task.FromResult(result);
+            resp = RespBuilder.Null();
+            commandContext.Socket.SendCommand(resp);
+            return Task.FromResult(resp);
         }
 
         var startEntryId = commandContext.CommandDetails.CommandParts[6];
@@ -77,14 +77,10 @@ public class Xrange : Base
             .Where(StreamEntriesFilter(startTimestamp, startSequence, endTimestamp, endSequence))
             .ToList();
 
-        result = BuildResp(streamEntries);
+        resp = BuildResp(streamEntries);
+        commandContext.Socket.SendCommand(resp);
 
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(result);
-        }
-
-        return Task.FromResult(result);
+        return Task.FromResult(resp);
     }
 
     private static string BuildResp(List<StreamCacheItemValueItem> streamEntries)

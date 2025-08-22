@@ -30,11 +30,7 @@ public class Rpush : Base
 
         var result = DataCache.Rpush(key, values);
         var resp = RespBuilder.Integer(result);
-
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(resp);
-        }
+        commandContext.Socket.SendCommand(resp);
 
         return Task.FromResult(resp);
     }

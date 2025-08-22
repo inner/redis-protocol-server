@@ -34,11 +34,7 @@ public class Blpop : Base
         if (result.Length == 0)
         {
             resp = RespBuilder.Null();
-            
-            if (!commandContext.ReplicaConnection)
-            {
-                commandContext.Socket.SendCommand(resp);
-            }
+            commandContext.Socket.SendCommand(resp);
 
             return resp;
         }
@@ -52,11 +48,7 @@ public class Blpop : Base
         }
 
         resp = sb.ToString();
-
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(resp);
-        }
+        commandContext.Socket.SendCommand(resp);
 
         return resp;
     }

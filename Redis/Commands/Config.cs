@@ -25,11 +25,7 @@ public class Config : Base
         if (Array.IndexOf(commandContext.CommandDetails.CommandParts, "GET") != -1 &&
             Array.IndexOf(commandContext.CommandDetails.CommandParts, "dir") != -1)
         {
-            if (!commandContext.ReplicaConnection)
-            {
-                commandContext.Socket.SendCommand(resp);
-            }
-
+            commandContext.Socket.SendCommand(resp);
             return Task.FromResult(resp);
         }
 
@@ -37,21 +33,13 @@ public class Config : Base
             Array.IndexOf(commandContext.CommandDetails.CommandParts, "dbfilename") != -1)
         {
             resp = RespBuilder.ArrayFromCommands("dbfilename", ServerInfo.ServerRuntimeContext.DbFilename);
-            
-            if (!commandContext.ReplicaConnection)
-            {
-                commandContext.Socket.SendCommand(resp);
-            }
+            commandContext.Socket.SendCommand(resp);
 
             return Task.FromResult(resp);
         }
         
         resp = RespBuilder.Error("Unsupported CONFIG parameter");
-        
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(resp);
-        }
+        commandContext.Socket.SendCommand(resp);
 
         return Task.FromResult(resp);
     }

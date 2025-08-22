@@ -26,11 +26,7 @@ public class Echo : Base
             _ => RespBuilder.Error("Wrong number of arguments")
         };
 
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(response);
-        }
-
+        commandContext.Socket.SendCommand(response);
         return Task.FromResult(response);
     }
     

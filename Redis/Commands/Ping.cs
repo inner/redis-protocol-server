@@ -14,11 +14,7 @@ public class Ping : Base
             ? RespBuilder.ArrayFromCommands("pong", string.Empty)
             : RespBuilder.SimpleString("PONG");
 
-        if (!commandContext.ReplicaConnection)
-        {
-            commandContext.Socket.SendCommand(resp);
-        }
-
+        commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
 
