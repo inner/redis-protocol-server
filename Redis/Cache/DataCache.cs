@@ -450,6 +450,19 @@ public static class DataCache
     
     public static int Geoadd(string key, double longitude, double latitude, string member)
     {
+        // EPSG:3857 bounds
+        const double minLongitude = -180.0;
+        const double maxLongitude = 180.0;
+        const double minLatitude = -85.05112878;
+        const double maxLatitude = 85.05112878;
+
+        if (longitude < minLongitude || longitude > maxLongitude ||
+            latitude < minLatitude || latitude > maxLatitude)
+        {
+            throw new ArgumentException(
+                $"ERR invalid longitude,latitude pair {longitude:F6},{latitude:F8}");
+        }
+        
         var fetchItem = Fetch(key);
         var addedCount = 0;
 
