@@ -33,7 +33,7 @@ public class Blpop : Base
 
         if (result.Length == 0)
         {
-            resp = RespBuilder.Null();
+            resp = RespBuilder.EmptyArray();
             commandContext.Socket.SendCommand(resp);
 
             return resp;
