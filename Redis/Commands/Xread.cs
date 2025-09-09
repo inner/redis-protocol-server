@@ -77,7 +77,7 @@ public class Xread : Base
             var streamKeys = GetStreamKeysFromCommand(commandContext.CommandDetails, isBlocking);
             if (streamKeys.Count == 0)
             {
-                resp = RespBuilder.Null();
+                resp = RespBuilder.NullArray();
                 commandContext.Socket.SendCommand(resp);
 
                 return Task.FromResult(resp);
@@ -88,7 +88,7 @@ public class Xread : Base
 
         if (streamEntries.Count == 0)
         {
-            resp = RespBuilder.Null();
+            resp = RespBuilder.NullArray();
             commandContext.Socket.SendCommand(resp);
 
             return Task.FromResult(resp);
