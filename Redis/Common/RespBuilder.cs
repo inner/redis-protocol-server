@@ -21,6 +21,11 @@ public static class RespBuilder
         return "*0\r\n";
     }
     
+    public static string NullArray()
+    {
+        return "*-1\r\n";
+    }
+    
     public static string InitArray(int count)
     {
         if (count < 0)
