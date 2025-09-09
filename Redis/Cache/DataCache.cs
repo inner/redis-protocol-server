@@ -447,6 +447,49 @@ public static class DataCache
         Cache[key] = JsonSerializer.Serialize(sortedSet);
         return 1;
     }
+    
+    public static int Geoadd(string key, double longitude, double latitude, string member)
+    {
+        var fetchItem = Fetch(key);
+        var addedCount = 0;
+
+        if (!string.IsNullOrEmpty(fetchItem))
+        {
+            var geoSet = fetchItem.Deserialize<Dictionary<string, (double Longitude, double Latitude)>>()
+                         ?? new Dictionary<string, (double Longitude, double Latitude)>();
+
+            if (!geoSet.TryAdd(member, (longitude, latitude)))
+            {
+                geoSet[member] = (longitude, latitude);
+                UpdateGeoSet(key, geoSet);
+                return addedCount;
+            }
+
+            UpdateGeoSet(key, geoSet);
+            addedCount++;
+
+            return addedCount;
+        }
+
+        var newGeoSet = new Dictionary<string, (double Longitude, double Latitude)>
+        {
+            { member, (longitude, latitude) }
+        };
+
+        Cache[key] = JsonSerializer.Serialize(newGeoSet);
+        return 1;
+
+        void UpdateGeoSet(string cacheKey, Dictionary<string, (double Longitude, double Latitude)> geoSet)
+        {
+            geoSet = geoSet
+                .OrderBy(x => x.Value.Longitude)
+                .ThenBy(x => x.Value.Latitude)
+                .ThenBy(x => x.Key)
+                .ToDictionary(x => x.Key, x => x.Value);
+
+            Cache[cacheKey] = JsonSerializer.Serialize(geoSet);
+        }
+    }
 
     public static string? Fetch(string key)
     {

@@ -42,7 +42,8 @@ public enum RespType
     Zrange,
     Zcard,
     Zscore,
-    Zrem
+    Zrem,
+    Geoadd
 }
 
 public enum DataType
