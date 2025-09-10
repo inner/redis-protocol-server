@@ -284,7 +284,7 @@ public static class DataCache
             {
                 var tcs = new TaskCompletionSource<string>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
-                
+
                 Waiters.GetOrAdd(listKey, _ =>
                         new ConcurrentQueue<TaskCompletionSource<string>>())
                     .Enqueue(tcs);
@@ -293,7 +293,6 @@ public static class DataCache
             }
             else
             {
-                // var delay = Task.Delay(TimeSpan.FromSeconds(timeout));
                 await Task.Delay(TimeSpan.FromSeconds(timeout));
                 listItem = Fetch(listKey);
             }
@@ -308,7 +307,7 @@ public static class DataCache
 
         var value = list[0];
         list.RemoveAt(0);
-        
+
         if (list.Count == 0)
         {
             Cache.TryRemove(listKey, out _);
@@ -317,7 +316,7 @@ public static class DataCache
         {
             Cache[listKey] = JsonSerializer.Serialize(list);
         }
-        
+
         return [listKey, value];
     }
 
