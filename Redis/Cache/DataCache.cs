@@ -282,7 +282,9 @@ public static class DataCache
         {
             if (timeout == 0)
             {
-                var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource<string>(
+                    TaskCreationOptions.RunContinuationsAsynchronously);
+                
                 Waiters.GetOrAdd(listKey, _ =>
                         new ConcurrentQueue<TaskCompletionSource<string>>())
                     .Enqueue(tcs);
