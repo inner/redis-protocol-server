@@ -324,11 +324,11 @@ public static class DataCache
             if (!sortedSet.TryAdd(member, score))
             {
                 sortedSet[member] = score;
-                UpdateSortedSet(key, sortedSet);
+                UpdateCache(key, sortedSet);
                 return addedCount;
             }
 
-            UpdateSortedSet(key, sortedSet);
+            UpdateCache(key, sortedSet);
             addedCount++;
 
             return addedCount;
@@ -342,7 +342,7 @@ public static class DataCache
         Cache[key] = JsonSerializer.Serialize(newSortedSet);
         return 1;
 
-        void UpdateSortedSet(string cacheKey, Dictionary<string, double> sortedSet)
+        void UpdateCache(string cacheKey, Dictionary<string, double> sortedSet)
         {
             sortedSet = sortedSet
                 .OrderBy(x => x.Value)
@@ -384,7 +384,7 @@ public static class DataCache
             return [];
         }
 
-        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, object>>();
         if (sortedSet == null || sortedSet.Count == 0 || start >= sortedSet.Count)
         {
             return [];
@@ -490,11 +490,11 @@ public static class DataCache
             if (!geoSet.TryAdd(member, (longitude, latitude)))
             {
                 geoSet[member] = (longitude, latitude);
-                UpdateGeoSet(key, geoSet);
+                UpdateCache(key, geoSet);
                 return addedCount;
             }
 
-            UpdateGeoSet(key, geoSet);
+            UpdateCache(key, geoSet);
             addedCount++;
 
             return addedCount;
@@ -508,7 +508,7 @@ public static class DataCache
         Cache[key] = JsonSerializer.Serialize(newGeoSet);
         return 1;
 
-        void UpdateGeoSet(string cacheKey, Dictionary<string, (double Longitude, double Latitude)> geoSet)
+        void UpdateCache(string cacheKey, Dictionary<string, (double Longitude, double Latitude)> geoSet)
         {
             geoSet = geoSet
                 .OrderBy(x => x.Value.Longitude)
