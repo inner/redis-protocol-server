@@ -157,14 +157,16 @@ public static class DataCache
         var serializedList = JsonSerializer.Serialize(list);
         Cache[listKey] = serializedList;
 
-        if (Waiters.TryRemove(listKey, out var queue))
+        if (!Waiters.TryRemove(listKey, out var queue))
         {
-            if (queue.TryDequeue(out var first))
-                first.TrySetResult(serializedList);
-
-            while (queue.TryDequeue(out var other))
-                other.TrySetResult("[]");
+            return list.Count;
         }
+        
+        if (queue.TryDequeue(out var first))
+            first.TrySetResult(serializedList);
+
+        while (queue.TryDequeue(out var other))
+            other.TrySetResult("[]");
 
         return list.Count;
     }
