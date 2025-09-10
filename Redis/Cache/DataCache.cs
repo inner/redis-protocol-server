@@ -293,13 +293,9 @@ public static class DataCache
             }
             else
             {
-                var startTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                while (string.IsNullOrEmpty(listItem) &&
-                       DateTimeOffset.Now.ToUnixTimeMilliseconds() - startTime < timeout * 1000)
-                {
-                    await Task.Delay(10);
-                    listItem = Fetch(listKey);
-                }
+                // var delay = Task.Delay(TimeSpan.FromSeconds(timeout));
+                await Task.Delay(TimeSpan.FromSeconds(timeout));
+                listItem = Fetch(listKey);
             }
         }
 
