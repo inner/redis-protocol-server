@@ -152,8 +152,9 @@ public static class DataCache
 
     public static int Rpush(string listKey, params string[] listValues)
     {
-        var list = Fetch(listKey)?.Deserialize<List<string>>() ?? new List<string>();
+        var list = Fetch(listKey)?.Deserialize<List<string>>() ?? [];
         list.AddRange(listValues);
+        
         var serializedList = JsonSerializer.Serialize(list);
         Cache[listKey] = serializedList;
 
@@ -163,10 +164,14 @@ public static class DataCache
         }
         
         if (queue.TryDequeue(out var first))
+        {
             first.TrySetResult(serializedList);
+        }
 
         while (queue.TryDequeue(out var other))
+        {
             other.TrySetResult("[]");
+        }
 
         return list.Count;
     }
