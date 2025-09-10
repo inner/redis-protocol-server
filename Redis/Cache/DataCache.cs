@@ -160,7 +160,7 @@ public static class DataCache
             list.AddRange(listValues);
             var serializedList = JsonSerializer.Serialize(list);
             Cache[listKey] = serializedList;
-            
+
             if (Waiters.TryRemove(listKey, out var queue))
             {
                 if (queue.TryDequeue(out var first))
@@ -175,7 +175,7 @@ public static class DataCache
                     other.TrySetResult("[]");
                 }
             }
-            
+
             return list.Count;
         }
 
@@ -283,7 +283,8 @@ public static class DataCache
             if (timeout == 0)
             {
                 var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Waiters.GetOrAdd(listKey, _ => new ConcurrentQueue<TaskCompletionSource<string>>())
+                Waiters.GetOrAdd(listKey, _ =>
+                        new ConcurrentQueue<TaskCompletionSource<string>>())
                     .Enqueue(tcs);
 
                 listItem = await tcs.Task;
@@ -465,7 +466,7 @@ public static class DataCache
         Cache[key] = JsonSerializer.Serialize(sortedSet);
         return 1;
     }
-    
+
     public static int Geoadd(string key, double longitude, double latitude, string member)
     {
         // EPSG:3857 bounds
@@ -480,7 +481,7 @@ public static class DataCache
             throw new ArgumentException(
                 $"ERR invalid longitude,latitude pair {longitude:F6},{latitude:F8}");
         }
-        
+
         var fetchItem = Fetch(key);
         var addedCount = 0;
 
