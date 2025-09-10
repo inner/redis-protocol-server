@@ -282,20 +282,11 @@ public static class DataCache
         {
             if (timeout == 0)
             {
-                // Otherwise, register this client as a waiter for that key
                 var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-                // Add this client’s waiter into the global queue for this key
                 Waiters.GetOrAdd(listKey, _ => new ConcurrentQueue<TaskCompletionSource<string>>())
                     .Enqueue(tcs);
 
                 listItem = await tcs.Task;
-
-                // while (string.IsNullOrEmpty(listItem))
-                // {
-                //     await Task.Delay(5);
-                //     listItem = Fetch(listKey);
-                // }
             }
             else
             {
