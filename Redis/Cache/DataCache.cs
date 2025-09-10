@@ -154,35 +154,43 @@ public static class DataCache
     {
         var listItem = Fetch(listKey);
         List<string> list = [];
+        string serializedList;
 
         if (string.IsNullOrEmpty(listItem))
         {
             list.AddRange(listValues);
-            var serializedList = JsonSerializer.Serialize(list);
+            serializedList = JsonSerializer.Serialize(list);
             Cache[listKey] = serializedList;
 
-            if (Waiters.TryRemove(listKey, out var queue))
-            {
-                if (queue.TryDequeue(out var first))
-                {
-                    // Oldest waiter gets the real data
-                    first.TrySetResult(serializedList);
-                }
-
-                // All remaining waiters get an empty array
-                while (queue.TryDequeue(out var other))
-                {
-                    other.TrySetResult("[]");
-                }
-            }
+            UpdateWaiters(listKey, serializedList);
 
             return list.Count;
         }
 
         list = listItem.Deserialize<List<string>>() ?? [];
         list.AddRange(listValues);
-        Cache[listKey] = JsonSerializer.Serialize(list);
+        serializedList = JsonSerializer.Serialize(list);
+        Cache[listKey] = serializedList;
+
+        UpdateWaiters(listKey, serializedList);
+
         return list.Count;
+
+        void UpdateWaiters(string waiterListKey, string serialized)
+        {
+            if (Waiters.TryRemove(waiterListKey, out var queue))
+            {
+                if (queue.TryDequeue(out var first))
+                {
+                    first.TrySetResult(serialized);
+                }
+
+                while (queue.TryDequeue(out var other))
+                {
+                    other.TrySetResult("[]");
+                }
+            }
+        }
     }
 
     public static int Lpush(string listKey, params string[] listValues)
