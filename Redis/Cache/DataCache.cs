@@ -10,6 +10,7 @@ namespace Redis.Cache;
 public static class DataCache
 {
     private static ConcurrentDictionary<string, string> Cache { get; } = new();
+    private static readonly ConcurrentDictionary<string, ConcurrentQueue<TaskCompletionSource<string>>> Waiters = new();
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
 
     public static void AddSubscription(string channel, Socket socket)
@@ -157,7 +158,24 @@ public static class DataCache
         if (string.IsNullOrEmpty(listItem))
         {
             list.AddRange(listValues);
-            Cache[listKey] = JsonSerializer.Serialize(list);
+            var serializedList = JsonSerializer.Serialize(list);
+            Cache[listKey] = serializedList;
+            
+            if (Waiters.TryRemove(listKey, out var queue))
+            {
+                if (queue.TryDequeue(out var first))
+                {
+                    // Oldest waiter gets the real data
+                    first.TrySetResult(serializedList);
+                }
+
+                // All remaining waiters get an empty array
+                while (queue.TryDequeue(out var other))
+                {
+                    other.TrySetResult("[]");
+                }
+            }
+            
             return list.Count;
         }
 
@@ -264,11 +282,20 @@ public static class DataCache
         {
             if (timeout == 0)
             {
-                while (string.IsNullOrEmpty(listItem))
-                {
-                    await Task.Delay(5);
-                    listItem = Fetch(listKey);
-                }
+                // Otherwise, register this client as a waiter for that key
+                var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                // Add this client’s waiter into the global queue for this key
+                Waiters.GetOrAdd(listKey, _ => new ConcurrentQueue<TaskCompletionSource<string>>())
+                    .Enqueue(tcs);
+
+                listItem = await tcs.Task;
+
+                // while (string.IsNullOrEmpty(listItem))
+                // {
+                //     await Task.Delay(5);
+                //     listItem = Fetch(listKey);
+                // }
             }
             else
             {
