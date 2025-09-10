@@ -163,7 +163,6 @@ public static class DataCache
             Cache[listKey] = serializedList;
 
             UpdateWaiters(listKey, serializedList);
-
             return list.Count;
         }
 
@@ -173,7 +172,6 @@ public static class DataCache
         Cache[listKey] = serializedList;
 
         UpdateWaiters(listKey, serializedList);
-
         return list.Count;
 
         void UpdateWaiters(string waiterListKey, string serialized)
