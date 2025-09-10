@@ -152,45 +152,21 @@ public static class DataCache
 
     public static int Rpush(string listKey, params string[] listValues)
     {
-        var listItem = Fetch(listKey);
-        List<string> list = [];
-        string serializedList;
-
-        if (string.IsNullOrEmpty(listItem))
-        {
-            list.AddRange(listValues);
-            serializedList = JsonSerializer.Serialize(list);
-            Cache[listKey] = serializedList;
-
-            UpdateWaiters(listKey, serializedList);
-            return list.Count;
-        }
-
-        list = listItem.Deserialize<List<string>>() ?? [];
+        var list = Fetch(listKey)?.Deserialize<List<string>>() ?? new List<string>();
         list.AddRange(listValues);
-        serializedList = JsonSerializer.Serialize(list);
+        var serializedList = JsonSerializer.Serialize(list);
         Cache[listKey] = serializedList;
 
-        UpdateWaiters(listKey, serializedList);
-        return list.Count;
-
-        void UpdateWaiters(string waiterListKey, string serialized)
+        if (Waiters.TryRemove(listKey, out var queue))
         {
-            if (!Waiters.TryRemove(waiterListKey, out var queue))
-            {
-                return;
-            }
-
             if (queue.TryDequeue(out var first))
-            {
-                first.TrySetResult(serialized);
-            }
+                first.TrySetResult(serializedList);
 
             while (queue.TryDequeue(out var other))
-            {
                 other.TrySetResult("[]");
-            }
         }
+
+        return list.Count;
     }
 
     public static int Lpush(string listKey, params string[] listValues)
