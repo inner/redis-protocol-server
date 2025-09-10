@@ -176,17 +176,19 @@ public static class DataCache
 
         void UpdateWaiters(string waiterListKey, string serialized)
         {
-            if (Waiters.TryRemove(waiterListKey, out var queue))
+            if (!Waiters.TryRemove(waiterListKey, out var queue))
             {
-                if (queue.TryDequeue(out var first))
-                {
-                    first.TrySetResult(serialized);
-                }
+                return;
+            }
 
-                while (queue.TryDequeue(out var other))
-                {
-                    other.TrySetResult("[]");
-                }
+            if (queue.TryDequeue(out var first))
+            {
+                first.TrySetResult(serialized);
+            }
+
+            while (queue.TryDequeue(out var other))
+            {
+                other.TrySetResult("[]");
             }
         }
     }
