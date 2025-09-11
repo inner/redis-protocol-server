@@ -43,10 +43,10 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
         }
     }
 
-    private void LogReceivedCommand(string resp)
+    private void LogReceivedCommand(string connection, string resp)
     {
         var logMessage = resp.Replace(Constants.NewLine, Constants.VerbatimNewLine);
-        Console.WriteLine($"[{NodeName}] Received command: [{logMessage}].");
+        Console.WriteLine($"[{NodeName}] [{connection}] Received command: [{logMessage}].");
     }
 
     protected async Task HandleConnection(TcpClient client)
@@ -74,7 +74,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
                     }
 
                     await receiver.Receive(client.Client, resp, commandQueue, subscriptions);
-                    LogReceivedCommand(resp);
+                    LogReceivedCommand(connectionId, resp);
                 }
             }
             catch (SocketException)
