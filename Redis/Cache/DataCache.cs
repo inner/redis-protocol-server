@@ -518,6 +518,36 @@ public static class DataCache
             coordinates1.latitude, coordinates1.longitude,
             coordinates2.latitude, coordinates2.longitude);
     }
+    
+    public static IList<string> Geosearch(string key, double longitude, double latitude, double radius, string unit)
+    {
+        var fetchItem = Fetch(key);
+        if (fetchItem == null)
+        {
+            return [];
+        }
+
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        if (sortedSet == null || sortedSet.Count == 0)
+        {
+            return [];
+        }
+
+        var members = new List<string>();
+        foreach (var (member, hash) in sortedSet)
+        {
+            var coordinates = GeohashDecoder.Decode((long)hash);
+            var distance = GeoCalculator.CalculateDistance(
+                latitude, longitude, coordinates.latitude, coordinates.longitude);
+
+            if (distance <= radius)
+            {
+                members.Add(member);
+            }
+        }
+
+        return members;
+    }
 
     public static string? Fetch(string key)
     {

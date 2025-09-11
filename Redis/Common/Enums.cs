@@ -44,7 +44,8 @@ public enum RespType
     Zrem,
     Geoadd,
     Geopos,
-    Geodist
+    Geodist,
+    Geosearch
 }
 
 public enum DataType
