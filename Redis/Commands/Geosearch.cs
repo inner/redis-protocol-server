@@ -1,4 +1,3 @@
-using System.Globalization;
 using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
@@ -24,7 +23,6 @@ public class Geosearch : Base
     {
         var commands = commandContext.CommandDetails.CommandParts;
 
-        // always FROMLONLAT and BYRADIUS
         var key = commands[4];
         var longitude = double.Parse(commands[8]);
         var latitude = double.Parse(commands[10]);
