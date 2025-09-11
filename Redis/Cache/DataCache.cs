@@ -11,6 +11,7 @@ public static class DataCache
 {
     private static ConcurrentDictionary<string, string> Cache { get; } = new();
     private static readonly ConcurrentDictionary<string, ConcurrentQueue<TaskCompletionSource<string>>> Waiters = new();
+    private static readonly ConcurrentDictionary<string, object> WaiterLocks = new();
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
 
     public static void AddSubscription(string channel, Socket socket)
@@ -163,16 +164,21 @@ public static class DataCache
             return list.Count;
         }
 
-        if (queue.TryDequeue(out var first))
+        var lockObj = WaiterLocks.GetOrAdd(listKey, _ => new object());
+        lock (lockObj)
         {
-            first.TrySetResult(serializedList);
+            if (queue.TryDequeue(out var first))
+            {
+                first.TrySetResult(serializedList);
+            }
+
+            while (queue.TryDequeue(out var other))
+            {
+                other.TrySetResult("[]");
+            }
         }
 
-        while (queue.TryDequeue(out var other))
-        {
-            other.TrySetResult("[]");
-        }
-
+        WaiterLocks.TryRemove(listKey, out _);
         return list.Count;
     }
 
@@ -276,9 +282,14 @@ public static class DataCache
                 var tcs = new TaskCompletionSource<string>(
                     TaskCreationOptions.RunContinuationsAsynchronously);
 
-                Waiters.GetOrAdd(listKey, _ =>
-                        new ConcurrentQueue<TaskCompletionSource<string>>())
-                    .Enqueue(tcs);
+                var queue = Waiters.GetOrAdd(listKey, _ =>
+                    new ConcurrentQueue<TaskCompletionSource<string>>());
+
+                var lockObj = WaiterLocks.GetOrAdd(listKey, _ => new object());
+                lock (lockObj)
+                {
+                    queue.Enqueue(tcs);
+                }
 
                 listItem = await tcs.Task;
             }
@@ -510,16 +521,16 @@ public static class DataCache
         {
             return null;
         }
-        
+
         var coordinates1 = GeohashDecoder.Decode((long)hash1);
         var coordinates2 = GeohashDecoder.Decode((long)hash2);
-        
+
         return GeoCalculator.CalculateDistance(
             coordinates1.latitude, coordinates1.longitude,
             coordinates2.latitude, coordinates2.longitude);
     }
-    
-    public static IList<string> Geosearch(string key, double longitude, double latitude, double radius, string unit)
+
+    public static IList<string> Geosearch(string key, double longitude, double latitude, double radius)
     {
         var fetchItem = Fetch(key);
         if (fetchItem == null)

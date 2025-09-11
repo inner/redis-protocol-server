@@ -27,9 +27,8 @@ public class Geosearch : Base
         var longitude = double.Parse(commands[8]);
         var latitude = double.Parse(commands[10]);
         var radius = double.Parse(commands[14]);
-        var unit = commands[16];
         
-        var result = DataCache.Geosearch(key, longitude, latitude, radius, unit);
+        var result = DataCache.Geosearch(key, longitude, latitude, radius);
         
         var resp = RespBuilder.InitArray(result.Count);
         foreach (var member in result)
