@@ -475,6 +475,30 @@ public static class DataCache
         return Zadd(key, GeohashEncoder.Encode(latitude, longitude), member);
     }
 
+    public static Dictionary<string, double>? Geopos(string key, params string[] members)
+    {
+        var fetchItem = Fetch(key);
+        if (fetchItem == null)
+        {
+            return null;
+        }
+
+        var result = new Dictionary<string, double>();
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+
+        if (sortedSet == null || sortedSet.Count == 0)
+        {
+            return result;
+        }
+
+        foreach (var member in members)
+        {
+            result[member] = sortedSet.GetValueOrDefault(member, double.NaN);
+        }
+
+        return result;
+    }
+
     public static string? Fetch(string key)
     {
         Cache.TryGetValue(key, out var value);
