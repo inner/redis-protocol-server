@@ -502,12 +502,8 @@ public static class DataCache
     public static double? Geodist(string key, string member1, string member2)
     {
         var fetchItem = Fetch(key);
-        if (fetchItem == null)
-        {
-            return null;
-        }
 
-        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        var sortedSet = fetchItem?.Deserialize<Dictionary<string, double>>();
         if (sortedSet == null || sortedSet.Count == 0 ||
             !sortedSet.TryGetValue(member1, out var hash1) ||
             !sortedSet.TryGetValue(member2, out var hash2))

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
@@ -30,7 +31,7 @@ public class Geodist : Base
         var result = DataCache.Geodist(key, location1, location2);
         
         var resp = RespBuilder.BulkString(
-            result!.Value.ToString("F4", System.Globalization.CultureInfo.InvariantCulture));
+            result!.Value.ToString("F4", CultureInfo.InvariantCulture));
 
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
