@@ -31,9 +31,9 @@ public class Geopos : Base
             .Where((_, i) => i % 2 == 0)
             .ToArray();
 
-        var result = DataCache.Geopos(key, members);
         string resp;
         
+        var result = DataCache.Geopos(key, members);
         if (result == null)
         {
             var sb = new StringBuilder(RespBuilder.InitArray(members.Length));
@@ -55,9 +55,12 @@ public class Geopos : Base
                 else
                 {
                     var coordinates = GeohashDecoder.Decode((long)position.Value);
+                    
                     sb.Append(RespBuilder.InitArray(2));
-                    sb.Append(RespBuilder.BulkString(coordinates.longitude.ToString(CultureInfo.InvariantCulture)));
-                    sb.Append(RespBuilder.BulkString(coordinates.latitude.ToString(CultureInfo.InvariantCulture)));   
+                    sb.Append(RespBuilder.BulkString(
+                        coordinates.longitude.ToString(CultureInfo.InvariantCulture)));
+                    sb.Append(RespBuilder.BulkString(
+                        coordinates.latitude.ToString(CultureInfo.InvariantCulture)));   
                 }
             }
 

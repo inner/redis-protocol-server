@@ -43,7 +43,8 @@ public enum RespType
     Zscore,
     Zrem,
     Geoadd,
-    Geopos
+    Geopos,
+    Geodist
 }
 
 public enum DataType

@@ -2,7 +2,7 @@ namespace Redis.Common;
 
 using System;
 
-public class GeohashEncoder
+public static class GeohashEncoder
 {
     private const double MinLatitude = -85.05112878;
     private const double MaxLatitude = 85.05112878;

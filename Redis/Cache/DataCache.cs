@@ -499,6 +499,30 @@ public static class DataCache
         return result;
     }
 
+    public static double? Geodist(string key, string member1, string member2)
+    {
+        var fetchItem = Fetch(key);
+        if (fetchItem == null)
+        {
+            return null;
+        }
+
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
+        if (sortedSet == null || sortedSet.Count == 0 ||
+            !sortedSet.TryGetValue(member1, out var hash1) ||
+            !sortedSet.TryGetValue(member2, out var hash2))
+        {
+            return null;
+        }
+        
+        var coordinates1 = GeohashDecoder.Decode((long)hash1);
+        var coordinates2 = GeohashDecoder.Decode((long)hash2);
+        
+        return GeoCalculator.CalculateDistance(
+            coordinates1.latitude, coordinates1.longitude,
+            coordinates2.latitude, coordinates2.longitude);
+    }
+
     public static string? Fetch(string key)
     {
         Cache.TryGetValue(key, out var value);
