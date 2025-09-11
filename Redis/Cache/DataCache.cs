@@ -154,7 +154,7 @@ public static class DataCache
     {
         var list = Fetch(listKey)?.Deserialize<List<string>>() ?? [];
         list.AddRange(listValues);
-        
+
         var serializedList = JsonSerializer.Serialize(list);
         Cache[listKey] = serializedList;
 
@@ -162,7 +162,7 @@ public static class DataCache
         {
             return list.Count;
         }
-        
+
         if (queue.TryDequeue(out var first))
         {
             first.TrySetResult(serializedList);
@@ -384,7 +384,7 @@ public static class DataCache
             return [];
         }
 
-        var sortedSet = fetchItem.Deserialize<Dictionary<string, object>>();
+        var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
         if (sortedSet == null || sortedSet.Count == 0 || start >= sortedSet.Count)
         {
             return [];
@@ -431,7 +431,6 @@ public static class DataCache
         }
 
         var sortedSet = fetchItem.Deserialize<Dictionary<string, double>>();
-
         if (sortedSet == null || !sortedSet.TryGetValue(member, out var score))
         {
             return null;
@@ -466,58 +465,14 @@ public static class DataCache
 
     public static int Geoadd(string key, double longitude, double latitude, string member)
     {
-        // EPSG:3857 bounds
-        const double minLongitude = -180.0;
-        const double maxLongitude = 180.0;
-        const double minLatitude = -85.05112878;
-        const double maxLatitude = 85.05112878;
-
-        if (longitude < minLongitude || longitude > maxLongitude ||
-            latitude < minLatitude || latitude > maxLatitude)
+        if (longitude < GeohashDecoder.MinLongitude || longitude > GeohashDecoder.MaxLongitude ||
+            latitude < GeohashDecoder.MinLatitude || latitude > GeohashDecoder.MaxLatitude)
         {
             throw new ArgumentException(
                 $"ERR invalid longitude,latitude pair {longitude:F6},{latitude:F8}");
         }
 
-        var fetchItem = Fetch(key);
-        var addedCount = 0;
-
-        if (!string.IsNullOrEmpty(fetchItem))
-        {
-            var geoSet = fetchItem.Deserialize<Dictionary<string, (double Longitude, double Latitude)>>()
-                         ?? new Dictionary<string, (double Longitude, double Latitude)>();
-
-            if (!geoSet.TryAdd(member, (longitude, latitude)))
-            {
-                geoSet[member] = (longitude, latitude);
-                UpdateCache(key, geoSet);
-                return addedCount;
-            }
-
-            UpdateCache(key, geoSet);
-            addedCount++;
-
-            return addedCount;
-        }
-
-        var newGeoSet = new Dictionary<string, (double Longitude, double Latitude)>
-        {
-            { member, (longitude, latitude) }
-        };
-
-        Cache[key] = JsonSerializer.Serialize(newGeoSet);
-        return 1;
-
-        void UpdateCache(string cacheKey, Dictionary<string, (double Longitude, double Latitude)> geoSet)
-        {
-            geoSet = geoSet
-                .OrderBy(x => x.Value.Longitude)
-                .ThenBy(x => x.Value.Latitude)
-                .ThenBy(x => x.Key)
-                .ToDictionary(x => x.Key, x => x.Value);
-
-            Cache[cacheKey] = JsonSerializer.Serialize(geoSet);
-        }
+        return Zadd(key, GeohashEncoder.Encode(latitude, longitude), member);
     }
 
     public static string? Fetch(string key)
