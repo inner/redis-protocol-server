@@ -11,7 +11,7 @@ public static class DataCache
 {
     private static ConcurrentDictionary<string, string> Cache { get; } = new();
     private static readonly ConcurrentDictionary<string, ConcurrentQueue<TaskCompletionSource<string>>> Waiters = new();
-    private static readonly ConcurrentDictionary<string, object> WaiterLocks = new();
+    private static readonly object LockObj = new();
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
 
     public static void AddSubscription(string channel, Socket socket)
@@ -153,20 +153,19 @@ public static class DataCache
 
     public static int Rpush(string listKey, params string[] listValues)
     {
-        var list = Fetch(listKey)?.Deserialize<List<string>>() ?? [];
-        list.AddRange(listValues);
-
-        var serializedList = JsonSerializer.Serialize(list);
-        Cache[listKey] = serializedList;
-
-        if (!Waiters.TryRemove(listKey, out var queue))
+        lock (LockObj)
         {
-            return list.Count;
-        }
+            var list = Fetch(listKey)?.Deserialize<List<string>>() ?? [];
+            list.AddRange(listValues);
+            
+            var serializedList = JsonSerializer.Serialize(list);
+            Cache[listKey] = serializedList;
 
-        var lockObj = WaiterLocks.GetOrAdd(listKey, _ => new object());
-        lock (lockObj)
-        {
+            if (!Waiters.TryRemove(listKey, out var queue))
+            {
+                return list.Count;
+            }
+
             if (queue.TryDequeue(out var first))
             {
                 first.TrySetResult(serializedList);
@@ -176,10 +175,9 @@ public static class DataCache
             {
                 other.TrySetResult("[]");
             }
-        }
 
-        WaiterLocks.TryRemove(listKey, out _);
-        return list.Count;
+            return list.Count;
+        }
     }
 
     public static int Lpush(string listKey, params string[] listValues)
@@ -273,39 +271,40 @@ public static class DataCache
 
     public static async Task<string[]> Blpop(string listKey, double timeout = 0.0)
     {
-        var listItem = Fetch(listKey);
+        string? listItems;
 
-        if (string.IsNullOrEmpty(listItem))
+        if (timeout == 0)
         {
-            if (timeout == 0)
+            var tcs = new TaskCompletionSource<string>(
+                TaskCreationOptions.RunContinuationsAsynchronously);
+
+            lock (LockObj)
             {
-                var tcs = new TaskCompletionSource<string>(
-                    TaskCreationOptions.RunContinuationsAsynchronously);
+                Waiters.GetOrAdd(listKey, _ =>
+                        new ConcurrentQueue<TaskCompletionSource<string>>())
+                    .Enqueue(tcs);
 
-                var queue = Waiters.GetOrAdd(listKey, _ =>
-                    new ConcurrentQueue<TaskCompletionSource<string>>());
-
-                var lockObj = WaiterLocks.GetOrAdd(listKey, _ => new object());
-                lock (lockObj)
-                {
-                    queue.Enqueue(tcs);
-                }
-
-                listItem = await tcs.Task;
+                listItems = Fetch(listKey);
             }
-            else
-            {
-                await Task.Delay(TimeSpan.FromSeconds(timeout));
-                listItem = Fetch(listKey);
-            }
+
+            listItems ??= await tcs.Task;
+        }
+        else
+        {
+            await Task.Delay(TimeSpan.FromSeconds(timeout));
+            listItems = Fetch(listKey);
         }
 
-        if (string.IsNullOrEmpty(listItem))
+        if (string.IsNullOrEmpty(listItems))
+        {
             return [];
+        }
 
-        var list = listItem.Deserialize<List<string>>() ?? [];
+        var list = listItems.Deserialize<List<string>>() ?? [];
         if (list.Count == 0)
+        {
             return [];
+        }
 
         var value = list[0];
         list.RemoveAt(0);
