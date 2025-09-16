@@ -11,7 +11,6 @@ public static class DataCache
 {
     private static ConcurrentDictionary<string, string> Cache { get; } = new();
     private static readonly ConcurrentDictionary<string, ConcurrentQueue<TaskCompletionSource<string>>> Waiters = new();
-    private static readonly object LockObj = new();
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
 
     public static void AddSubscription(string channel, Socket socket)
@@ -153,31 +152,28 @@ public static class DataCache
 
     public static int Rpush(string listKey, params string[] listValues)
     {
-        lock (LockObj)
+        var list = Fetch(listKey)?.Deserialize<List<string>>() ?? [];
+        list.AddRange(listValues);
+
+        var serializedList = JsonSerializer.Serialize(list);
+        Cache[listKey] = serializedList;
+
+        if (!Waiters.TryRemove(listKey, out var queue))
         {
-            var list = Fetch(listKey)?.Deserialize<List<string>>() ?? [];
-            list.AddRange(listValues);
-            
-            var serializedList = JsonSerializer.Serialize(list);
-            Cache[listKey] = serializedList;
-
-            if (!Waiters.TryRemove(listKey, out var queue))
-            {
-                return list.Count;
-            }
-
-            if (queue.TryDequeue(out var first))
-            {
-                first.TrySetResult(serializedList);
-            }
-
-            while (queue.TryDequeue(out var other))
-            {
-                other.TrySetResult("[]");
-            }
-
             return list.Count;
         }
+
+        if (queue.TryDequeue(out var first))
+        {
+            first.TrySetResult(serializedList);
+        }
+
+        while (queue.TryDequeue(out var other))
+        {
+            other.TrySetResult("[]");
+        }
+
+        return list.Count;
     }
 
     public static int Lpush(string listKey, params string[] listValues)
@@ -278,16 +274,11 @@ public static class DataCache
             var tcs = new TaskCompletionSource<string>(
                 TaskCreationOptions.RunContinuationsAsynchronously);
 
-            lock (LockObj)
-            {
-                Waiters.GetOrAdd(listKey, _ =>
-                        new ConcurrentQueue<TaskCompletionSource<string>>())
-                    .Enqueue(tcs);
+            Waiters.GetOrAdd(listKey, _ =>
+                    new ConcurrentQueue<TaskCompletionSource<string>>())
+                .Enqueue(tcs);
 
-                listItems = Fetch(listKey);
-            }
-
-            listItems ??= await tcs.Task;
+            listItems = Fetch(listKey) ?? await tcs.Task;
         }
         else
         {
