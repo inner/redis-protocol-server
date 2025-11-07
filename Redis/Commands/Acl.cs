@@ -1,3 +1,4 @@
+using System.Text;
 using Redis.Commands.Common;
 using Redis.Common;
 
@@ -7,11 +8,12 @@ public class Acl : Base
 {
     protected override string Name => nameof(Acl);
     public override bool CanBePropagated => false;
+
     protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
     }
-    
+
     protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
     {
         return await GenerateCommonResponse(commandContext);
@@ -19,11 +21,28 @@ public class Acl : Base
 
     private static async Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var resp = RespBuilder.BulkString("default");
+        string? resp = null;
+        var commandParts = commandContext.CommandDetails.CommandParts;
+        if (string.Equals(commandParts[4], "WHOAMI", StringComparison.InvariantCultureIgnoreCase))
+        {
+            resp = RespBuilder.BulkString("default");
+        }
+        else if (string.Equals(commandParts[4], "GETUSER", StringComparison.InvariantCultureIgnoreCase))
+        {
+            var sb = new StringBuilder(RespBuilder.InitArray(2));
+            sb.Append(RespBuilder.BulkString("flags"));
+            sb.Append(RespBuilder.EmptyArray());
+            resp = sb.ToString();
+        }
+        else
+        {
+            resp = RespBuilder.Error("ACL command not implemented.");
+        }
+
         commandContext.Socket.SendCommand(resp);
         return await Task.FromResult(resp);
     }
-    
+
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
         return new()
