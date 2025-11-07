@@ -40,7 +40,7 @@ public class Lpop : Base
 
         if (count == null)
         {
-            resp = RespBuilder.SimpleString(result[0]);
+            resp = RespBuilder.BulkString(result[0]);
         }
         else
         {
@@ -49,7 +49,7 @@ public class Lpop : Base
 
             foreach (var item in result)
             {
-                sb.Append(RespBuilder.SimpleString(item));
+                sb.Append(RespBuilder.BulkString(item));
             }
 
             resp = sb.ToString();
