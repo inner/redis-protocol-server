@@ -44,7 +44,7 @@ public class Blpop : Base
 
         foreach (var item in result)
         {
-            sb.Append(RespBuilder.SimpleString(item));
+            sb.Append(RespBuilder.BulkString(item));
         }
 
         resp = sb.ToString();
