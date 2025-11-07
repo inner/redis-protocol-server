@@ -35,7 +35,7 @@ public class Lrange : Base
         
         foreach (var item in result)
         {
-            sb.Append(RespBuilder.SimpleString(item));
+            sb.Append(RespBuilder.BulkString(item));
         }
 
         var resp = sb.ToString();
