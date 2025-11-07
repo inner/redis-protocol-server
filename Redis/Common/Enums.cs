@@ -45,7 +45,8 @@ public enum RespType
     Geoadd,
     Geopos,
     Geodist,
-    Geosearch
+    Geosearch,
+    Acl
 }
 
 public enum DataType
