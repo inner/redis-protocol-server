@@ -19,7 +19,7 @@ public class Acl : Base
 
     private static async Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        var resp = RespBuilder.SimpleString("default");
+        var resp = RespBuilder.BulkString("default");
         commandContext.Socket.SendCommand(resp);
         return await Task.FromResult(resp);
     }
