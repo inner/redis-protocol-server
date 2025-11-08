@@ -31,15 +31,24 @@ public class Acl : Base
         else if (string.Equals(commandParts[4], "GETUSER", StringComparison.InvariantCultureIgnoreCase))
         {
             var username = commandParts[6];
+            var passwordHash = DataCache.GetPassword(username);
+            
             var sb = new StringBuilder(RespBuilder.InitArray(4));
+            
+            // flags
             sb.Append(RespBuilder.BulkString("flags"));
-            if (string.Equals(username, "default", StringComparison.InvariantCultureIgnoreCase))
+            if (passwordHash != null)
             {
                 sb.Append(RespBuilder.InitArray(1));
                 sb.Append(RespBuilder.BulkString("nopass"));
             }
+            else
+            {
+                sb.Append(RespBuilder.InitArray(0));
+            }
+            
+            // passwords
             sb.Append(RespBuilder.BulkString("passwords"));
-            var passwordHash = DataCache.GetPassword(username);
             if (passwordHash != null)
             {
                 sb.Append(RespBuilder.InitArray(1));
@@ -49,6 +58,7 @@ public class Acl : Base
             {
                 sb.Append(RespBuilder.InitArray(0));
             }
+            
             resp = sb.ToString();
         }
         else if (string.Equals(commandParts[4], "SETUSER", StringComparison.InvariantCultureIgnoreCase))
