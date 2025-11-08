@@ -21,7 +21,7 @@ public class Acl : Base
 
     private static async Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        string? resp = null;
+        string? resp;
         var commandParts = commandContext.CommandDetails.CommandParts;
         if (string.Equals(commandParts[4], "WHOAMI", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -31,7 +31,11 @@ public class Acl : Base
         {
             var sb = new StringBuilder(RespBuilder.InitArray(2));
             sb.Append(RespBuilder.BulkString("flags"));
-            sb.Append(RespBuilder.EmptyArray());
+            if (string.Equals(commandParts[6], "default", StringComparison.InvariantCultureIgnoreCase))
+            {
+                sb.Append(RespBuilder.InitArray(1));
+                sb.Append(RespBuilder.BulkString("nopass"));
+            }
             resp = sb.ToString();
         }
         else
