@@ -12,6 +12,18 @@ public static class DataCache
     private static ConcurrentDictionary<string, string> Cache { get; } = new();
     private static readonly ConcurrentDictionary<string, ConcurrentQueue<TaskCompletionSource<string>>> Waiters = new();
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
+    private static ConcurrentDictionary<string, string> UserPasswords { get; } = new();
+    
+    public static void SetPassword(string username, string passwordHash)
+    {
+        UserPasswords[username] = passwordHash;
+    }
+    
+    public static string? GetPassword(string username)
+    {
+        UserPasswords.TryGetValue(username, out var passwordHash);
+        return passwordHash;
+    }
 
     public static void AddSubscription(string channel, Socket socket)
     {

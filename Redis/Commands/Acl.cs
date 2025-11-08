@@ -1,4 +1,5 @@
 using System.Text;
+using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
 
@@ -29,17 +30,42 @@ public class Acl : Base
         }
         else if (string.Equals(commandParts[4], "GETUSER", StringComparison.InvariantCultureIgnoreCase))
         {
+            var username = commandParts[6];
             var sb = new StringBuilder(RespBuilder.InitArray(4));
             sb.Append(RespBuilder.BulkString("flags"));
-            if (string.Equals(commandParts[6], "default", StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(username, "default", StringComparison.InvariantCultureIgnoreCase))
             {
                 sb.Append(RespBuilder.InitArray(1));
                 sb.Append(RespBuilder.BulkString("nopass"));
             }
             sb.Append(RespBuilder.BulkString("passwords"));
-            sb.Append(RespBuilder.InitArray(0));
-
+            var passwordHash = DataCache.GetPassword(username);
+            if (passwordHash != null)
+            {
+                sb.Append(RespBuilder.InitArray(1));
+                sb.Append(RespBuilder.BulkString(passwordHash));
+            }
+            else
+            {
+                sb.Append(RespBuilder.InitArray(0));
+            }
             resp = sb.ToString();
+        }
+        else if (string.Equals(commandParts[4], "SETUSER", StringComparison.InvariantCultureIgnoreCase))
+        {
+            var username = commandParts[6];
+            var plaintextPassword = commandParts[8];
+            if (plaintextPassword.StartsWith('>'))
+            {
+                plaintextPassword = plaintextPassword[1..];
+            }
+            
+            var sha256 = System.Security.Cryptography.SHA256.Create();
+            var passwordBytes = Encoding.UTF8.GetBytes(plaintextPassword);
+            var hashBytes = sha256.ComputeHash(passwordBytes);
+            var passwordHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+            DataCache.SetPassword(username, passwordHash);
+            resp = RespBuilder.SimpleString("OK");
         }
         else
         {
