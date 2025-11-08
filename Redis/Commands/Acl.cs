@@ -39,12 +39,12 @@ public class Acl : Base
             sb.Append(RespBuilder.BulkString("flags"));
             if (passwordHash != null)
             {
-                sb.Append(RespBuilder.InitArray(1));
-                sb.Append(RespBuilder.BulkString("nopass"));
+                sb.Append(RespBuilder.InitArray(0));
             }
             else
             {
-                sb.Append(RespBuilder.InitArray(0));
+                sb.Append(RespBuilder.InitArray(1));
+                sb.Append(RespBuilder.BulkString("nopass"));
             }
             
             // passwords
