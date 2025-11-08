@@ -12,12 +12,7 @@ public static class DataCache
     private static ConcurrentDictionary<string, string> Cache { get; } = new();
     private static readonly ConcurrentDictionary<string, ConcurrentQueue<TaskCompletionSource<string>>> Waiters = new();
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
-
-    // init default user
     private static ConcurrentDictionary<string, string> UserPasswords { get; } = new();
-    // {
-    //     ["default"] = string.Empty
-    // };
     
     public static void SetPassword(string username, string passwordHash)
     {
