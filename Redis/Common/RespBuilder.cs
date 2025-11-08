@@ -59,7 +59,7 @@ public static class RespBuilder
         
         return includeErrPrefix
             ? $"-ERR {value}\r\n"
-            : $"{value}\r\n";
+            : $"{SimpleString(value)}";
     }
 
     public static string Null()
