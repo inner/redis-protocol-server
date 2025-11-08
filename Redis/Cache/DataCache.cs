@@ -13,16 +13,52 @@ public static class DataCache
     private static readonly ConcurrentDictionary<string, ConcurrentQueue<TaskCompletionSource<string>>> Waiters = new();
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
     private static ConcurrentDictionary<string, string> UserPasswords { get; } = new();
+    private static ConcurrentDictionary<string, Socket> AuthenticatedConnections { get; } = new();
     
     public static void SetPassword(string username, string passwordHash)
     {
-        UserPasswords[username] = passwordHash;
+        UserPasswords.AddOrUpdate(
+            username,
+            passwordHash,
+            (_, _) => passwordHash);
     }
     
     public static string? GetPasswordHash(string username)
     {
         UserPasswords.TryGetValue(username, out var passwordHash);
         return passwordHash;
+    }
+    
+    public static bool DefaultUserExists()
+    {
+        return UserPasswords.ContainsKey("default");
+    }
+    
+    public static void AddAuthenticatedConnection(string username, Socket socket)
+    {
+        AuthenticatedConnections.AddOrUpdate(
+            username,
+            socket,
+            (_, _) => socket);
+    }
+    
+    public static void RemoveAuthenticatedConnection(string username)
+    {
+        AuthenticatedConnections.TryRemove(username, out _);
+    }
+    
+    public static bool IsConnectionAuthenticated(Socket socket)
+    {
+        return AuthenticatedConnections.Values
+            .Any(s => s == socket);
+    }
+    
+    public static string? GetAuthenticatedUsername(Socket socket)
+    {
+        var kvp = AuthenticatedConnections
+            .FirstOrDefault(x => x.Value == socket);
+        
+        return kvp.Key;
     }
 
     public static void AddSubscription(string channel, Socket socket)

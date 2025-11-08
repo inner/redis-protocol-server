@@ -26,7 +26,16 @@ public class Acl : Base
         var commandParts = commandContext.CommandDetails.CommandParts;
         if (string.Equals(commandParts[4], "WHOAMI", StringComparison.InvariantCultureIgnoreCase))
         {
-            resp = RespBuilder.BulkString("default");
+            if (ServerRuntimeContext.DefaultUserAuthenticated &&
+                !DataCache.IsConnectionAuthenticated(commandContext.Socket))
+            {
+                resp = RespBuilder.Error("NOAUTH Authentication required.");
+                commandContext.Socket.SendCommand(resp);
+                return await Task.FromResult(resp);
+            }
+
+            resp = RespBuilder.BulkString(
+                DataCache.GetAuthenticatedUsername(commandContext.Socket) ?? "default");
         }
         else if (string.Equals(commandParts[4], "GETUSER", StringComparison.InvariantCultureIgnoreCase))
         {
@@ -70,8 +79,9 @@ public class Acl : Base
                 plaintextPassword = plaintextPassword[1..];
             }
             
-            var passwordHash = PasswordHasher.EncryptPassword(plaintextPassword);
-            DataCache.SetPassword(username, passwordHash);
+            DataCache.SetPassword(username, PasswordHasher.EncryptPassword(plaintextPassword));
+            DataCache.AddAuthenticatedConnection(username, commandContext.Socket);
+            
             resp = RespBuilder.SimpleString("OK");
         }
         else

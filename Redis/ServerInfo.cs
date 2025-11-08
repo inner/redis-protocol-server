@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Redis.Cache;
 using Redis.Common;
 
 namespace Redis;
@@ -46,6 +47,8 @@ public class ServerRuntimeContext
 
         await Task.WhenAll(tasks);
     }
+
+    public static bool DefaultUserAuthenticated => DataCache.DefaultUserExists();
 }
 
 public class Replication
