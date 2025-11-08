@@ -31,10 +31,10 @@ public class Acl : Base
         else if (string.Equals(commandParts[4], "GETUSER", StringComparison.InvariantCultureIgnoreCase))
         {
             var username = commandParts[6];
-            var passwordHash = DataCache.GetPassword(username);
-            
+            var passwordHash = DataCache.GetPasswordHash(username);
+
             var sb = new StringBuilder(RespBuilder.InitArray(4));
-            
+
             // flags
             sb.Append(RespBuilder.BulkString("flags"));
             if (passwordHash != null)
@@ -46,7 +46,7 @@ public class Acl : Base
                 sb.Append(RespBuilder.InitArray(1));
                 sb.Append(RespBuilder.BulkString("nopass"));
             }
-            
+
             // passwords
             sb.Append(RespBuilder.BulkString("passwords"));
             if (passwordHash != null)
@@ -58,7 +58,7 @@ public class Acl : Base
             {
                 sb.Append(RespBuilder.InitArray(0));
             }
-            
+
             resp = sb.ToString();
         }
         else if (string.Equals(commandParts[4], "SETUSER", StringComparison.InvariantCultureIgnoreCase))
@@ -70,10 +70,7 @@ public class Acl : Base
                 plaintextPassword = plaintextPassword[1..];
             }
             
-            var sha256 = System.Security.Cryptography.SHA256.Create();
-            var passwordBytes = Encoding.UTF8.GetBytes(plaintextPassword);
-            var hashBytes = sha256.ComputeHash(passwordBytes);
-            var passwordHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+            var passwordHash = PasswordHasher.EncryptPassword(plaintextPassword);
             DataCache.SetPassword(username, passwordHash);
             resp = RespBuilder.SimpleString("OK");
         }
@@ -88,11 +85,11 @@ public class Acl : Base
 
     public override Dictionary<string, Dictionary<string, string>> Docs()
     {
-        return new()
+        return new Dictionary<string, Dictionary<string, string>>
         {
             {
                 Name,
-                new()
+                new Dictionary<string, string>
                 {
                     { "summary", "Manages the ACL (Access Control List) system." },
                     { "usage #1", "redis-cli" },

@@ -19,7 +19,7 @@ public static class DataCache
         UserPasswords[username] = passwordHash;
     }
     
-    public static string? GetPassword(string username)
+    public static string? GetPasswordHash(string username)
     {
         UserPasswords.TryGetValue(username, out var passwordHash);
         return passwordHash;

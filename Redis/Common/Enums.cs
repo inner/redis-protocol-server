@@ -46,7 +46,8 @@ public enum RespType
     Geopos,
     Geodist,
     Geosearch,
-    Acl
+    Acl,
+    Auth,
 }
 
 public enum DataType
