@@ -36,6 +36,7 @@ public class Acl : Base
                 sb.Append(RespBuilder.InitArray(1));
                 sb.Append(RespBuilder.BulkString("nopass"));
             }
+
             resp = sb.ToString();
         }
         else
