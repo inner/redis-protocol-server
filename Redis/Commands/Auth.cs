@@ -21,22 +21,13 @@ public class Auth : Base
 
     private static async Task<string> GenerateCommonResponse(CommandContext commandContext)
     {
-        string? resp;
         var commandParts = commandContext.CommandDetails.CommandParts;
         var username = commandParts[4];
         var password = commandParts[6];
-        
-        var passwordHash = DataCache.GetPasswordHash(username);
-        if (string.IsNullOrEmpty(passwordHash))
-        {
-            resp = RespBuilder.Error("WRONGPASS invalid username-password pair or user is disabled.");
-        }
-        else
-        {
-            resp = PasswordHasher.VerifyPassword(password, passwordHash)
-                ? RespBuilder.SimpleString("OK")
-                : RespBuilder.Error("WRONGPASS invalid username-password pair or user is disabled.");
-        }
+
+        var resp = PasswordHasher.VerifyPassword(password, DataCache.GetPasswordHash(username))
+            ? RespBuilder.SimpleString("OK")
+            : RespBuilder.Error("WRONGPASS invalid username-password pair or user is disabled.");
 
         commandContext.Socket.SendCommand(resp);
         return await Task.FromResult(resp);

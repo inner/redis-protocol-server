@@ -12,27 +12,27 @@ public static class RespBuilder
             ArgumentNullException.ThrowIfNull(command);
             sb.Append($"${command.Length}\r\n{command}\r\n");
         }
-        
+
         return sb.ToString();
     }
-    
+
     public static string EmptyArray()
     {
         return "*0\r\n";
     }
-    
+
     public static string NullArray()
     {
         return "*-1\r\n";
     }
-    
+
     public static string InitArray(int count)
     {
         if (count < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be negative.");
         }
-        
+
         return $"*{count}\r\n";
     }
 
@@ -41,7 +41,7 @@ public static class RespBuilder
         ArgumentNullException.ThrowIfNull(value);
         return $"${value.Length}\r\n{value}\r\n";
     }
-    
+
     public static string SimpleString(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -53,12 +53,15 @@ public static class RespBuilder
         return $":{value}\r\n";
     }
 
-    public static string Error(string value)
+    public static string Error(string value, bool includeErrPrefix = true)
     {
         ArgumentNullException.ThrowIfNull(value);
-        return $"-ERR {value}\r\n";
+        
+        return includeErrPrefix
+            ? $"-ERR {value}\r\n"
+            : $"{value}\r\n";
     }
-    
+
     public static string Null()
     {
         return "$-1\r\n";
