@@ -29,7 +29,10 @@ public class Acl : Base
             if (ServerRuntimeContext.DefaultUserAuthenticated &&
                 !DataCache.IsConnectionAuthenticated(commandContext.Socket))
             {
-                resp = RespBuilder.Error("NOAUTH Authentication required.");
+                resp = RespBuilder.Error(
+                    "NOAUTH Authentication required.",
+                    includeErrPrefix: false);
+                
                 commandContext.Socket.SendCommand(resp);
                 return await Task.FromResult(resp);
             }
