@@ -29,13 +29,15 @@ public class Acl : Base
         }
         else if (string.Equals(commandParts[4], "GETUSER", StringComparison.InvariantCultureIgnoreCase))
         {
-            var sb = new StringBuilder(RespBuilder.InitArray(2));
+            var sb = new StringBuilder(RespBuilder.InitArray(4));
             sb.Append(RespBuilder.BulkString("flags"));
             if (string.Equals(commandParts[6], "default", StringComparison.InvariantCultureIgnoreCase))
             {
                 sb.Append(RespBuilder.InitArray(1));
                 sb.Append(RespBuilder.BulkString("nopass"));
             }
+            sb.Append(RespBuilder.BulkString("passwords"));
+            sb.Append(RespBuilder.InitArray(0));
 
             resp = sb.ToString();
         }
