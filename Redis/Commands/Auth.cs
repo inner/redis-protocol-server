@@ -25,11 +25,19 @@ public class Auth : Base
         var username = commandParts[4];
         var password = commandParts[6];
 
-        var resp = PasswordHasher.VerifyPassword(password, DataCache.GetPasswordHash(username))
-            ? RespBuilder.SimpleString("OK")
-            : RespBuilder.Error(
+        string resp;
+        
+        if (PasswordHasher.VerifyPassword(password, DataCache.GetPasswordHash(username)))
+        {
+            DataCache.AddAuthenticatedConnection(username, commandContext.Socket);
+            resp = RespBuilder.SimpleString("OK");
+        }
+        else
+        {
+            resp = RespBuilder.Error(
                 "WRONGPASS invalid username-password pair or user is disabled.",
                 includeErrPrefix: false);
+        }
 
         commandContext.Socket.SendCommand(resp);
         return await Task.FromResult(resp);
