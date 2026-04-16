@@ -34,7 +34,7 @@ public class Command : Base
 
     private Task<string> GetDocsResp(string? commandKey = null)
     {
-        var commands = CommandDocsRegistry.AllLegacyDocs();
+        var commands = CommandDocsRegistry.AllDocs();
 
         var commandsFiltered = commandKey == null
             ? commands

@@ -52,7 +52,7 @@ public static class CommandDocsRegistry
             [ZscoreDoc.Instance.Name] = ZscoreDoc.Instance
         };
 
-    public static Dictionary<string, Dictionary<string, string>> AllLegacyDocs()
+    public static Dictionary<string, Dictionary<string, string>> AllDocs()
     {
         return Docs.Values.ToDictionary(
             doc => doc.Name,

@@ -1,6 +1,6 @@
 namespace Redis.CommandDocs;
 
-public sealed record CommandDocumentation(
+public record CommandDocumentation(
     string Name,
     string? Summary = null,
     string? Syntax = null,
