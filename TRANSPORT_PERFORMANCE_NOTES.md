@@ -838,3 +838,752 @@ socket -> async receive -> PipeReader/PipeWriter -> incremental RESP parser
 ```
 
 That is why the `Sockets` folder is a stronger long-term transport design.
+
+## 11. What Would Need To Change For A Full Refactor
+
+This is the important part: a transport-only refactor is not enough.
+
+Right now the system is string-based across almost the whole execution path:
+
+- transport reads a full request into `string`
+- parser splits that `string`
+- command dispatch works from `string[] CommandParts`
+- commands build responses as `string`
+- commands send those `string` responses directly to sockets
+- transactions queue raw RESP strings
+- replication forwards raw RESP strings
+
+So if you want the server to become truly more performant end to end, the
+refactor has to move several layers together.
+
+The most useful mental model is:
+
+```text
+Today:
+bytes -> string -> split strings -> execute -> build response string -> bytes
+
+Target:
+bytes -> parsed command -> execute -> write RESP bytes directly
+```
+
+Below is what would need to change.
+
+## 12. Step 1: Move The Transport Boundary From `string` To Buffered Bytes
+
+### Current Shape
+
+From the active path:
+
+```csharp
+// The transport fully materializes a request as a string.
+var resp = client.GetStream().AsString();
+
+// The receiver only knows how to accept a string payload.
+await receiver.Receive(client.Client, resp, commandQueue, subscriptions, commandSource);
+```
+
+```csharp
+public virtual async Task Receive(
+    Socket socket,
+    string resp,
+    List<CommandQueueItem> commandQueue,
+    List<string> subscriptions,
+    CommandSource source)
+{
+    var respDataType = resp.GetRespDataType();
+    await executor.Execute(socket, resp, commandQueue, subscriptions, this, source);
+}
+```
+
+### Fully Refactored Shape
+
+The receiver should stop accepting a prebuilt `string` and instead consume bytes
+from a `PipeReader`.
+
+```csharp
+// Illustrative design: the parser/receiver now operates on the connection's input pipe.
+public async Task ProcessConnectionAsync(
+    Connection connection,
+    List<CommandQueueItem> commandQueue,
+    List<string> subscriptions,
+    CommandSource source)
+{
+    while (true)
+    {
+        // Read whatever bytes are currently buffered for this connection.
+        var result = await connection.Input.ReadAsync();
+        var buffer = result.Buffer;
+
+        // Parse as many full RESP commands as exist in the buffer.
+        while (TryParseRespCommand(buffer, out var command, out var consumed))
+        {
+            buffer = buffer.Slice(consumed);
+            await ExecuteParsedCommandAsync(connection, command, commandQueue, subscriptions, source);
+        }
+
+        // Preserve unconsumed bytes so partial frames survive until the next read.
+        connection.Input.AdvanceTo(buffer.Start, buffer.End);
+
+        if (result.IsCompleted)
+        {
+            break;
+        }
+    }
+}
+```
+
+### Why This Change Matters
+
+- The parser becomes frame-aware.
+- Incomplete commands stay buffered.
+- You stop forcing the whole request path through `string`.
+
+## 13. Step 2: Replace `CommandDetails` With A Parsed Command Model
+
+### Current Shape
+
+From [Redis/Commands/Common/CommandDetails.cs](./Redis/Commands/Common/CommandDetails.cs):
+
+```csharp
+public class CommandDetails
+{
+    public required int CommandCount { get; init; }
+    public required string[] CommandParts { get; init; }
+    public required string Resp { get; init; }
+    public required RespType RespType { get; init; }
+    public required bool FromTransaction { get; set; }
+}
+```
+
+And from [Redis/Common/StringExtensions.cs](./Redis/Common/StringExtensions.cs):
+
+```csharp
+public static CommandDetails BuildCommandDetails(this string resp)
+{
+    var commandParts = resp.Split(Constants.VerbatimNewLine)
+        .Where(x => !string.IsNullOrEmpty(x))
+        .ToArray();
+
+    return new CommandDetails
+    {
+        CommandCount = int.Parse(commandParts[0].Replace("*", string.Empty)),
+        CommandParts = commandParts,
+        Resp = resp,
+        RespType = commandParts[2].ToCommandType(),
+        FromTransaction = false
+    };
+}
+```
+
+This model already assumes:
+
+- the whole request exists as a string
+- the request is split into strings eagerly
+- the raw request string is preserved for replication and transactions
+
+### Fully Refactored Shape
+
+You want a parsed command object whose primary representation is not a raw RESP
+string.
+
+```csharp
+// Illustrative design: parsed command built from buffered bytes.
+public sealed class ParsedCommand
+{
+    // The command name is decoded once.
+    public required RespType RespType { get; init; }
+
+    // Arguments stay as UTF-8 slices or rented byte buffers.
+    public required ReadOnlyMemory<byte>[] Arguments { get; init; }
+
+    // Preserve encoded bytes only if you need to replay or propagate them.
+    public required ReadOnlyMemory<byte> EncodedResp { get; init; }
+
+    // Transaction bookkeeping still lives here.
+    public bool FromTransaction { get; set; }
+
+    // Decode only when a command actually needs a string view.
+    public string GetArgumentAsString(int index) =>
+        System.Text.Encoding.UTF8.GetString(Arguments[index].Span);
+}
+```
+
+### Why This Change Matters
+
+- Argument decoding becomes selective instead of universal.
+- You can keep the encoded command bytes for replication.
+- Transactions and replay stop depending on rebuilding raw strings.
+
+## 14. Step 3: Replace String-Based Dispatch With Parsed Command Dispatch
+
+### Current Shape
+
+From [Redis/Executors/ArrayExecutor.cs](./Redis/Executors/ArrayExecutor.cs):
+
+```csharp
+var multiRespSplit = Regex.Split(resp, @"(\*\d+\\r\\n)")
+    .Where(x => !string.IsNullOrWhiteSpace(x))
+    .Select(x => x.TrimEnd())
+    .ToList();
+
+foreach (var commandDetails in respCommands.Select(respCommand => respCommand.BuildCommandDetails()))
+{
+    await receiver.ExecuteCommand(socket, commandDetails, commandQueue, subscriptions, source);
+}
+```
+
+This means:
+
+- regex split on the full string payload
+- reconstruction of command substrings
+- then another parse step into `CommandDetails`
+
+### Fully Refactored Shape
+
+This layer would ideally stop being regex-based entirely.
+
+```csharp
+// Illustrative design: a RESP parser produces ParsedCommand directly.
+while (TryParseRespCommand(buffer, out var command, out var consumed))
+{
+    // Execute the parsed command immediately.
+    await receiver.ExecuteCommand(connection, command, commandQueue, subscriptions, source);
+
+    // Move forward only by the bytes that formed this command.
+    buffer = buffer.Slice(consumed);
+}
+```
+
+### Why This Change Matters
+
+- No regex split on full request strings.
+- No rebuild of intermediate RESP command strings.
+- Parsing and dispatch become one streaming pipeline.
+
+## 15. Step 4: Change Command APIs So Commands No Longer Touch Sockets Directly
+
+### Current Shape
+
+From [Redis/Commands/Common/Base.cs](./Redis/Commands/Common/Base.cs):
+
+```csharp
+protected abstract Task<string> ExecuteCore(CommandContext commandContext);
+```
+
+And commands commonly do this:
+
+```csharp
+var resp = RespBuilder.SimpleString("PONG");
+commandContext.Socket.SendCommand(resp);
+return Task.FromResult(resp);
+```
+
+This means command execution is coupled to:
+
+- socket writes
+- string response building
+- response replay through returned strings
+
+### Fully Refactored Shape
+
+Commands should stop sending raw socket bytes themselves and stop returning
+response strings.
+
+Instead, commands should write through a response writer abstraction.
+
+```csharp
+// Illustrative design: commands write bytes through a writer owned by the connection.
+public abstract class Base
+{
+    protected abstract ValueTask ExecuteCoreAsync(CommandContext commandContext);
+
+    public async ValueTask ExecuteAsync(CommandContext commandContext)
+    {
+        if (!IsSupportedOnCurrentNodeRole())
+        {
+            await commandContext.Writer.WriteErrorAsync(
+                $"Command '{commandContext.Command.RespType}' is not allowed on this node.");
+            return;
+        }
+
+        if (TransactionEnabled(commandContext))
+        {
+            return;
+        }
+
+        await ExecuteCoreAsync(commandContext);
+    }
+}
+```
+
+And `CommandContext` would change from socket-centric to writer-centric:
+
+```csharp
+// Illustrative design.
+public sealed class CommandContext
+{
+    public required Connection Connection { get; init; }
+    public required RespWriter Writer { get; init; }
+    public required ParsedCommand Command { get; init; }
+    public required List<CommandQueueItem> CommandQueue { get; init; }
+    public required List<string> Subscriptions { get; init; }
+    public required CommandSource Source { get; init; }
+}
+```
+
+### Why This Change Matters
+
+- Commands stop caring about sockets.
+- The output path can become byte-oriented and buffered.
+- The execution contract becomes clearer: execute behavior, do not manage
+  transport details.
+
+## 16. Step 5: Rewrite `RespBuilder` Into A Byte Writer
+
+### Current Shape
+
+From [Redis/Common/RespBuilder.cs](./Redis/Common/RespBuilder.cs):
+
+```csharp
+public static string SimpleString(string value)
+{
+    return $"+{value}\r\n";
+}
+
+public static string Integer(long value)
+{
+    return $":{value}\r\n";
+}
+```
+
+And then later:
+
+```csharp
+socket.Send(resp.Replace(Constants.VerbatimNewLine, Constants.NewLine).AsBytes());
+```
+
+So responses are:
+
+- built as strings
+- normalized as strings
+- encoded as bytes later
+
+### Fully Refactored Shape
+
+The builder should become a writer over `IBufferWriter<byte>` or `PipeWriter`.
+
+```csharp
+// Illustrative design: byte-oriented RESP writer.
+public sealed class RespWriter
+{
+    private readonly PipeWriter writer;
+
+    public RespWriter(PipeWriter writer)
+    {
+        this.writer = writer;
+    }
+
+    public void WriteSimpleString(string value)
+    {
+        // Write RESP prefix directly.
+        WriteAscii("+");
+
+        // Encode only the payload once.
+        WriteUtf8(value);
+
+        // Write CRLF directly as bytes.
+        WriteAscii("\r\n");
+    }
+
+    public void WriteInteger(long value)
+    {
+        WriteAscii(":");
+        WriteAscii(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        WriteAscii("\r\n");
+    }
+
+    public void WriteBulkString(string value)
+    {
+        WriteAscii("$");
+        WriteAscii(value.Length.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        WriteAscii("\r\n");
+        WriteUtf8(value);
+        WriteAscii("\r\n");
+    }
+
+    public ValueTask FlushAsync() => writer.FlushAsync();
+
+    private void WriteAscii(string value)
+    {
+        var bytes = System.Text.Encoding.ASCII.GetBytes(value);
+        writer.Write(bytes);
+    }
+
+    private void WriteUtf8(string value)
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
+        writer.Write(bytes);
+    }
+}
+```
+
+### Why This Change Matters
+
+- Responses can be encoded directly into the connection output pipe.
+- The command path no longer builds transient response strings by default.
+- You can later optimize numeric and ASCII paths further if needed.
+
+## 17. Step 6: Every Command Would Need To Change
+
+This is the part you were asking about explicitly.
+
+Because commands currently:
+
+- read arguments from `string[] CommandParts`
+- build response strings with `RespBuilder`
+- call `Socket.SendCommand(...)`
+- return `string`
+
+almost every command would need mechanical but real changes.
+
+### Example: `PING` Today
+
+```csharp
+protected override Task<string> ExecuteCore(CommandContext commandContext)
+{
+    if (commandContext.IsReplicationStream)
+    {
+        return Task.FromResult(string.Empty);
+    }
+
+    var resp = commandContext.Subscriptions.Count > 0
+        ? RespBuilder.ArrayFromCommands("pong", string.Empty)
+        : RespBuilder.SimpleString("PONG");
+
+    commandContext.Socket.SendCommand(resp);
+    return Task.FromResult(resp);
+}
+```
+
+### Example: `PING` After A Full Refactor
+
+```csharp
+// Illustrative design.
+protected override async ValueTask ExecuteCoreAsync(CommandContext commandContext)
+{
+    if (commandContext.IsReplicationStream)
+    {
+        // Replication stream PING should not emit a normal client response.
+        return;
+    }
+
+    if (commandContext.Subscriptions.Count > 0)
+    {
+        // Write RESP array directly to the connection's output pipe.
+        commandContext.Writer.WriteArrayHeader(2);
+        commandContext.Writer.WriteBulkString("pong");
+        commandContext.Writer.WriteBulkString(string.Empty);
+    }
+    else
+    {
+        commandContext.Writer.WriteSimpleString("PONG");
+    }
+
+    await commandContext.Writer.FlushAsync();
+}
+```
+
+### Example: `SET` Today
+
+The current `SET` implementation reads from `CommandParts` and returns string
+responses.
+
+Conceptually, it looks like this:
+
+```csharp
+// Today's pattern.
+var key = commandContext.CommandDetails.CommandParts[4];
+var value = commandContext.CommandDetails.CommandParts[6];
+
+DataCache.Set(key, value, expiry);
+
+SendIfNotFromTransaction(commandContext, RespBuilder.SimpleString("OK"));
+return Task.FromResult(RespBuilder.SimpleString("OK"));
+```
+
+### Example: `SET` After A Full Refactor
+
+```csharp
+// Illustrative design.
+protected override ValueTask ExecuteCoreAsync(CommandContext commandContext)
+{
+    // Decode only the arguments this command actually needs.
+    var key = commandContext.Command.GetArgumentAsString(0);
+    var value = commandContext.Command.GetArgumentAsString(1);
+
+    DataCache.Set(key, value, expiry: null);
+
+    if (!commandContext.Command.FromTransaction)
+    {
+        commandContext.Writer.WriteSimpleString("OK");
+        return commandContext.Writer.FlushAsync();
+    }
+
+    return ValueTask.CompletedTask;
+}
+```
+
+### What This Means In Practice
+
+Nearly every command file would need to be updated because:
+
+- `CommandDetails` becomes `ParsedCommand`
+- `Socket` send calls disappear
+- `Task<string>` becomes `ValueTask` or `Task`
+- `RespBuilder` string-returning usage disappears
+
+The changes are repetitive, but not conceptually hard once the core abstractions
+are in place.
+
+## 18. Step 7: Transactions Must Stop Storing Raw RESP Strings
+
+### Current Shape
+
+From [Redis/Commands/Common/Base.cs](./Redis/Commands/Common/Base.cs):
+
+```csharp
+var commandString = string.Join(
+    Constants.VerbatimNewLine, commandContext.CommandDetails.CommandParts);
+
+var commandType = commandContext.CommandDetails.CommandParts[2].ToCommandType();
+
+commandContext.CommandQueue.Add(
+    new CommandQueueItem { RespType = commandType, Resp = commandString });
+```
+
+And from [Redis/Commands/Common/CommandQueueItem.cs](./Redis/Commands/Common/CommandQueueItem.cs):
+
+```csharp
+public class CommandQueueItem
+{
+    public RespType RespType { get; init; }
+    public required string Resp { get; init; }
+}
+```
+
+This means transactions replay by storing raw RESP strings and reparsing them
+later.
+
+### Fully Refactored Shape
+
+Transactions should queue parsed commands or encoded bytes, not reconstructed
+strings.
+
+```csharp
+// Illustrative design.
+public sealed class CommandQueueItem
+{
+    public required ParsedCommand Command { get; init; }
+}
+```
+
+Then queuing becomes:
+
+```csharp
+commandContext.CommandQueue.Add(new CommandQueueItem
+{
+    // Keep the parsed command object or a stable encoded copy.
+    Command = commandContext.Command
+});
+```
+
+And `EXEC` would stop reparsing strings:
+
+```csharp
+foreach (var queued in commandContext.CommandQueue)
+{
+    queued.Command.FromTransaction = true;
+    await commandContext.Receiver.ExecuteCommand(
+        commandContext.Connection,
+        queued.Command,
+        [],
+        [],
+        commandContext.Source);
+}
+```
+
+### Why This Change Matters
+
+- No string rebuild during queueing.
+- No reparse on `EXEC`.
+- Transaction replay becomes closer to "re-execute parsed command".
+
+## 19. Step 8: Replication Must Stop Propagating Strings
+
+### Current Shape
+
+From [Redis/Receivers/ReceiverExtensions.cs](./Redis/Receivers/ReceiverExtensions.cs):
+
+```csharp
+await ServerRuntimeContext.ExecuteOnReplicas(commandDetails.Resp);
+```
+
+From [Redis/ServerInfo.cs](./Redis/ServerInfo.cs):
+
+```csharp
+public static async Task ExecuteOnReplicas(string resp)
+{
+    var tasks = connectedReplicas
+        .Select(replica =>
+            Task.Run(() =>
+                replica.Value.SendCommand(resp)));
+
+    await Task.WhenAll(tasks);
+}
+```
+
+This means propagation is also string-based:
+
+- preserve or rebuild RESP string
+- send string to replicas
+
+### Fully Refactored Shape
+
+Replication should forward encoded bytes, ideally without rebuilding them.
+
+```csharp
+// Illustrative design.
+public static async Task ExecuteOnReplicasAsync(ReadOnlyMemory<byte> encodedResp)
+{
+    var tasks = ServerInfo.ServerRuntimeContext.Replicas
+        .Where(x => x.Value.Connected)
+        .Select(async replica =>
+        {
+            // Each replica connection owns an output writer or async sender.
+            await replica.Value.Output.WriteAsync(encodedResp);
+            await replica.Value.Output.FlushAsync();
+        });
+
+    await Task.WhenAll(tasks);
+}
+```
+
+And the command execution bridge would propagate:
+
+```csharp
+if (ShouldReplicateCommand(command, parsedCommand))
+{
+    // Reuse the encoded command bytes that were originally parsed.
+    await ServerRuntimeContext.ExecuteOnReplicasAsync(parsedCommand.EncodedResp);
+}
+```
+
+### Why This Change Matters
+
+- No rebuild of RESP string for propagation.
+- Replica propagation can reuse already-encoded command bytes.
+- Replication path becomes consistent with the rest of the byte-oriented design.
+
+## 20. Step 9: Error Handling Must Also Use The Writer
+
+### Current Shape
+
+From [Redis/Receivers/ReceiverBase.cs](./Redis/Receivers/ReceiverBase.cs):
+
+```csharp
+catch (Exception ex)
+{
+    socket.SendCommand(RespBuilder.Error(ex.Message));
+}
+```
+
+### Fully Refactored Shape
+
+Error responses should be written through the same byte-oriented response path:
+
+```csharp
+catch (Exception ex)
+{
+    connection.Writer.WriteError(ex.Message);
+    await connection.Writer.FlushAsync();
+}
+```
+
+### Why This Change Matters
+
+- One output path instead of mixed output styles.
+- Error handling benefits from the same buffering and transport abstraction.
+
+## 21. Files That Would Be Directly Affected
+
+If you wanted to do this fully rather than partially, the main impact areas
+would be:
+
+- `Redis/Nodes/NodeBase.cs`
+  because connection handling must switch from `NetworkStream` string reads to
+  buffered async transport
+- `Redis/Common/NetworkExtensions.cs`
+  because most of the current string-based read/write helpers would either
+  disappear or shrink to handshake-specific code
+- `Redis/Receivers/ReceiverBase.cs`
+  because it currently accepts `string resp`
+- `Redis/Executors/ArrayExecutor.cs`
+  because regex/string splitting should be replaced by a real incremental parser
+- `Redis/Common/StringExtensions.cs`
+  because `BuildCommandDetails(string resp)` is part of the string pipeline
+- `Redis/Commands/Common/CommandDetails.cs`
+  because the parsed command model needs to change
+- `Redis/Commands/Common/CommandQueueItem.cs`
+  because transactions should not queue raw strings
+- `Redis/Commands/Common/Base.cs`
+  because commands should stop returning response strings and stop sending raw
+  socket writes directly
+- almost every file under `Redis/Commands`
+  because commands currently read `CommandParts`, build string responses, and
+  write through `Socket.SendCommand(...)`
+- `Redis/Common/RespBuilder.cs`
+  because it would need to become a byte-oriented writer
+- `Redis/Receivers/ReceiverExtensions.cs`
+  because dispatch and propagation currently assume `CommandDetails.Resp`
+- `Redis/ServerInfo.cs`
+  because replica propagation currently sends strings
+
+## 22. What A "Fully More Performant" Version Really Means
+
+If you truly wanted the refactor to be complete, the goal would not be:
+
+- "use `SocketAsyncEventArgs` somewhere"
+
+The goal would be:
+
+- async transport
+- byte-oriented parser
+- parsed-command execution model
+- byte-oriented response writer
+- transaction queue that stores parsed or encoded commands
+- replication path that forwards encoded bytes
+
+That is the real end-to-end change.
+
+## 23. Best Summary
+
+The hard truth is:
+
+- swapping only the transport layer would help
+- but it would leave a lot of performance on the table
+- because the rest of the server is still string-centric
+
+A real refactor would need to move the whole request/response pipeline from:
+
+```text
+NetworkStream -> string -> split -> command parts -> response string -> socket send
+```
+
+to:
+
+```text
+SocketAsyncEventArgs -> PipeReader -> parsed command -> command execution -> PipeWriter
+```
+
+That is why "fully more performant" is not one change. It is a pipeline-wide
+architectural shift.
