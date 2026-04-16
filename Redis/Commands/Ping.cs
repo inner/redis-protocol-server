@@ -10,7 +10,7 @@ public class Ping : Base
 
     protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
-        if (IsReplicationStream(commandContext))
+        if (commandContext.IsReplicationStream)
         {
             return Task.FromResult(string.Empty);
         }
@@ -21,12 +21,5 @@ public class Ping : Base
 
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
-    }
-
-    private static bool IsReplicationStream(CommandContext commandContext)
-    {
-        return !ServerInfo.ServerRuntimeContext.IsMaster &&
-               ServerInfo.ServerRuntimeContext.MasterSocket != null &&
-               ReferenceEquals(commandContext.Socket, ServerInfo.ServerRuntimeContext.MasterSocket);
     }
 }

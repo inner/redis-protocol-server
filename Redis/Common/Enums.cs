@@ -72,3 +72,9 @@ public enum SupportedRoles
     MasterOnly,
     ReplicaOnly
 }
+
+public enum CommandSource
+{
+    Client,
+    ReplicationMaster
+}

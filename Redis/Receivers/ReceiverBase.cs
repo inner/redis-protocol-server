@@ -8,7 +8,7 @@ namespace Redis.Receivers;
 public class ReceiverBase
 {
     public virtual async Task Receive(Socket socket, string resp, List<CommandQueueItem> commandQueue,
-        List<string> subscriptions)
+        List<string> subscriptions, CommandSource source)
     {
         try
         {
@@ -16,7 +16,7 @@ public class ReceiverBase
 
             if (ExecutorRegistry.Executors.TryGetValue(respDataType, out var executor))
             {
-                await executor.Execute(socket, resp, commandQueue, subscriptions, this);
+                await executor.Execute(socket, resp, commandQueue, subscriptions, this, source);
             }
             else
             {

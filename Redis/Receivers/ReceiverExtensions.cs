@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using Redis.Commands.Common;
+using Redis.Common;
 
 namespace Redis.Receivers;
 
@@ -10,7 +11,8 @@ public static class ReceiverExtensions
         Socket socket,
         CommandDetails commandDetails,
         List<CommandQueueItem> commandQueue,
-        List<string> subscriptions)
+        List<string> subscriptions,
+        CommandSource source)
     {
         var className = $"Redis.Commands.{commandDetails.RespType}";
 
@@ -25,6 +27,7 @@ public static class ReceiverExtensions
         var commandContext = new CommandContext
         {
             Socket = socket,
+            Source = source,
             CommandDetails = commandDetails,
             CommandQueue = commandQueue,
             Subscriptions = subscriptions,

@@ -45,7 +45,11 @@ public class Exec : Base
             commandResults.Add(
                 await commandContext.Receiver
                     .ExecuteCommand(
-                        commandContext.Socket, commandDetails, [], []));
+                        commandContext.Socket,
+                        commandDetails,
+                        [],
+                        [],
+                        commandContext.Source));
         }
 
         var sb = new StringBuilder($"*{commandResults.Count}\r\n");

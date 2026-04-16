@@ -10,7 +10,7 @@ public class ArrayExecutor : IRespDataTypeExecutor
 {
     public async Task Execute(
         Socket socket, string resp, List<CommandQueueItem> commandQueue,
-        List<string> subscriptions, ReceiverBase receiver)
+        List<string> subscriptions, ReceiverBase receiver, CommandSource source)
     {
         var multiRespSplit = Regex.Split(resp, @"(\*\d+\\r\\n)")
             .Where(x => !string.IsNullOrWhiteSpace(x))
@@ -36,7 +36,7 @@ public class ArrayExecutor : IRespDataTypeExecutor
         // they need to be executed in the same order, not asynchronously
         foreach (var commandDetails in respCommands.Select(respCommand => respCommand.BuildCommandDetails()))
         {
-            await receiver.ExecuteCommand(socket, commandDetails, commandQueue, subscriptions);
+            await receiver.ExecuteCommand(socket, commandDetails, commandQueue, subscriptions, source);
         }
     }
 }

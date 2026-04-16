@@ -53,8 +53,9 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
     {
         List<CommandQueueItem> commandQueue = [];
         List<string> subscriptions = [];
-        
+
         var connectionId = $"{client.Client.LocalEndPoint}->{client.Client.RemoteEndPoint}";
+        var commandSource = ResolveCommandSource(client.Client);
 
         while (client.Connected)
         {
@@ -66,14 +67,14 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
                 {
                     var resp = client.GetStream()
                         .AsString();
-                    
+
                     if (string.IsNullOrEmpty(resp))
                     {
                         client.Client.SendCommand(RespBuilder.Null());
                         continue;
                     }
 
-                    await receiver.Receive(client.Client, resp, commandQueue, subscriptions);
+                    await receiver.Receive(client.Client, resp, commandQueue, subscriptions, commandSource);
                     LogReceivedCommand(resp);
                 }
             }
@@ -94,6 +95,15 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
                 CloseTcpClient(connectionId, client);
             }
         }
+    }
+
+    private static CommandSource ResolveCommandSource(Socket socket)
+    {
+        return !ServerInfo.ServerRuntimeContext.IsMaster &&
+               ServerInfo.ServerRuntimeContext.MasterSocket != null &&
+               ReferenceEquals(socket, ServerInfo.ServerRuntimeContext.MasterSocket)
+            ? CommandSource.ReplicationMaster
+            : CommandSource.Client;
     }
 
     private static void CloseTcpClient(string connectionId, TcpClient? tcpClient)
