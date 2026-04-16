@@ -30,6 +30,15 @@ If asked what makes this project relevant for systems-oriented roles, emphasize:
 - replication
 - correctness under distributed behavior
 
+## Concrete Technical Areas To Mention
+
+- RESP parsing
+- TCP connection handling
+- command dispatch
+- replication handshake
+- replica ACK flow
+- command execution refactor
+
 ## Notes On Positioning
 
 - Prefer `Redis-inspired` or `RESP-compatible` over `Redis from scratch`.
