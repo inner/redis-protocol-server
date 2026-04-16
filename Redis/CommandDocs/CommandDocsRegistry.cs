@@ -52,24 +52,6 @@ public static class CommandDocsRegistry
             [ZscoreDoc.Instance.Name] = ZscoreDoc.Instance
         };
 
-    public static CommandDocumentation? Find(string commandName)
-    {
-        return Docs.TryGetValue(commandName, out var doc)
-            ? doc
-            : null;
-    }
-
-    public static Dictionary<string, Dictionary<string, string>> LegacyDocsFor(string commandName)
-    {
-        var doc = Find(commandName)
-                  ?? throw new KeyNotFoundException($"No central documentation exists for command '{commandName}'.");
-
-        return new Dictionary<string, Dictionary<string, string>>
-        {
-            [doc.Name] = CommandDocRespAdapter.ToLegacyFieldMap(doc)
-        };
-    }
-
     public static Dictionary<string, Dictionary<string, string>> AllLegacyDocs()
     {
         return Docs.Values.ToDictionary(
