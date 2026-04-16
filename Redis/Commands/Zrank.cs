@@ -35,21 +35,4 @@ public class Zrank : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "ZRANK",
-                new()
-                {
-                    { "description", "Returns the rank (or index) of a member in a sorted set." },
-                    { "syntax", "ZRANK key member" },
-                    { "group", "Sorted Sets" },
-                    { "complexity", "O(log(N)) where N is the number of elements in the sorted set." }
-                }
-            }
-        };
-    }
 }

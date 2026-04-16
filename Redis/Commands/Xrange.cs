@@ -149,28 +149,4 @@ public class Xrange : Base
             return true;
         };
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Returns the messages from a stream within a range of IDs." },
-                    { "usage #1", "redis-cli XADD weather_in_london 1-0 temperature 20 humidity 95" },
-                    { "usage #2", "redis-cli XADD weather_in_london 1-* temperature 19 humidity 70" },
-                    { "usage #3", "redis-cli XADD weather_in_london 2-* temperature 24 humidity 78" },
-                    { "usage #4", "redis-cli XADD weather_in_london 2-* temperature 24 humidity 78" },
-                    { "usage #5", "redis-cli XADD weather_in_london * temperature 25 humidity 90" },
-                    { "usage #6", "redis-cli XRANGE weather_in_london 1 1" },
-                    { "usage #7", "redis-cli XRANGE weather_in_london 1 1-1" },
-                    { "usage #8", "redis-cli XRANGE weather_in_london - 1" },
-                    { "usage #9", "redis-cli XRANGE weather_in_london - 1-0" },
-                    { "usage #10", "redis-cli XRANGE weather_in_london 2 +" }
-                }
-            }
-        };
-    }
 }

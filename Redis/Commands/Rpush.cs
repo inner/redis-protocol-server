@@ -34,20 +34,4 @@ public class Rpush : Base
 
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Appends one or multiple values to the end of a list." },
-                    { "usage #1", "RPUSH mylist value1 value2" },
-                    { "usage #2", "RPUSH anotherlist value3" }
-                }
-            }
-        };
-    }
 }

@@ -217,21 +217,4 @@ public class Xread : Base
         
         return sb.ToString();
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Returns messages from multiple streams with IDs " +
-                                 "greater than the ones requested. Blocks until a " +
-                                 "message is available otherwise." },
-                    { "usage CLI #1", "redis-cli XREAD block 10000 streams weather_in_london 2-0" },
-                }
-            }
-        };
-    }
 }

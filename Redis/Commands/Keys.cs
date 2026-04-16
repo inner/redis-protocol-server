@@ -39,19 +39,4 @@ public class Keys : Base
 
         return Task.FromResult(result);
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    {"summary", "Returns all key names that match a pattern."},
-                    {"usage", "redis-cli KEYS *"}
-                }
-            }
-        };
-    }
 }

@@ -51,21 +51,4 @@ public class Zrange : Base
         
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "ZRANGE",
-                new()
-                {
-                    { "description", "Returns a range of members in a sorted set, by index." },
-                    { "syntax", "ZRANGE key start stop" },
-                    { "group", "Sorted Sets" },
-                    { "complexity", "O(log(N) + M) where N is the number of elements in the sorted set and M is the number of elements returned." }
-                }
-            }
-        };
-    }
 }

@@ -39,21 +39,4 @@ public class Publish : Base
 
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "Publish",
-                new()
-                {
-                    { "description", "Publishes a message to a channel." },
-                    { "syntax", "PUBLISH channel message" },
-                    { "group", "Pub/Sub" },
-                    { "complexity", "O(N) where N is the number of subscribers to the channel." }
-                }
-            }
-        };
-    }
 }

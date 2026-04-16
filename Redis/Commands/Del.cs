@@ -30,21 +30,4 @@ public class Del : Base
         commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Deletes one or more keys." },
-                    { "usage #1", "redis-cli SET key1 val1" },
-                    { "usage #2", "redis-cli SET key2 val2" },
-                    { "usage #3", "redis-cli DEL key1 key2 key3" }
-                }
-            }
-        };
-    }
 }

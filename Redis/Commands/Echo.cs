@@ -29,19 +29,4 @@ public class Echo : Base
         commandContext.Socket.SendCommand(response);
         return Task.FromResult(response);
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    {"summary", "Returns the given string."},
-                    {"usage", "redis-cli ECHO mystring"}
-                }
-            }
-        };
-    }
 }

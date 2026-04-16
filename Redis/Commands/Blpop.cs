@@ -52,21 +52,4 @@ public class Blpop : Base
 
         return resp;
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new Dictionary<string, Dictionary<string, string>>
-        {
-            {
-                "Blpop", new Dictionary<string, string>
-                {
-                    {"description", "Removes and returns the first element of the list stored at key. If the list is empty, it blocks until an element is available or the timeout is reached."},
-                    {"syntax", "BLPOP key [key ...] timeout"},
-                    {"group", "List"},
-                    {"complexity", "O(1) for each key"},
-                    {"since", "1.0.0"}
-                }
-            }
-        };
-    }
 }

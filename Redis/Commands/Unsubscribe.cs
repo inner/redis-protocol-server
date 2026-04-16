@@ -40,21 +40,4 @@ public class Unsubscribe : Base
 
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "Unsubscribe",
-                new()
-                {
-                    { "description", "Unsubscribes from a channel." },
-                    { "syntax", "UNSUBSCRIBE [channel]" },
-                    { "group", "Pub/Sub" },
-                    { "complexity", "O(N) where N is the number of subscriptions to the channel." }
-                }
-            }
-        };
-    }
 }

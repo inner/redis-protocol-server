@@ -70,23 +70,4 @@ public class Set : Base
 
         return Task.FromResult(okResp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    {
-                        "summary",
-                        "Sets the string value of a key, ignoring its type. The key is created if it doesn't exist."
-                    },
-                    { "usage #1", "redis-cli SET key1 val1" },
-                    { "usage #2", "redis-cli SET key1 val1 PX 5000" }
-                }
-            }
-        };
-    }
 }

@@ -69,24 +69,4 @@ public class Exec : Base
         
         return string.Empty;
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Discards a transaction." },
-                    { "usage #1", "redis-cli" },
-                    { "usage #2", "MULTI" },
-                    { "usage #3", "SET mykey1 myval1" },
-                    { "usage #4", "INCR someotherkey" },
-                    { "usage #5", "EXEC" },
-                    { "usage #6", "GET mykey1" }
-                }
-            }
-        };
-    }
 }

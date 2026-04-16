@@ -31,21 +31,4 @@ public class Zcard : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "ZCARD",
-                new()
-                {
-                    { "description", "Returns the number of members in a sorted set." },
-                    { "syntax", "ZCARD key" },
-                    { "group", "Sorted Sets" },
-                    { "complexity", "O(1)" }
-                }
-            }
-        };
-    }
 }

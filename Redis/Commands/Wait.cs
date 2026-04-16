@@ -36,28 +36,4 @@ public class Wait : Base
         commandContext.Socket.SendCommand(acksReceivedResp);
         return acksReceivedResp;
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    {
-                        "summary",
-                        "Blocks until the asynchronous replication of all preceding " +
-                        "write commands sent by the connection is completed."
-                    },
-                    { "documentation", "https://redis.io/docs/latest/commands/wait/" },
-                    { "usage #1", "redis-cli" },
-                    { "usage #2", "SET mykey1 myval1" },
-                    { "usage #4", "SET mykey2 myval2" },
-                    { "usage #5", "SET mykey3 myval3" },
-                    { "usage #6", "WAIT 4 2000" }
-                }
-            }
-        };
-    }
 }

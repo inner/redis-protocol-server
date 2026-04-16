@@ -25,19 +25,4 @@ public class Quit : Base
 
         return Task.FromResult(resp);
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Closes the connection." },
-                    { "usage", "redis-cli QUIT" }
-                }
-            }
-        };
-    }
 }

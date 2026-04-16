@@ -39,30 +39,4 @@ public class Geosearch : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "GEOSEARCH",
-                new()
-                {
-                    {
-                        "description",
-                        "Query a sorted set representing a geospatial index to fetch members matching a given maximum distance from a point or within a bounding box."
-                    },
-                    {
-                        "syntax",
-                        "GEOSEARCH key FROMMEMBER member BYRADIUS radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count [ANY]] [ASC|DESC]"
-                    },
-                    { "group", "Geospatial" },
-                    {
-                        "complexity",
-                        "O(log(N)+M) with N being the number of elements in the sorted set and M the number of elements being returned."
-                    }
-                }
-            }
-        };
-    }
 }

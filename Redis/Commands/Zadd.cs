@@ -33,21 +33,4 @@ public class Zadd : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "ZADD",
-                new()
-                {
-                    { "description", "Adds one or more members to a sorted set, or updates the score of an existing member." },
-                    { "syntax", "ZADD key [NX|XX] [CH] [INCR] score member [score member ...]" },
-                    { "group", "Sorted Sets" },
-                    { "complexity", "O(log(N)) for each item added, where N is the number of elements in the sorted set." }
-                }
-            }
-        };
-    }
 }

@@ -36,21 +36,4 @@ public class Geodist : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "GEODIST",
-                new()
-                {
-                    { "description", "Returns the distance between two members of a geospatial index." },
-                    { "syntax", "GEODIST key member1 member2 [unit]" },
-                    { "group", "Geospatial" },
-                    { "complexity", "O(log(N)) where N is the number of elements in the sorted set." }
-                }
-            }
-        };
-    }
 }

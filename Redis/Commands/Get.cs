@@ -45,19 +45,4 @@ public class Get : Base
             commandContext.Socket.SendCommand(response);
         }
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Returns the string value of a key." },
-                    { "usage", "redis-cli GET key1" }
-                }
-            }
-        };
-    }
 }

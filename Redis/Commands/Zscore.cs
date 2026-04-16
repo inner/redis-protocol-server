@@ -35,21 +35,4 @@ public class Zscore : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "ZSCORE",
-                new()
-                {
-                    { "description", "Returns the score of a member in a sorted set." },
-                    { "syntax", "ZSCORE key member" },
-                    { "group", "Sorted Sets" },
-                    { "complexity", "O(log(N)) where N is the number of elements in the sorted set." }
-                }
-            }
-        };
-    }
 }

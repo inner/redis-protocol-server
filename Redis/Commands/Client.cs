@@ -25,18 +25,4 @@ public class Client : Base
 
         return Task.FromResult(resp);
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "A container for client connection commands." }
-                }
-            }
-        };
-    }
 }

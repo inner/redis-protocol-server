@@ -34,21 +34,4 @@ public class Geoadd : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "GEOADD",
-                new()
-                {
-                    { "description", "Adds one or more geospatial items (latitude, longitude, name) to a geospatial index represented using a sorted set." },
-                    { "syntax", "GEOADD key longitude latitude member [longitude latitude member ...]" },
-                    { "group", "Geospatial" },
-                    { "complexity", "O(log(N)) for each item added, where N is the number of elements in the sorted set." }
-                }
-            }
-        };
-    }
 }

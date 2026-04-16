@@ -95,23 +95,4 @@ public class Acl : Base
         commandContext.Socket.SendCommand(resp);
         return await Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new Dictionary<string, Dictionary<string, string>>
-        {
-            {
-                Name,
-                new Dictionary<string, string>
-                {
-                    { "summary", "Manages the ACL (Access Control List) system." },
-                    { "usage #1", "redis-cli" },
-                    { "usage #2", "ACL LIST" },
-                    { "usage #3", "ACL SETUSER myuser on >mypassword ~* +@all" },
-                    { "usage #4", "ACL GETUSER myuser" },
-                    { "usage #5", "ACL DELUSER myuser" }
-                }
-            }
-        };
-    }
 }

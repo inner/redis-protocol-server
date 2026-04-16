@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Redis.CommandDocs;
 using Redis.Commands.Common;
 using Redis.Common;
 
@@ -33,7 +34,7 @@ public class Command : Base
 
     private Task<string> GetDocsResp(string? commandKey = null)
     {
-        var commands = Docs();
+        var commands = CommandDocsRegistry.AllLegacyDocs();
 
         var commandsFiltered = commandKey == null
             ? commands
@@ -59,22 +60,5 @@ public class Command : Base
         }
 
         return Task.FromResult(sb.ToString());
-    }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        var commands = typeof(Base).Assembly.GetTypes()
-            .Where(t => t is { IsClass: true, IsAbstract: false } && t.IsSubclassOf(typeof(Base)) &&
-                        t.Name != nameof(Command))
-            .Select(t => (Base)Activator.CreateInstance(t)!);
-
-        var commandDocs = commands.SelectMany(c => c.Docs()).ToList();
-        
-        var docs = commandDocs
-            .GroupBy(d => d.Key)
-            .ToDictionary(g => g.Key.ToUpper(), g => g.SelectMany(d => d.Value)
-                .ToDictionary(d => d.Key, d => d.Value));
-
-        return docs;
     }
 }

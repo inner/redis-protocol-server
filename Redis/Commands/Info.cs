@@ -51,19 +51,4 @@ public class Info : Base
         commandContext.Socket.SendCommand(response);
         return Task.FromResult(response);
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Returns information and statistics about the server." },
-                    { "usage", "redis-cli INFO" }
-                }
-            }
-        };
-    }
 }

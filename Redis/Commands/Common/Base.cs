@@ -6,7 +6,6 @@ public abstract class Base
 {
     protected abstract string Name { get; }
     public abstract bool CanBePropagated { get; }
-    public abstract Dictionary<string, Dictionary<string, string>> Docs();
     private bool TransactionStarted { get; set; }
 
     protected virtual Task<string> OnMasterNodeExecute(CommandContext commandContext)

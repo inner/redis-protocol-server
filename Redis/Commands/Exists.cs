@@ -31,21 +31,4 @@ public class Exists : Base
         commandContext.Socket.SendCommand(result);
         return Task.FromResult(result);
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    {"summary", "Determines whether one or more keys exist."},
-                    {"usage #1", "redis-cli SET mykey1 myval1"},
-                    {"usage #2", "redis-cli SET mykey2 myval2"},
-                    {"usage #3", "redis-cli EXISTS mykey1 mykey2 nosuchkey"}
-                }
-            }
-        };
-    }
 }

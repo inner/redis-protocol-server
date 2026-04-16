@@ -70,24 +70,4 @@ public class Geopos : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "GEOPOS",
-                new()
-                {
-                    {
-                        "description",
-                        "Returns the positions (longitude and latitude) of members of a geospatial index."
-                    },
-                    { "syntax", "GEOPOS key member [member ...]" },
-                    { "group", "Geospatial" },
-                    { "complexity", "O(N) where N is the number of members to retrieve positions for." }
-                }
-            }
-        };
-    }
 }

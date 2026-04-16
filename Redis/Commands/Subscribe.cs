@@ -42,22 +42,4 @@ public class Subscribe : Base
         
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "Subscribe",
-                new()
-                {
-                    { "description", "Subscribes to a channel to receive messages." },
-                    { "syntax", "SUBSCRIBE channel" },
-                    { "group", "Pub/Sub" },
-                    { "complexity", "O(1) per message received." },
-                    { "since", "1.0.0" }
-                }
-            }
-        };
-    }
 }

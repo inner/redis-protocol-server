@@ -34,20 +34,4 @@ public class Lpush : Base
 
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Prepends one or multiple values to the beginning of a list." },
-                    { "usage #1", "LPUSH mylist value1 value2" },
-                    { "usage #2", "LPUSH anotherlist value3" }
-                }
-            }
-        };
-    }
 }

@@ -31,20 +31,4 @@ public class Llen : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Returns the length of a list." },
-                    { "usage #1", "LLEN mylist" },
-                    { "usage #2", "LLEN anotherlist" }
-                }
-            }
-        };
-    }
 }

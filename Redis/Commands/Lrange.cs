@@ -43,21 +43,4 @@ public class Lrange : Base
 
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Returns a range of elements from a list." },
-                    { "usage #1", "LRANGE mylist 0 -1" },
-                    { "usage #2", "LRANGE mylist 0 1" },
-                    { "usage #3", "LRANGE mylist 1 2" }
-                }
-            }
-        };
-    }
 }

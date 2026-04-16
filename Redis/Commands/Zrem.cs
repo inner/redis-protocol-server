@@ -32,21 +32,4 @@ public class Zrem : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-    
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                "ZREM",
-                new()
-                {
-                    { "description", "Removes one or more members from a sorted set." },
-                    { "syntax", "ZREM key member [member ...]" },
-                    { "group", "Sorted Sets" },
-                    { "complexity", "O(log(N)) for each item removed, where N is the number of elements in the sorted set." }
-                }
-            }
-        };
-    }
 }

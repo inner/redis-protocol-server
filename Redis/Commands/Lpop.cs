@@ -58,19 +58,4 @@ public class Lpop : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new Dictionary<string, string>
-                {
-                    { "description", "Removes and returns the first element of the list stored at key." },
-                    { "syntax", "LPOP key" }
-                }
-            }
-        };
-    }
 }

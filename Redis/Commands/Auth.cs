@@ -42,27 +42,4 @@ public class Auth : Base
         commandContext.Socket.SendCommand(resp);
         return await Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new Dictionary<string, Dictionary<string, string>>
-        {
-            {
-                "AUTH", new Dictionary<string, string>
-                {
-                    { "summary", "Authenticate to the server" },
-                    { "since", "1.0.0" },
-                    { "group", "connection" },
-                    { "complexity", "1" },
-                    { "arity", "2..N" },
-                    { "container_commands", "false" },
-                    { "history", "AUTH was added in Redis 1.0.0." },
-                    {
-                        "notes",
-                        "The AUTH command is used to authenticate a client connection to the Redis server using a password."
-                    }
-                }
-            }
-        };
-    }
 }

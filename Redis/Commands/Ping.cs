@@ -17,19 +17,4 @@ public class Ping : Base
         commandContext.Socket.SendCommand(resp);
         return Task.FromResult(resp);
     }
-
-    public override Dictionary<string, Dictionary<string, string>> Docs()
-    {
-        return new()
-        {
-            {
-                Name,
-                new()
-                {
-                    { "summary", "Returns the server's liveliness response." },
-                    { "usage", "redis-cli PING" }
-                }
-            }
-        };
-    }
 }
