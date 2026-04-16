@@ -9,17 +9,7 @@ public class Zadd : Base
     protected override string Name => nameof(Zadd);
     public override bool CanBePropagated => true;
 
-    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         var commands = commandContext.CommandDetails.CommandParts;
         

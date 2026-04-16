@@ -10,17 +10,7 @@ public class Xadd : Base
     protected override string Name => nameof(Xadd);
     public override bool CanBePropagated => true;
 
-    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    private Task<string> GenerateCommonResponse(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         string resp;
         var key = commandContext.CommandDetails.CommandParts[4];

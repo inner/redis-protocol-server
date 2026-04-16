@@ -15,7 +15,7 @@ public class Xread : Base
     private const string EntryIdPattern = @"^\d+-\d+$";
     private const string Block = "block";
 
-    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
+    protected override async Task<string> ExecuteCore(CommandContext commandContext)
     {
         var blockIndex = Array.IndexOf(commandContext.CommandDetails.CommandParts, Block);
         
@@ -27,13 +27,13 @@ public class Xread : Base
 
         if (blockIndex != -1 && commandContext.CommandDetails.CommandParts[6] == "0")
         {
-            return await GenerateCommonResponse(commandContext, noTimeout: true);
+            return await ReadStreams(commandContext, noTimeout: true);
         }
 
-        return await GenerateCommonResponse(commandContext);
+        return await ReadStreams(commandContext);
     }
 
-    private static Task<string> GenerateCommonResponse(CommandContext commandContext, bool noTimeout = false)
+    private static Task<string> ReadStreams(CommandContext commandContext, bool noTimeout = false)
     {
         string resp;
         var isBlocking = Array.IndexOf(commandContext.CommandDetails.CommandParts, Block) != -1;

@@ -8,11 +8,17 @@ public class Replconf : Base
     protected override string Name => nameof(Replconf);
     public override bool CanBePropagated => false;
 
-    protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
+    {
+        return ServerInfo.ServerRuntimeContext.IsMaster
+            ? HandleMaster(commandContext)
+            : HandleReplica(commandContext);
+    }
+
+    private static Task<string> HandleMaster(CommandContext commandContext)
     {
         var result = RespBuilder.SimpleString("OK");
         var replconfArg = commandContext.CommandDetails.CommandParts[4];
-
         string[] handshakeArgs = ["listening-port", "capa"];
         string[] ackArgs = ["ack"];
 
@@ -29,7 +35,7 @@ public class Replconf : Base
         return Task.FromResult(result);
     }
 
-    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
+    private static Task<string> HandleReplica(CommandContext commandContext)
     {
         var replconfArg1 = commandContext.CommandDetails.CommandParts[4];
         var replconfArg2 = commandContext.CommandDetails.CommandParts[6];

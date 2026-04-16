@@ -9,17 +9,7 @@ public class Del : Base
     protected override string Name => nameof(Del);
     public override bool CanBePropagated => true;
 
-    protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
-    {
-        return GenerateCommonResponse(commandContext);
-    }
-    
-    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return GenerateCommonResponse(commandContext);
-    }
-
-    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         var keys = commandContext.CommandDetails.CommandParts[3..]
             .Where(x => !x.StartsWith("$"))

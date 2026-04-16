@@ -8,9 +8,10 @@ public class Info : Base
     protected override string Name => nameof(Info);
     public override bool CanBePropagated => false;
 
-    protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
-        var infoValues = new Dictionary<string, string>
+        var infoValues = ServerInfo.ServerRuntimeContext.IsMaster
+            ? new Dictionary<string, string>
         {
             { "role", "master" },
             { "master_replid", ServerInfo.ServerRuntimeContext.MasterReplId },
@@ -21,18 +22,8 @@ public class Info : Base
             { "repl_backlog_size", "1048576" },
             { "repl_backlog_first_byte_offset", "0" },
             { "repl_backlog_histlen", string.Empty }
-        };
-        
-        var infoValue = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
-        var response = RespBuilder.BulkString(infoValue);
-        
-        commandContext.Socket.SendCommand(response);
-        return Task.FromResult(response);
-    }
-
-    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        var infoValues = new Dictionary<string, string>
+        }
+            : new Dictionary<string, string>
         {
             { "role", "slave" },
             { "master_replid", string.Empty },
@@ -44,10 +35,10 @@ public class Info : Base
             { "repl_backlog_first_byte_offset", "0" },
             { "repl_backlog_histlen", string.Empty }
         };
-        
+
         var infoValue = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
         var response = RespBuilder.BulkString(infoValue);
-        
+
         commandContext.Socket.SendCommand(response);
         return Task.FromResult(response);
     }

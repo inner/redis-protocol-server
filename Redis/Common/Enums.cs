@@ -65,3 +65,10 @@ public enum EntryIdType
     AutoSequence,
     Auto
 }
+
+public enum SupportedRoles
+{
+    Both,
+    MasterOnly,
+    ReplicaOnly
+}

@@ -8,8 +8,9 @@ public class Wait : Base
 {
     protected override string Name => nameof(Wait);
     public override bool CanBePropagated => false;
+    protected override SupportedRoles SupportedRoles => SupportedRoles.MasterOnly;
 
-    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
+    protected override async Task<string> ExecuteCore(CommandContext commandContext)
     {
         ServerInfo.Replication.ReplicaAcksReceived = 0;
 

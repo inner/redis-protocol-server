@@ -9,17 +9,7 @@ public class Incr : Base
     protected override string Name => nameof(Incr);
     public override bool CanBePropagated => true;
 
-    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    private Task<string> GenerateCommonResponse(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         string result;
         var key = commandContext.CommandDetails.CommandParts[4];
@@ -28,36 +18,22 @@ public class Incr : Base
         if (cacheItem == null)
         {
             DataCache.Set(key, "1");
-
-            if (!commandContext.CommandDetails.FromTransaction)
-            {
-                commandContext.Socket.SendCommand(RespBuilder.Integer(1));
-            }
-
-            return Task.FromResult(RespBuilder.Integer(1));
+            result = RespBuilder.Integer(1);
+            SendIfNotFromTransaction(commandContext, result);
+            return Task.FromResult(result);
         }
 
         if (!long.TryParse(cacheItem.Value, out var longValue))
         {
             result = RespBuilder.Error("value is not an integer or out of range");
-
-            if (!commandContext.CommandDetails.FromTransaction)
-            {
-                commandContext.Socket.SendCommand(result);
-            }
-
+            SendIfNotFromTransaction(commandContext, result);
             return Task.FromResult(result);
         }
 
         longValue++;
         DataCache.Set(key, longValue.ToString());
         result = RespBuilder.Integer(longValue);
-
-        if (!commandContext.CommandDetails.FromTransaction)
-        {
-            commandContext.Socket.SendCommand(result);
-        }
-
+        SendIfNotFromTransaction(commandContext, result);
         return Task.FromResult(result);
     }
 }

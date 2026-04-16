@@ -8,17 +8,7 @@ public class Config : Base
     protected override string Name => nameof(Config);
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         var resp = RespBuilder.ArrayFromCommands("dir", ServerInfo.ServerRuntimeContext.DataDir);
         

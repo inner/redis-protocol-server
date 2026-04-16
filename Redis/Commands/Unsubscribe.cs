@@ -10,17 +10,7 @@ public class Unsubscribe : Base
     protected override string Name => nameof(Unsubscribe);
     public override bool CanBePropagated => false;
 
-    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         var channel = commandContext.CommandDetails.CommandParts[4];
 

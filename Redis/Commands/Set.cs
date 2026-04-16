@@ -10,18 +10,21 @@ public class Set : Base
     public override bool CanBePropagated => true;
     private readonly string okResp = RespBuilder.SimpleString("OK");
 
-    protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         var cacheKey = commandContext.CommandDetails.CommandParts[4];
         var cacheValue = commandContext.CommandDetails.CommandParts[6];
+        var shouldSendOkResponse =
+            ServerInfo.ServerRuntimeContext.IsMaster &&
+            !commandContext.CommandDetails.FromTransaction;
 
         if (commandContext.CommandDetails.CommandParts.Length < 9)
         {
             DataCache.Set(cacheKey, cacheValue);
 
-            if (!commandContext.CommandDetails.FromTransaction)
+            if (shouldSendOkResponse)
             {
-                commandContext.Socket.SendCommand(okResp);
+                SendIfNotFromTransaction(commandContext, okResp);
             }
 
             return Task.FromResult(okResp);
@@ -38,35 +41,10 @@ public class Set : Base
         var expiry = int.Parse(commandContext.CommandDetails.CommandParts[10]);
         DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
 
-        if (!commandContext.CommandDetails.FromTransaction)
+        if (shouldSendOkResponse)
         {
-            commandContext.Socket.SendCommand(okResp);
+            SendIfNotFromTransaction(commandContext, okResp);
         }
-
-        return Task.FromResult(okResp);
-    }
-
-    protected override Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        var cacheKey = commandContext.CommandDetails.CommandParts[4];
-        var cacheValue = commandContext.CommandDetails.CommandParts[6];
-
-        if (commandContext.CommandDetails.CommandParts.Length < 9)
-        {
-            DataCache.Set(cacheKey, cacheValue);
-            return Task.FromResult(okResp);
-        }
-
-        const string expiryCommandConstant = "PX";
-
-        var expiryCommand = commandContext.CommandDetails.CommandParts[8];
-        if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
-        {
-            commandContext.Socket.SendCommand(RespBuilder.Error($"Unrecognized command: '{expiryCommand}'."));
-        }
-
-        var expiry = int.Parse(commandContext.CommandDetails.CommandParts[10]);
-        DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
 
         return Task.FromResult(okResp);
     }

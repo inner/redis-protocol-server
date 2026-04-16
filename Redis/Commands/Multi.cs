@@ -8,17 +8,7 @@ public class Multi : Base
     protected override string Name => nameof(Multi);
     public override bool CanBePropagated => true;
 
-    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    private static Task<string> GenerateCommonResponse(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         if (commandContext.CommandQueue.All(x => x.RespType != RespType.Multi))
         {

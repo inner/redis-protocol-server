@@ -6,17 +6,10 @@ public abstract class Base
 {
     protected abstract string Name { get; }
     public abstract bool CanBePropagated { get; }
+    protected virtual SupportedRoles SupportedRoles => SupportedRoles.Both;
     private bool TransactionStarted { get; set; }
 
-    protected virtual Task<string> OnMasterNodeExecute(CommandContext commandContext)
-    {
-        return Task.FromResult(string.Empty);
-    }
-
-    protected virtual Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return Task.FromResult(string.Empty);
-    }
+    protected abstract Task<string> ExecuteCore(CommandContext commandContext);
 
     public async Task<string> Execute(CommandContext commandContext)
     {
@@ -35,18 +28,42 @@ public abstract class Base
             }
         }
 
+        if (!IsSupportedOnCurrentNodeRole())
+        {
+            var role = ServerInfo.ServerRuntimeContext.IsMaster
+                ? "master"
+                : "replica";
+            var command = commandContext.CommandDetails.RespType.ToString().ToUpperInvariant();
+            var response = RespBuilder.Error($"Command '{command}' is not allowed on a {role} node.");
+            commandContext.Socket.SendCommand(response);
+            return string.Empty;
+        }
+
         if (TransactionEnabled(commandContext))
         {
             return string.Empty;
         }
 
-        var result = ServerInfo.ServerRuntimeContext.IsMaster switch
-        {
-            true => await OnMasterNodeExecute(commandContext),
-            false => await OnReplicaNodeExecute(commandContext)
-        };
+        return await ExecuteCore(commandContext);
+    }
 
-        return result;
+    protected static void SendIfNotFromTransaction(CommandContext commandContext, string response)
+    {
+        if (!commandContext.CommandDetails.FromTransaction)
+        {
+            commandContext.Socket.SendCommand(response);
+        }
+    }
+
+    private bool IsSupportedOnCurrentNodeRole()
+    {
+        return (ServerInfo.ServerRuntimeContext.IsMaster, SupportedRoles) switch
+        {
+            (_, SupportedRoles.Both) => true,
+            (true, SupportedRoles.MasterOnly) => true,
+            (false, SupportedRoles.ReplicaOnly) => true,
+            _ => false
+        };
     }
 
     private bool TransactionEnabled(CommandContext commandContext)

@@ -10,17 +10,7 @@ public class Blpop : Base
     protected override string Name => nameof(Blpop);
     public override bool CanBePropagated => true;
 
-    protected override async Task<string> OnMasterNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    protected override async Task<string> OnReplicaNodeExecute(CommandContext commandContext)
-    {
-        return await GenerateCommonResponse(commandContext);
-    }
-
-    private static async Task<string> GenerateCommonResponse(CommandContext commandContext)
+    protected override async Task<string> ExecuteCore(CommandContext commandContext)
     {
         var commands = commandContext.CommandDetails.CommandParts;
         var key = commands[4];

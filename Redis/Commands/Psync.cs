@@ -7,8 +7,9 @@ public class Psync : Base
 {
     protected override string Name => nameof(Psync);
     public override bool CanBePropagated => false;
+    protected override SupportedRoles SupportedRoles => SupportedRoles.MasterOnly;
 
-    protected override Task<string> OnMasterNodeExecute(CommandContext commandContext)
+    protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         var fullResync = RespBuilder.SimpleString($"FULLRESYNC {ServerInfo.ServerRuntimeContext.MasterReplId} 0");
         commandContext.Socket.SendCommand(fullResync);
