@@ -99,8 +99,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
 
     private static CommandSource ResolveCommandSource(Socket socket)
     {
-        return !ServerInfo.ServerRuntimeContext.IsMaster &&
-               ServerInfo.ServerRuntimeContext.MasterSocket != null &&
+        return !ServerInfo.ServerRuntimeContext.IsMaster && ServerInfo.ServerRuntimeContext.MasterSocket != null &&
                ReferenceEquals(socket, ServerInfo.ServerRuntimeContext.MasterSocket)
             ? CommandSource.ReplicationMaster
             : CommandSource.Client;
