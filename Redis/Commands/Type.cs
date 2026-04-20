@@ -36,6 +36,24 @@ public class Type : Base
 
                 return Task.FromResult(result);
             }
+
+            var listCacheItem = fetchItem.Deserialize<List<string>>();
+            if (listCacheItem != null)
+            {
+                result = RespBuilder.SimpleString("list");
+                commandContext.Socket.SendCommand(result);
+
+                return Task.FromResult(result);
+            }
+
+            var sortedSetCacheItem = fetchItem.Deserialize<Dictionary<string, double>>();
+            if (sortedSetCacheItem != null)
+            {
+                result = RespBuilder.SimpleString("zset");
+                commandContext.Socket.SendCommand(result);
+
+                return Task.FromResult(result);
+            }
         }
 
         result = RespBuilder.SimpleString("none");

@@ -17,7 +17,7 @@ public class Xread : Base
 
     protected override async Task<string> ExecuteCore(CommandContext commandContext)
     {
-        var blockIndex = Array.IndexOf(commandContext.CommandDetails.CommandParts, Block);
+        var blockIndex = FindCommandPartIndex(commandContext.CommandDetails.CommandParts, Block);
         
         if (blockIndex != -1 && int.TryParse(
                 commandContext.CommandDetails.CommandParts[blockIndex + 2], out var blockTime))
@@ -25,7 +25,7 @@ public class Xread : Base
             await Task.Delay(blockTime);
         }
 
-        if (blockIndex != -1 && commandContext.CommandDetails.CommandParts[6] == "0")
+        if (blockIndex != -1 && commandContext.CommandDetails.CommandParts[blockIndex + 2] == "0")
         {
             return await ReadStreams(commandContext, noTimeout: true);
         }
@@ -36,7 +36,7 @@ public class Xread : Base
     private static Task<string> ReadStreams(CommandContext commandContext, bool noTimeout = false)
     {
         string resp;
-        var isBlocking = Array.IndexOf(commandContext.CommandDetails.CommandParts, Block) != -1;
+        var isBlocking = FindCommandPartIndex(commandContext.CommandDetails.CommandParts, Block) != -1;
         List<StreamCacheItemValueItem> streamEntries = [];
 
         if (noTimeout)
@@ -195,6 +195,19 @@ public class Xread : Base
         }
 
         return streamKeysWithEntryIds;
+    }
+
+    private static int FindCommandPartIndex(IReadOnlyList<string> commandParts, string value)
+    {
+        for (var i = 0; i < commandParts.Count; i++)
+        {
+            if (string.Equals(commandParts[i], value, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
     
     private static string BuildResp(List<StreamCacheItemValueItem> streamEntries)

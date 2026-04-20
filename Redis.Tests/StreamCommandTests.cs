@@ -66,20 +66,24 @@ public class StreamCommandTests
     }
 
     [Fact(Timeout = 60_000)]
-    public async Task XREAD_FromZeroAfterXADD_ReturnsNewEntry()
+    public async Task XREAD_BLOCK_FromZero_WhenEntryArrives_ReturnsNewEntry()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
         var (host, port) = cluster.MasterEndpoint;
         var key = $"stream:xread:{Guid.NewGuid():N}";
+
+        await using var consumer = await RedisRespClient.ConnectAsync(host, port);
+        var blockedReadTask = consumer.ExecuteCommandAsync(
+            "XREAD", "BLOCK", "0", "STREAMS", key, "0-0");
+
+        await Task.Delay(200);
 
         await using var producer = await RedisRespClient.ConnectAsync(host, port);
         var addedResponse = await producer.ExecuteCommandAsync(
             "XADD", key, "500-1", "temperature", "23");
         Assert.Equal("500-1", ParseBulkString(addedResponse));
 
-        await using var consumer = await RedisRespClient.ConnectAsync(host, port);
-        var response = await consumer.ExecuteCommandAsync(
-            "XREAD", "STREAMS", key, "0-0");
+        var response = await blockedReadTask;
 
         Assert.Equal(
             RespBuilder.InitArray(1) +
