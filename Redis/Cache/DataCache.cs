@@ -233,13 +233,34 @@ public static class DataCache
         if (string.IsNullOrEmpty(listItem))
         {
             list.AddRange(reversed);
-            Cache[listKey] = JsonSerializer.Serialize(list);
-            return list.Count;
+            return CompleteLpush(listKey, list);
         }
 
         list = listItem.Deserialize<List<string>>() ?? [];
         list.InsertRange(0, reversed);
-        Cache[listKey] = JsonSerializer.Serialize(list);
+        return CompleteLpush(listKey, list);
+    }
+
+    private static int CompleteLpush(string listKey, List<string> list)
+    {
+        var serializedList = JsonSerializer.Serialize(list);
+        Cache[listKey] = serializedList;
+
+        if (!Waiters.TryRemove(listKey, out var queue))
+        {
+            return list.Count;
+        }
+
+        if (queue.TryDequeue(out var first))
+        {
+            first.TrySetResult(serializedList);
+        }
+
+        while (queue.TryDequeue(out var other))
+        {
+            other.TrySetResult("[]");
+        }
+
         return list.Count;
     }
 

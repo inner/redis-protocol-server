@@ -7,7 +7,7 @@ namespace Redis.Commands;
 public class Lpush : Base
 {
     protected override string Name => nameof(Lpush);
-    public override bool CanBePropagated => false;
+    public override bool CanBePropagated => true;
 
     protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
