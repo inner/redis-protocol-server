@@ -32,9 +32,9 @@ The active server path is currently a straightforward `TcpListener` / `TcpClient
 - It does not use a Linux-specific eventing model such as `epoll` behind the scenes
 - It should be viewed as a learning-oriented server implementation first, not a production-tuned Redis clone
 
-The repository also contains code under [Redis/Sockets](/home/inner/github/codecrafters-redis-csharp/Redis/Sockets) that is not part of the active runtime path today. That code represents an experimental direction toward a lower-allocation, more asynchronous transport layer. The intention there is to have a foundation for a future refactor if the server is pushed further toward performance work.
+The repository also contains code under [Redis/Sockets](Redis/Sockets) that is not part of the active runtime path today. That code represents an experimental direction toward a lower-allocation, more asynchronous transport layer. The intention there is to have a foundation for a future refactor if the server is pushed further toward performance work.
 
-The RDB support is also intentionally very limited at the moment. The reader under [Redis/Rdb](/home/inner/github/codecrafters-redis-csharp/Redis/Rdb) is a bare-bones loader rather than a full Redis RDB implementation.
+The RDB support is also intentionally very limited at the moment. The reader under [Redis/Rdb](Redis/Rdb) is a bare-bones loader rather than a full Redis RDB implementation.
 
 - It mainly supports loading simple string values
 - It understands only a narrow subset of RDB opcodes and data types
