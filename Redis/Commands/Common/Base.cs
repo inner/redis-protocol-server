@@ -91,13 +91,10 @@ public abstract class Base
             return false;
         }
 
-        var commandString = string.Join(
-            Constants.VerbatimNewLine, commandContext.CommandDetails.CommandParts);
-
         var commandType = commandContext.CommandDetails.CommandParts[2].ToCommandType();
 
         commandContext.CommandQueue.Add(
-            new CommandQueueItem { RespType = commandType, Resp = commandString });
+            new CommandQueueItem { RespType = commandType, Resp = commandContext.CommandDetails.Resp });
 
         commandContext.Socket.SendCommand(RespBuilder.SimpleString("QUEUED"));
         return true;
