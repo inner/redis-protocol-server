@@ -41,13 +41,18 @@ internal sealed class RedisRespClient : IAsyncDisposable
         return ExecuteAsync((IReadOnlyList<string>)commandParts, CancellationToken.None);
     }
 
+    public Task<string> ReadResponseAsync(CancellationToken cancellationToken = default)
+    {
+        return ReadResponseCoreAsync(cancellationToken);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await stream.DisposeAsync();
         tcpClient.Dispose();
     }
 
-    private async Task<string> ReadResponseAsync(CancellationToken cancellationToken)
+    private async Task<string> ReadResponseCoreAsync(CancellationToken cancellationToken)
     {
         var prefix = (char)await ReadByteAsync(cancellationToken);
 
@@ -85,7 +90,7 @@ internal sealed class RedisRespClient : IAsyncDisposable
         var builder = new StringBuilder($"{prefix}{count}\r\n");
         for (var i = 0; i < count; i++)
         {
-            builder.Append(await ReadResponseAsync(cancellationToken));
+            builder.Append(await ReadResponseCoreAsync(cancellationToken));
         }
 
         return builder.ToString();
