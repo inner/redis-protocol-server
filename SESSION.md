@@ -7,3 +7,4 @@
 - The request parser appears to mishandle multiple RESP commands delivered in one TCP read, which forces `StackExchange.Redis` tests to disable most handshake/topology probing instead of using the default client configuration.
 - StackExchange.Redis uses `PSETEX` for timed `StringSetAsync` writes, but the server only supports expiry via `SET ... PX`, so client-compatibility tests need raw `SET` execution until `PSETEX` is implemented.
 - `BLPOP` waiter wake-up behavior was inconsistent across list writes because `RPUSH` notified blocked consumers but `LPUSH` initially did not; blocking list behavior depends on both push paths waking waiters.
+- `XREAD BLOCK 0 STREAMS <key> 0-0` currently returns a null array instead of waiting for a later `XADD`, so blocking stream reads need further debugging before they can be covered with a stable integration test.
