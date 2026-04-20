@@ -13,6 +13,33 @@ This repository contains a Redis-inspired server written in C#.
 
 This README is intentionally Docker-first and `redis-cli`-first. You do not need a local .NET SDK to try the server. If you have Docker installed, you can build the image, start a master with replicas, and copy/paste the examples below exactly as written.
 
+## Scope And Limitations
+
+This is not a full Redis implementation, and it is not a complete RESP-compatible drop-in replacement for real Redis.
+
+- Only a subset of Redis commands is implemented
+- Only a subset of RESP-driven client behavior has been exercised
+- In practice, the supported surface is closer to a partial Redis-inspired server than full Redis command compatibility
+
+The examples in this README focus on the command set that is currently implemented and tested. Outside of that surface, behavior may be unsupported, incomplete, or intentionally simplified.
+
+## Implementation Notes
+
+The active server path is currently a straightforward `TcpListener` / `TcpClient` / `NetworkStream` implementation. It is functional, but it is not especially performance-oriented.
+
+- The current runtime path performs more allocations than necessary
+- It relies heavily on string-based parsing and reconstruction
+- It does not use a Linux-specific eventing model such as `epoll` behind the scenes
+- It should be viewed as a learning-oriented server implementation first, not a production-tuned Redis clone
+
+The repository also contains code under [Redis/Sockets](/home/inner/github/codecrafters-redis-csharp/Redis/Sockets) that is not part of the active runtime path today. That code represents an experimental direction toward a lower-allocation, more asynchronous transport layer. The intention there is to have a foundation for a future refactor if the server is pushed further toward performance work.
+
+The RDB support is also intentionally very limited at the moment. The reader under [Redis/Rdb](/home/inner/github/codecrafters-redis-csharp/Redis/Rdb) is a bare-bones loader rather than a full Redis RDB implementation.
+
+- It mainly supports loading simple string values
+- It understands only a narrow subset of RDB opcodes and data types
+- It should be treated as minimal persistence/bootstrap support, not broad Redis dump compatibility
+
 ## Prerequisites
 
 - Docker
