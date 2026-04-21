@@ -1,6 +1,6 @@
 ﻿namespace Redis.Cache;
 
-public interface ICacheItemBase
+public interface ICacheItem
 {
     public string Type { get; }
 }
