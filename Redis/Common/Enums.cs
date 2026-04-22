@@ -48,6 +48,7 @@ public enum RespType
     Geosearch,
     Acl,
     Auth,
+    Watch,
 }
 
 public enum DataType
