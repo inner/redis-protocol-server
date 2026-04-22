@@ -27,6 +27,8 @@ The examples in this README focus on the command set that is currently implement
 
 The active server path is currently a straightforward `TcpListener` / `TcpClient` / `NetworkStream` implementation. It is functional, but it is not especially performance-oriented.
 
+**This codebase is also intentionally not a polished architecture-heavy implementation. It prioritizes learning and directness over layered interfaces, deep abstractions, and framework-style structure.**
+
 - The current runtime path performs more allocations than necessary
 - It relies heavily on string-based parsing and reconstruction
 - It does not use a Linux-specific eventing model such as `epoll` behind the scenes
