@@ -1,4 +1,7 @@
+using System.Net.Sockets;
+using System.Text;
 using Redis.Common;
+using Redis.Receivers;
 
 namespace Redis.Aof;
 
@@ -54,11 +57,19 @@ public static class AofManager
         }
 
         var incrFileName = ReadActiveIncrFileName();
+        var incrFilePath = Path.Combine(DirectoryPath, incrFileName);
+
+        // Replay runs before the write stream is opened, so Append is a no-op
+        // during replay and the replayed commands are not logged a second time.
+        if (File.Exists(incrFilePath))
+        {
+            Replay(incrFilePath);
+        }
 
         // Open for appending: creates the file if missing and never truncates
         // the persisted write history.
         _incrFile = new FileStream(
-            Path.Combine(DirectoryPath, incrFileName),
+            incrFilePath,
             FileMode.Append,
             FileAccess.Write,
             FileShare.ReadWrite);
@@ -100,6 +111,97 @@ public static class AofManager
 
         return active ?? throw new InvalidOperationException(
             $"AOF manifest '{ManifestFilePath}' has no incremental (type i) entry.");
+    }
+
+    // ==========================================================================
+    // Replay on startup
+    // ==========================================================================
+
+    // Rebuilds the keyspace by executing every logged command through the
+    // normal command pipeline, so replay semantics never drift from live ones.
+    // TODO: SET ... PX is logged with a relative TTL, so a replayed key lives
+    // longer than intended; Redis logs absolute PXAT instead.
+    private static void Replay(string path)
+    {
+        var receiver = new ReceiverBase();
+
+        // Commands reply on their socket. During replay there is no client, so
+        // an unconnected socket stands in: replies via SendIfNotFromTransaction
+        // are suppressed (FromTransaction), and the few commands that reply
+        // directly throw on Send *after* applying their change, which is
+        // caught below.
+        using var noClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+        foreach (var resp in ParseCommands(File.ReadAllBytes(path)))
+        {
+            try
+            {
+                var commandDetails = resp.BuildCommandDetails();
+                commandDetails.FromTransaction = true;
+
+                receiver
+                    .ExecuteCommand(noClient, commandDetails, [], [], CommandSource.Client)
+                    .GetAwaiter()
+                    .GetResult();
+            }
+            catch (Exception ex) when (ex is SocketException or ObjectDisposedException)
+            {
+                // Reply could not be delivered; the command itself has run.
+            }
+        }
+    }
+
+    // Splits the file into RESP arrays of bulk strings. Lengths are byte
+    // counts, so framing is done on bytes before decoding each command. The
+    // result uses the escaped "\r\n" form the rest of the pipeline expects.
+    // A truncated trailing command (e.g. after a crash mid-write) is ignored.
+    private static IEnumerable<string> ParseCommands(byte[] data)
+    {
+        var position = 0;
+
+        while (position < data.Length)
+        {
+            var start = position;
+
+            if (data[position] != (byte)'*' || !TryReadLine(data, ref position, out var header) ||
+                !int.TryParse(header.AsSpan(1), out var elementCount))
+            {
+                yield break;
+            }
+
+            for (var i = 0; i < elementCount; i++)
+            {
+                if (position >= data.Length || data[position] != (byte)'$' ||
+                    !TryReadLine(data, ref position, out var lengthLine) ||
+                    !int.TryParse(lengthLine.AsSpan(1), out var length) ||
+                    position + length + 2 > data.Length)
+                {
+                    yield break;
+                }
+
+                // Skip the payload and its trailing \r\n.
+                position += length + 2;
+            }
+
+            yield return Encoding.UTF8.GetString(data, start, position - start)
+                .Replace(Constants.NewLine, Constants.VerbatimNewLine);
+        }
+    }
+
+    private static bool TryReadLine(byte[] data, ref int position, out string line)
+    {
+        for (var i = position; i + 1 < data.Length; i++)
+        {
+            if (data[i] == (byte)'\r' && data[i + 1] == (byte)'\n')
+            {
+                line = Encoding.ASCII.GetString(data, position, i - position);
+                position = i + 2;
+                return true;
+            }
+        }
+
+        line = string.Empty;
+        return false;
     }
 
     // ==========================================================================
