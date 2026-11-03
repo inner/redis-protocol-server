@@ -157,6 +157,46 @@ public static class DataCache
         Write(key, serialized);
     }
 
+    // ==========================================================================
+    // Bitmaps
+    // ==========================================================================
+
+    // Bitmaps are plain string values, as in Redis. Since the whole pipeline is
+    // string based, each char of the stored string holds one byte (0..255),
+    // i.e. a Latin-1 view of the raw bytes.
+    // TODO: GET on a bitmap with bytes >= 0x80 is not byte-exact, because the
+    // socket layer encodes responses as UTF-8.
+    private static readonly object BitmapLock = new();
+
+    public static int SetBit(string key, long offset, int bit)
+    {
+        // Read-modify-write must not interleave with another SETBIT on the
+        // same key, otherwise one of the bit updates would be lost.
+        lock (BitmapLock)
+        {
+            var existing = Get(key);
+            var bytes = (existing?.Value ?? string.Empty).ToCharArray();
+
+            var byteIndex = (int)(offset / 8);
+            if (byteIndex >= bytes.Length)
+            {
+                // Redis grows the string with zero bytes up to the offset.
+                Array.Resize(ref bytes, byteIndex + 1);
+            }
+
+            // Offset 0 is the most significant bit of the first byte.
+            var mask = 1 << (7 - (int)(offset % 8));
+            var current = bytes[byteIndex];
+            var original = (current & mask) != 0 ? 1 : 0;
+
+            bytes[byteIndex] = (char)(bit == 1 ? current | mask : current & ~mask);
+
+            // Keep the key's TTL: SETBIT modifies the value, it does not replace it.
+            Set(key, new string(bytes), existing?.Expiry);
+            return original;
+        }
+    }
+
     public static BasicCacheItem? Get(string key)
     {
         if (!Cache.TryGetValue(key, out var basicCacheItemSerialized))

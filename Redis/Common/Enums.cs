@@ -50,6 +50,7 @@ public enum RespType
     Auth,
     Watch,
     Unwatch,
+    Setbit,
 }
 
 public enum DataType
