@@ -53,6 +53,7 @@ public enum RespType
     Setbit,
     Getbit,
     Strlen,
+    Bitcount,
 }
 
 public enum DataType
