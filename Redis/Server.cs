@@ -1,5 +1,6 @@
 using System.Net;
 using Redis;
+using Redis.Aof;
 using Redis.Nodes;
 
 var programArgs = args
@@ -78,6 +79,8 @@ aof.AppendOnly = ReadOption("appendonly") ?? aof.AppendOnly;
 aof.AppendDirName = ReadOption("appenddirname") ?? aof.AppendDirName;
 aof.AppendFilename = ReadOption("appendfilename") ?? aof.AppendFilename;
 aof.AppendFsync = ReadOption("appendfsync") ?? aof.AppendFsync;
+
+AofManager.Initialize();
 
 try
 {
