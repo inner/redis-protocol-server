@@ -17,6 +17,12 @@ public static class AofManager
     public static string DirectoryPath =>
         Path.Combine(ServerInfo.ServerRuntimeContext.DataDir, Options.AppendDirName);
 
+    // Redis 7 multi-part AOF naming: the first incremental file is
+    // <appendfilename>.1.incr.aof.
+    public static string IncrFileName => $"{Options.AppendFilename}.1.incr.aof";
+
+    public static string IncrFilePath => Path.Combine(DirectoryPath, IncrFileName);
+
     public static void Initialize()
     {
         if (!Enabled)
@@ -26,5 +32,11 @@ public static class AofManager
 
         // CreateDirectory is a no-op when the directory already exists.
         Directory.CreateDirectory(DirectoryPath);
+
+        // Create the incremental file if missing, but never truncate an
+        // existing one: its contents are the persisted write history.
+        using (new FileStream(IncrFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+        {
+        }
     }
 }
