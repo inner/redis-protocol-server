@@ -14,7 +14,27 @@ public static class DataCache
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
     private static ConcurrentDictionary<string, string> UserPasswords { get; } = new();
     private static ConcurrentDictionary<string, Socket> AuthenticatedConnections { get; } = new();
-    
+
+    // Every keyspace mutation goes through these two helpers so that WATCH can
+    // detect that a key was touched, even if it was later set back to the
+    // same value.
+    private static void Write(string key, string serialized)
+    {
+        Cache[key] = serialized;
+        WatchRegistry.Touch(key);
+    }
+
+    private static bool Remove(string key)
+    {
+        if (!Cache.TryRemove(key, out _))
+        {
+            return false;
+        }
+
+        WatchRegistry.Touch(key);
+        return true;
+    }
+
     public static void SetPassword(string username, string passwordHash)
     {
         UserPasswords.AddOrUpdate(
@@ -134,7 +154,7 @@ public static class DataCache
         };
 
         var serialized = JsonSerializer.Serialize(basicCacheItem);
-        Cache[key] = serialized;
+        Write(key, serialized);
     }
 
     public static BasicCacheItem? Get(string key)
@@ -183,7 +203,7 @@ public static class DataCache
                 existingStreamCacheItem.Value.Add(value);
             }
 
-            Cache[key] = JsonSerializer.Serialize(existingStreamCacheItem);
+            Write(key, JsonSerializer.Serialize(existingStreamCacheItem));
         }
         else
         {
@@ -192,7 +212,7 @@ public static class DataCache
                 Value = [value]
             };
 
-            Cache[key] = JsonSerializer.Serialize(streamCacheItem);
+            Write(key, JsonSerializer.Serialize(streamCacheItem));
         }
 
         return entryId;
@@ -204,7 +224,7 @@ public static class DataCache
         list.AddRange(listValues);
 
         var serializedList = JsonSerializer.Serialize(list);
-        Cache[listKey] = serializedList;
+        Write(listKey, serializedList);
 
         if (!Waiters.TryRemove(listKey, out var queue))
         {
@@ -244,7 +264,7 @@ public static class DataCache
     private static int CompleteLpush(string listKey, List<string> list)
     {
         var serializedList = JsonSerializer.Serialize(list);
-        Cache[listKey] = serializedList;
+        Write(listKey, serializedList);
 
         if (!Waiters.TryRemove(listKey, out var queue))
         {
@@ -330,7 +350,7 @@ public static class DataCache
             list.RemoveRange(0, itemsToRemove);
         }
 
-        Cache[listKey] = JsonSerializer.Serialize(list);
+        Write(listKey, JsonSerializer.Serialize(list));
         return values;
     }
 
@@ -371,11 +391,11 @@ public static class DataCache
 
         if (list.Count == 0)
         {
-            Cache.TryRemove(listKey, out _);
+            Remove(listKey);
         }
         else
         {
-            Cache[listKey] = JsonSerializer.Serialize(list);
+            Write(listKey, JsonSerializer.Serialize(list));
         }
 
         return [listKey, value];
@@ -409,7 +429,7 @@ public static class DataCache
             { member, score }
         };
 
-        Cache[key] = JsonSerializer.Serialize(newSortedSet);
+        Write(key, JsonSerializer.Serialize(newSortedSet));
         return 1;
 
         void UpdateCache(string cacheKey, Dictionary<string, double> sortedSet)
@@ -419,7 +439,7 @@ public static class DataCache
                 .ThenBy(x => x.Key)
                 .ToDictionary(x => x.Key, x => x.Value);
 
-            Cache[cacheKey] = JsonSerializer.Serialize(sortedSet);
+            Write(cacheKey, JsonSerializer.Serialize(sortedSet));
         }
     }
 
@@ -525,11 +545,11 @@ public static class DataCache
 
         if (sortedSet.Count == 0)
         {
-            Cache.TryRemove(key, out _);
+            Remove(key);
             return 1;
         }
 
-        Cache[key] = JsonSerializer.Serialize(sortedSet);
+        Write(key, JsonSerializer.Serialize(sortedSet));
         return 1;
     }
 
@@ -632,6 +652,6 @@ public static class DataCache
 
     public static int DelKeys(params string[] keys)
     {
-        return keys.Count(key => Cache.TryRemove(key, out _));
+        return keys.Count(key => Remove(key));
     }
 }

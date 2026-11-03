@@ -39,4 +39,18 @@ public static class WatchRegistry
             ? keys.Keys.ToList()
             : [];
     }
+
+    // A connection is dirty when any watched key's version moved since WATCH.
+    // Comparing versions rather than values means a modify-then-restore still
+    // aborts the transaction, matching Redis semantics.
+    public static bool IsDirty(Socket socket)
+    {
+        return WatchedKeys.TryGetValue(socket, out var keys) &&
+               keys.Any(watched => KeyVersions.GetValueOrDefault(watched.Key) != watched.Value);
+    }
+
+    public static void Unwatch(Socket socket)
+    {
+        WatchedKeys.TryRemove(socket, out _);
+    }
 }

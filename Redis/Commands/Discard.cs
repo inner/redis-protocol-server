@@ -1,4 +1,5 @@
-﻿using Redis.Commands.Common;
+﻿using Redis.Cache;
+using Redis.Commands.Common;
 using Redis.Common;
 
 namespace Redis.Commands;
@@ -15,6 +16,8 @@ public class Discard : Base
         if (commandContext.CommandQueue.Count > 0)
         {
             commandContext.CommandQueue.Clear();
+            // Like Redis, DISCARD also drops the connection's watched keys.
+            WatchRegistry.Unwatch(commandContext.Socket);
             result = RespBuilder.SimpleString("OK");
         }
         else

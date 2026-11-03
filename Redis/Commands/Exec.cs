@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
 using Redis.Receivers;
@@ -18,6 +19,21 @@ public class Exec : Base
         {
             result = RespBuilder.Error("EXEC without MULTI");
             commandContext.Socket.SendCommand(result);
+            return result;
+        }
+
+        // EXEC ends the connection's optimistic-locking session whatever the
+        // outcome, so read the dirty flag first and clear the watches here.
+        var watchedKeyTouched = WatchRegistry.IsDirty(commandContext.Socket);
+        WatchRegistry.Unwatch(commandContext.Socket);
+
+        if (watchedKeyTouched)
+        {
+            // Aborted transaction: queued commands are dropped unexecuted and
+            // the client gets a null array, as in Redis.
+            result = RespBuilder.NullArray();
+            commandContext.Socket.SendCommand(result);
+            commandContext.CommandQueue.Clear();
             return result;
         }
 
