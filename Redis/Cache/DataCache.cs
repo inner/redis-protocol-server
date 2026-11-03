@@ -197,6 +197,20 @@ public static class DataCache
         }
     }
 
+    public static int GetBit(string key, long offset)
+    {
+        // Missing keys and offsets past the end read as zero, like Redis.
+        var value = Get(key)?.Value ?? string.Empty;
+        var byteIndex = offset / 8;
+        if (byteIndex >= value.Length)
+        {
+            return 0;
+        }
+
+        var mask = 1 << (7 - (int)(offset % 8));
+        return (value[(int)byteIndex] & mask) != 0 ? 1 : 0;
+    }
+
     public static BasicCacheItem? Get(string key)
     {
         if (!Cache.TryGetValue(key, out var basicCacheItemSerialized))
