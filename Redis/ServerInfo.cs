@@ -33,6 +33,7 @@ public class ServerRuntimeContext
     public string DataDir { get; set; } = null!;
     public string DbFilename { get; set; } = null!;
     public bool DbFileExists { get; set; }
+    public AofOptions Aof { get; } = new();
     public int ConnectedReplicasCount => Replicas.Count(x => x.Value.Connected);
 
     public static async Task ExecuteOnReplicas(string resp)
@@ -49,6 +50,15 @@ public class ServerRuntimeContext
     }
 
     public static bool DefaultUserAuthenticated => DataCache.DefaultUserExists();
+}
+
+// Append-only-file settings with Redis' defaults; overridable via CLI flags.
+public class AofOptions
+{
+    public string AppendOnly { get; set; } = "no";
+    public string AppendDirName { get; set; } = "appendonlydir";
+    public string AppendFilename { get; set; } = "appendonly.aof";
+    public string AppendFsync { get; set; } = "everysec";
 }
 
 public class Replication

@@ -1,5 +1,4 @@
 using System.Net;
-using System.Runtime.InteropServices;
 using Redis;
 using Redis.Nodes;
 
@@ -37,11 +36,13 @@ if (Array.IndexOf(programArgs, "--dir") != -1)
     var dir = programArgs[dirIndex + 1];
     ServerInfo.ServerRuntimeContext.DataDir = dir;
 
+    // --dbfilename is optional alongside --dir (e.g. AOF-only setups).
     var dbFilenameIndex = Array.IndexOf(programArgs, "--dbfilename");
-    var dbFilename = programArgs[dbFilenameIndex + 1];
-    ServerInfo.ServerRuntimeContext.DbFilename = dbFilename;
+    ServerInfo.ServerRuntimeContext.DbFilename = dbFilenameIndex != -1
+        ? programArgs[dbFilenameIndex + 1]
+        : "dump.rdb";
 
-    var pathToDbFile = Path.Combine(dir, dbFilename);
+    var pathToDbFile = Path.Combine(dir, ServerInfo.ServerRuntimeContext.DbFilename);
     if (File.Exists(pathToDbFile))
     {
         ServerInfo.ServerRuntimeContext.DbFileExists = true;
@@ -49,38 +50,8 @@ if (Array.IndexOf(programArgs, "--dir") != -1)
 }
 else
 {
-    if (ServerInfo.OperatingSystem == OSPlatform.Windows)
-    {
-        if (!Directory.Exists(ServerInfo.WindowsMasterDir))
-        {
-            Directory.CreateDirectory(ServerInfo.WindowsMasterDir);
-        }
-
-        if (!Directory.Exists(ServerInfo.WindowsReplicaDir))
-        {
-            Directory.CreateDirectory(ServerInfo.WindowsReplicaDir);
-        }
-    }
-    else
-    {
-        if (!Directory.Exists(ServerInfo.LinuxMasterDir))
-        {
-            Directory.CreateDirectory(ServerInfo.LinuxMasterDir);
-        }
-
-        if (!Directory.Exists(ServerInfo.LinuxReplicaDir))
-        {
-            Directory.CreateDirectory(ServerInfo.LinuxReplicaDir);
-        }
-    }
-
-    ServerInfo.ServerRuntimeContext.DataDir = ServerInfo.OperatingSystem == OSPlatform.Windows
-        ? ServerInfo.ServerRuntimeContext.IsMaster
-            ? ServerInfo.WindowsMasterDir
-            : ServerInfo.WindowsReplicaDir
-        : ServerInfo.ServerRuntimeContext.IsMaster
-            ? ServerInfo.LinuxMasterDir
-            : ServerInfo.LinuxReplicaDir;
+    // Like Redis, `dir` defaults to the working directory at startup.
+    ServerInfo.ServerRuntimeContext.DataDir = Directory.GetCurrentDirectory();
 
     ServerInfo.ServerRuntimeContext.DbFilename = ServerInfo.ServerRuntimeContext.IsMaster
         ? $"master{(port != 0 ? port : ServerInfo.DefaultRedisPort)}{ServerInfo.RdbExtension}"
@@ -93,6 +64,20 @@ if (Array.IndexOf(programArgs, "--dbfilename") != -1)
     var dbFilename = programArgs[dbFilenameIndex + 1];
     ServerInfo.ServerRuntimeContext.DbFilename = dbFilename;
 }
+
+// AOF options only need to be recorded here; defaults live in
+// ServerRuntimeContext and are reported by CONFIG GET.
+string? ReadOption(string name)
+{
+    var index = Array.IndexOf(programArgs, $"--{name}");
+    return index != -1 && index + 1 < programArgs.Length ? programArgs[index + 1] : null;
+}
+
+var aof = ServerInfo.ServerRuntimeContext.Aof;
+aof.AppendOnly = ReadOption("appendonly") ?? aof.AppendOnly;
+aof.AppendDirName = ReadOption("appenddirname") ?? aof.AppendDirName;
+aof.AppendFilename = ReadOption("appendfilename") ?? aof.AppendFilename;
+aof.AppendFsync = ReadOption("appendfsync") ?? aof.AppendFsync;
 
 try
 {

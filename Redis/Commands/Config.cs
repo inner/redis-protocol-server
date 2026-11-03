@@ -8,29 +8,38 @@ public class Config : Base
     protected override string Name => nameof(Config);
     public override bool CanBePropagated => false;
 
+    // Readable parameters, resolved lazily so CONFIG GET always reflects the
+    // current runtime values.
+    // TODO: glob patterns and multiple parameters per CONFIG GET are not supported.
+    private static readonly Dictionary<string, Func<string>> Parameters =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["dir"] = () => ServerInfo.ServerRuntimeContext.DataDir,
+            ["dbfilename"] = () => ServerInfo.ServerRuntimeContext.DbFilename,
+            ["appendonly"] = () => ServerInfo.ServerRuntimeContext.Aof.AppendOnly,
+            ["appenddirname"] = () => ServerInfo.ServerRuntimeContext.Aof.AppendDirName,
+            ["appendfilename"] = () => ServerInfo.ServerRuntimeContext.Aof.AppendFilename,
+            ["appendfsync"] = () => ServerInfo.ServerRuntimeContext.Aof.AppendFsync,
+        };
+
     protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
-        var resp = RespBuilder.ArrayFromCommands("dir", ServerInfo.ServerRuntimeContext.DataDir);
-        
-        if (Array.IndexOf(commandContext.CommandDetails.CommandParts, "GET") != -1 &&
-            Array.IndexOf(commandContext.CommandDetails.CommandParts, "dir") != -1)
+        var parts = commandContext.CommandDetails.CommandParts;
+        string resp;
+
+        // CONFIG GET parameter -> parts[4] is the subcommand, parts[6] the name.
+        if (parts.Length >= 7 &&
+            string.Equals(parts[4], "GET", StringComparison.OrdinalIgnoreCase) &&
+            Parameters.TryGetValue(parts[6], out var getValue))
         {
-            commandContext.Socket.SendCommand(resp);
-            return Task.FromResult(resp);
+            resp = RespBuilder.ArrayFromCommands(parts[6].ToLowerInvariant(), getValue());
+        }
+        else
+        {
+            resp = RespBuilder.Error("Unsupported CONFIG parameter");
         }
 
-        if (Array.IndexOf(commandContext.CommandDetails.CommandParts, "GET") != -1 &&
-            Array.IndexOf(commandContext.CommandDetails.CommandParts, "dbfilename") != -1)
-        {
-            resp = RespBuilder.ArrayFromCommands("dbfilename", ServerInfo.ServerRuntimeContext.DbFilename);
-            commandContext.Socket.SendCommand(resp);
-
-            return Task.FromResult(resp);
-        }
-        
-        resp = RespBuilder.Error("Unsupported CONFIG parameter");
-        commandContext.Socket.SendCommand(resp);
-
+        SendIfNotFromTransaction(commandContext, resp);
         return Task.FromResult(resp);
     }
 }
