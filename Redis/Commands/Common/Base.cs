@@ -1,4 +1,5 @@
-﻿using Redis.Common;
+﻿using Redis.Aof;
+using Redis.Common;
 
 namespace Redis.Commands.Common;
 
@@ -42,6 +43,16 @@ public abstract class Base
         if (TransactionEnabled(commandContext))
         {
             return string.Empty;
+        }
+
+        // Write commands are logged once they are known to run (not merely
+        // queued by MULTI) and before they reply, so appendfsync=always holds.
+        // Commands inside EXEC pass through here individually.
+        // TODO: commands that end up failing (e.g. INCR on a non-integer) are
+        // still logged; replaying them fails the same way, so state is unaffected.
+        if (AofManager.ShouldLog(commandContext.CommandDetails.RespType, CanBePropagated))
+        {
+            AofManager.Append(commandContext.CommandDetails.Resp);
         }
 
         return await ExecuteCore(commandContext);
