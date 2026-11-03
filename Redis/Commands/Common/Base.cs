@@ -80,7 +80,7 @@ public abstract class Base
 
         var commandTypesExcluded = new List<RespType>
         {
-            RespType.Multi, RespType.Exec, RespType.Discard
+            RespType.Multi, RespType.Exec, RespType.Discard, RespType.Watch
         };
 
         var commandStrings = commandTypesExcluded.ConvertAll(c => c.ToString());
