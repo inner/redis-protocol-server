@@ -23,6 +23,9 @@ public static class AofManager
 
     public static string IncrFilePath => Path.Combine(DirectoryPath, IncrFileName);
 
+    public static string ManifestFilePath =>
+        Path.Combine(DirectoryPath, $"{Options.AppendFilename}.manifest");
+
     public static void Initialize()
     {
         if (!Enabled)
@@ -37,6 +40,15 @@ public static class AofManager
         // existing one: its contents are the persisted write history.
         using (new FileStream(IncrFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
         {
+        }
+
+        // The manifest lists the AOF parts in replay order. Only one
+        // incremental part exists so far, so its entry is fixed.
+        // TODO: read an existing manifest instead of assuming its contents
+        // once base files / rewrites are supported.
+        if (!File.Exists(ManifestFilePath))
+        {
+            File.WriteAllText(ManifestFilePath, $"file {IncrFileName} seq 1 type i\n");
         }
     }
 }
