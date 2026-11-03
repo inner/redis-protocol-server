@@ -49,6 +49,7 @@ public enum RespType
     Acl,
     Auth,
     Watch,
+    Unwatch,
 }
 
 public enum DataType
