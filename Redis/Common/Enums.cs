@@ -54,6 +54,7 @@ public enum RespType
     Getbit,
     Strlen,
     Bitcount,
+    Bitop,
 }
 
 public enum DataType
