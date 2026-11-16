@@ -55,6 +55,7 @@ public sealed class TestcontainersRedisCluster : IAsyncDisposable
         {
             master = BuildContainer(image, network, "master", MasterAlias, command: null);
             await master.StartAsync(cancellationToken);
+            await WaitUntilAnsweringAsync(master, cancellationToken);
 
             for (var i = 0; i < replicaCount; i++)
             {
@@ -66,6 +67,7 @@ public sealed class TestcontainersRedisCluster : IAsyncDisposable
                     ["--replicaof", $"{MasterAlias} {RedisPort}"]);
                 await replica.StartAsync(cancellationToken);
                 replicas.Add(replica);
+                await WaitUntilAnsweringAsync(replica, cancellationToken);
             }
 
             return new TestcontainersRedisCluster(network, master, replicas);
@@ -111,6 +113,42 @@ public sealed class TestcontainersRedisCluster : IAsyncDisposable
         }
 
         return string.Join($"{Environment.NewLine}{Environment.NewLine}", sections);
+    }
+
+    // The container wait strategy can report port 6380 as in use before the
+    // server listens: a replica's own outgoing connection to its master's port
+    // 6380 already shows up. Docker's port proxy then accepts test connections
+    // and immediately closes them. Only a PING answer proves the node is up.
+    private static async Task WaitUntilAnsweringAsync(IContainer container, CancellationToken cancellationToken)
+    {
+        var deadline = DateTimeOffset.UtcNow.AddSeconds(30);
+        var port = (int)container.GetMappedPublicPort(RedisPort);
+
+        while (true)
+        {
+            try
+            {
+                await using var client = await RedisRespClient.ConnectAsync(container.Hostname, port, cancellationToken);
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                timeout.CancelAfter(TimeSpan.FromSeconds(2));
+
+                if (await client.ExecuteAsync(["PING"], timeout.Token) == RespBuilder.SimpleString("PONG"))
+                {
+                    return;
+                }
+            }
+            catch (Exception) when (DateTimeOffset.UtcNow < deadline && !cancellationToken.IsCancellationRequested)
+            {
+                // Not listening yet.
+            }
+
+            if (DateTimeOffset.UtcNow >= deadline)
+            {
+                throw new TimeoutException($"Container {container.Name} did not answer PING within 30s.");
+            }
+
+            await Task.Delay(100, cancellationToken);
+        }
     }
 
     private static IContainer BuildContainer(

@@ -11,6 +11,11 @@ public abstract class Base
     protected virtual SupportedRoles SupportedRoles => SupportedRoles.Both;
     private bool TransactionStarted { get; set; }
 
+    // True once ExecuteCore ran, i.e. the command was not rejected (auth,
+    // role, subscribe mode) or queued by MULTI. Only executed commands are
+    // propagated to replicas.
+    public bool Executed { get; private set; }
+
     protected abstract Task<string> ExecuteCore(CommandContext commandContext);
 
     public async Task<string> Execute(CommandContext commandContext)
@@ -20,28 +25,27 @@ public abstract class Base
             var respType = commandContext.CommandDetails.RespType;
             if (!AllowedWhenInSubscribeMode.Contains(respType))
             {
-                commandContext.Socket.Send(
-                    RespBuilder.Error(
-                        $"Can't execute '{respType.ToString().ToLower()}': " +
-                        "only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in " +
-                        "this context").AsBytes());
-                
-                return string.Empty;
+                var error = RespBuilder.Error(
+                    $"Can't execute '{respType.ToString().ToLower()}': " +
+                    "only (P|S)SUBSCRIBE / (P|S)UNSUBSCRIBE / PING / QUIT / RESET are allowed in " +
+                    "this context");
+
+                Reply(commandContext, error);
+                return error;
             }
         }
 
         // Once the default user has a password, a connection must AUTH before
-        // running anything else. The replication stream from a master is
-        // trusted, as is the replica handshake.
-        // TODO: real Redis also requires replicas to authenticate (masterauth).
+        // running anything else. Replicas authenticate with --masterauth; the
+        // replication stream a replica receives from its master is trusted.
         if (ServerRuntimeContext.DefaultUserAuthenticated &&
             !commandContext.IsReplicationStream &&
             !AllowedWithoutAuthentication.Contains(commandContext.CommandDetails.RespType) &&
             !DataCache.IsConnectionAuthenticated(commandContext.Socket))
         {
-            commandContext.Socket.SendCommand(
-                RespBuilder.Error("NOAUTH Authentication required.", includeErrPrefix: false));
-            return string.Empty;
+            var error = RespBuilder.Error("NOAUTH Authentication required.", includeErrPrefix: false);
+            Reply(commandContext, error);
+            return error;
         }
 
         if (!IsSupportedOnCurrentNodeRole())
@@ -51,8 +55,8 @@ public abstract class Base
                 : "replica";
             var command = commandContext.CommandDetails.RespType.ToString().ToUpperInvariant();
             var response = RespBuilder.Error($"Command '{command}' is not allowed on a {role} node.");
-            commandContext.Socket.SendCommand(response);
-            return string.Empty;
+            Reply(commandContext, response);
+            return response;
         }
 
         if (TransactionEnabled(commandContext))
@@ -70,12 +74,20 @@ public abstract class Base
             AofManager.Append(commandContext.CommandDetails.Resp);
         }
 
+        Executed = true;
         return await ExecuteCore(commandContext);
     }
 
-    protected static void SendIfNotFromTransaction(CommandContext commandContext, string response)
+    // Sends a command's reply to its client. Two callers get no reply:
+    // - EXEC runs queued commands with FromTransaction set and collects their
+    //   return values into one array reply (also used by AOF replay);
+    // - a replica applying its master's replication stream, since a master
+    //   expects no replies except to REPLCONF GETACK (sent directly).
+    // Every command reply goes through here, and each ExecuteCore returns the
+    // same string, so EXEC can include it.
+    protected static void Reply(CommandContext commandContext, string response)
     {
-        if (!commandContext.CommandDetails.FromTransaction)
+        if (!commandContext.CommandDetails.FromTransaction && !commandContext.IsReplicationStream)
         {
             commandContext.Socket.SendCommand(response);
         }
@@ -122,16 +134,14 @@ public abstract class Base
         commandContext.CommandQueue.Add(
             new CommandQueueItem { RespType = commandType, Resp = commandContext.CommandDetails.Resp });
 
-        commandContext.Socket.SendCommand(RespBuilder.SimpleString("QUEUED"));
+        Reply(commandContext, RespBuilder.SimpleString("QUEUED"));
         return true;
     }
 
     private static readonly RespType[] AllowedWithoutAuthentication =
     [
         RespType.Auth,
-        RespType.Quit,
-        RespType.Replconf,
-        RespType.Psync
+        RespType.Quit
     ];
 
     private static readonly RespType[] AllowedWhenInSubscribeMode =

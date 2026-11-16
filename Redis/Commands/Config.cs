@@ -20,6 +20,7 @@ public class Config : Base
             ["appenddirname"] = () => ServerInfo.ServerRuntimeContext.Aof.AppendDirName,
             ["appendfilename"] = () => ServerInfo.ServerRuntimeContext.Aof.AppendFilename,
             ["appendfsync"] = () => ServerInfo.ServerRuntimeContext.Aof.AppendFsync,
+            ["masterauth"] = () => ServerInfo.ServerRuntimeContext.MasterAuth ?? string.Empty,
         };
 
     protected override Task<string> ExecuteCore(CommandContext commandContext)
@@ -39,7 +40,7 @@ public class Config : Base
             resp = RespBuilder.Error("Unsupported CONFIG parameter");
         }
 
-        SendIfNotFromTransaction(commandContext, resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

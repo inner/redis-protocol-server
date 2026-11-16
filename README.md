@@ -90,6 +90,12 @@ $ mcli INCR page-views
 $ mcli SET temp-key short PX 200
 OK
 
+$ mcli SET session-key token EX 60
+OK
+
+$ mcli PSETEX cache-key 200 cached
+OK
+
 $ mcli GET temp-key
 short
 ```
@@ -492,6 +498,9 @@ $ mcli GEOADD places 15.087269 37.502669 Catania
 $ mcli GEODIST places Palermo Catania
 166274.1516
 
+$ mcli GEODIST places Palermo Catania km
+166.2742
+
 $ mcli GEOPOS places Palermo
 13.361389338970184
 38.1155563954963
@@ -593,6 +602,8 @@ redis-cli SET key1 val1 PX 5000
 
 ```console
 $ mcli COMMAND DOCS
+$ mcli COMMAND COUNT
+$ mcli COMMAND LIST
 ```
 
 ## ACL And AUTH
@@ -651,6 +662,25 @@ ACL WHOAMI
 ```console
 OK
 default
+```
+
+## Password-Protected Master
+
+```console
+$ mcli ACL SETUSER default ">s3cret"
+OK
+
+$ docker run -d --name redis-replica-auth --network codecrafters-redis-net codecrafters-redis-csharp --replicaof "redis-master 6380" --masterauth s3cret
+
+$ mcli -a s3cret --no-auth-warning SET guarded yes
+OK
+
+$ rcli -h redis-replica-auth -p 6380 GET guarded
+yes
+
+$ rcli -h redis-replica-auth -p 6380 CONFIG GET masterauth
+masterauth
+s3cret
 ```
 
 ## AOF Persistence
@@ -743,7 +773,7 @@ $ docker start redis-master redis-replica-1 redis-replica-2
 ## Clean Up Everything
 
 ```console
-$ docker rm -f redis-master redis-replica-1 redis-replica-2 redis-aof redis-aof-always redis-rdb
+$ docker rm -f redis-master redis-replica-1 redis-replica-2 redis-replica-auth redis-aof redis-aof-always redis-rdb
 $ docker volume rm redis-aof-data redis-rdb-data
 $ docker network rm codecrafters-redis-net
 ```

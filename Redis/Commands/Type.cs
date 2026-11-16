@@ -23,7 +23,7 @@ public class Type : Base
                     StringComparison.InvariantCultureIgnoreCase))
             {
                 result = RespBuilder.SimpleString("string");
-                commandContext.Socket.SendCommand(result);
+                Reply(commandContext, result);
                 return Task.FromResult(result);
             }
 
@@ -32,7 +32,7 @@ public class Type : Base
                     StringComparison.InvariantCultureIgnoreCase))
             {
                 result = RespBuilder.SimpleString("stream");
-                commandContext.Socket.SendCommand(result);
+                Reply(commandContext, result);
 
                 return Task.FromResult(result);
             }
@@ -41,7 +41,7 @@ public class Type : Base
             if (listCacheItem != null)
             {
                 result = RespBuilder.SimpleString("list");
-                commandContext.Socket.SendCommand(result);
+                Reply(commandContext, result);
 
                 return Task.FromResult(result);
             }
@@ -50,14 +50,14 @@ public class Type : Base
             if (sortedSetCacheItem != null)
             {
                 result = RespBuilder.SimpleString("zset");
-                commandContext.Socket.SendCommand(result);
+                Reply(commandContext, result);
 
                 return Task.FromResult(result);
             }
         }
 
         result = RespBuilder.SimpleString("none");
-        commandContext.Socket.SendCommand(result);
+        Reply(commandContext, result);
         return Task.FromResult(result);
     }
 }

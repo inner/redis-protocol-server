@@ -2,7 +2,7 @@ namespace Redis.Tests;
 
 public class SortedSetCommandTests
 {
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task ZADD_ThenZRANGE_ReturnsMembersOrderedByScore()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -24,7 +24,7 @@ public class SortedSetCommandTests
             (await database.SortedSetRangeByRankAsync(key, 0, -1)).Select(value => value.ToString()).ToArray());
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task ZADD_ThenZSCORE_ReturnsStoredScore()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -41,7 +41,7 @@ public class SortedSetCommandTests
         Assert.Equal(1.5, await database.SortedSetScoreAsync(key, "alpha"));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task ZADD_ThenZRANK_ReturnsMemberRank()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -61,7 +61,7 @@ public class SortedSetCommandTests
         Assert.Equal(1, await database.SortedSetRankAsync(key, "bravo"));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task ZADD_ThenZCARD_ReturnsSortedSetLength()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -81,7 +81,7 @@ public class SortedSetCommandTests
         Assert.Equal(3, await database.SortedSetLengthAsync(key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task ZREM_RemovesMemberAndUpdatesSortedSetState()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -106,7 +106,7 @@ public class SortedSetCommandTests
             (await database.SortedSetRangeByRankAsync(key, 0, -1)).Select(value => value.ToString()).ToArray());
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task ZADD_ReplicatesSortedSetWriteToAllThreeReplicas()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync(replicaCount: 3);

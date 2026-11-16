@@ -5,6 +5,24 @@ namespace Redis.Common;
 
 public static class NetworkExtensions
 {
+    // Replica handshake step 0, only when --masterauth is set.
+    public static NetworkStream SendAuth(this NetworkStream stream, string? password)
+    {
+        if (password == null)
+        {
+            return stream;
+        }
+
+        stream.Write(RespBuilder.ArrayFromCommands("AUTH", password).AsBytes());
+
+        EnsureExpectedResponse(
+            nameof(SendAuth),
+            RespBuilder.SimpleString("OK"),
+            AsString(stream));
+
+        return stream;
+    }
+
     public static NetworkStream SendPing(this NetworkStream stream)
     {
         var resp = RespBuilder.ArrayFromCommands("PING").AsBytes();
@@ -139,18 +157,17 @@ public static class NetworkExtensions
         }
 
         return memoryStream.ToArray()
-            .AsString()
-            .Replace(Constants.NewLine, Constants.VerbatimNewLine);
+            .AsString();
     }
 
     public static void SendCommand(this Socket socket, string resp)
     {
-        socket.Send(resp.Replace(Constants.VerbatimNewLine, Constants.NewLine).AsBytes());
+        socket.Send(resp.AsBytes());
     }
 
     private static void EnsureExpectedResponse(string methodName, string expectedResponse, string actualResponse)
     {
-        if (!string.Equals(expectedResponse.Replace(Constants.NewLine, Constants.VerbatimNewLine), actualResponse,
+        if (!string.Equals(expectedResponse, actualResponse,
                 StringComparison.InvariantCultureIgnoreCase))
         {
             throw new Exception($"Handshake failed on step: {methodName}. " +

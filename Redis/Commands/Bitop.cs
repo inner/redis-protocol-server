@@ -18,7 +18,7 @@ public class Bitop : Base
         if (parts.Length < 9)
         {
             response = RespBuilder.Error("wrong number of arguments for 'bitop' command");
-            SendIfNotFromTransaction(commandContext, response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
@@ -38,7 +38,7 @@ public class Bitop : Base
             response = RespBuilder.Error(operation == "NOT"
                 ? "BITOP NOT must be called with a single source key."
                 : "syntax error");
-            SendIfNotFromTransaction(commandContext, response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
@@ -81,7 +81,7 @@ public class Bitop : Base
         }
 
         response = RespBuilder.Integer(length);
-        SendIfNotFromTransaction(commandContext, response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

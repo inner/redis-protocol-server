@@ -40,7 +40,7 @@ public class Auth : Base
                 includeErrPrefix: false);
         }
 
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return await Task.FromResult(resp);
     }
 }

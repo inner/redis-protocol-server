@@ -18,7 +18,7 @@ public class Zcard : Base
         var result = DataCache.Zcard(key);
         var resp = RespBuilder.Integer(result);
         
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

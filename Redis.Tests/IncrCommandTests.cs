@@ -2,7 +2,7 @@ namespace Redis.Tests;
 
 public class IncrCommandTests
 {
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task INCR_OnMissingKey_ReturnsOne()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -19,7 +19,7 @@ public class IncrCommandTests
         Assert.Equal("1", await database.StringGetAsync(key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task INCR_OnExistingInteger_IncrementsValue()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -38,7 +38,7 @@ public class IncrCommandTests
         Assert.Equal("42", await database.StringGetAsync(key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task INCR_OnNonInteger_ReturnsError()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();

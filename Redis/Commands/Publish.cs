@@ -18,7 +18,7 @@ public class Publish : Base
         
         var subscribers = DataCache.GetSubscriptions(channel);
         var resp = RespBuilder.Integer(subscribers);
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         
         var sb = new StringBuilder(RespBuilder.InitArray(3));
         sb.Append(RespBuilder.BulkString(nameof(message).ToLower()));

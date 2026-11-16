@@ -8,44 +8,48 @@ public class Set : Base
 {
     protected override string Name => nameof(Set);
     public override bool CanBePropagated => true;
-    private readonly string okResp = RespBuilder.SimpleString("OK");
+    private static readonly string OkResp = RespBuilder.SimpleString("OK");
 
+    // SET key value [EX seconds | PX milliseconds]
+    // TODO: NX/XX, GET, KEEPTTL, EXAT and PXAT are not supported.
     protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
-        var cacheKey = commandContext.CommandDetails.CommandParts[4];
-        var cacheValue = commandContext.CommandDetails.CommandParts[6];
-        var shouldSendOkResponse =
-            ServerInfo.ServerRuntimeContext.IsMaster &&
-            !commandContext.CommandDetails.FromTransaction;
+        var parts = commandContext.CommandDetails.CommandParts;
+        var key = parts[4];
+        var value = parts[6];
+        long? ttlMilliseconds = null;
+        string resp;
 
-        if (commandContext.CommandDetails.CommandParts.Length < 9)
+        // Options start at the 4th argument; each takes one value.
+        for (var i = 8; i < parts.Length; i += 4)
         {
-            DataCache.Set(cacheKey, cacheValue);
+            var option = parts[i].ToUpperInvariant();
 
-            if (shouldSendOkResponse)
+            if (option is not ("EX" or "PX") || ttlMilliseconds != null)
             {
-                SendIfNotFromTransaction(commandContext, okResp);
+                resp = RespBuilder.Error("syntax error");
+                Reply(commandContext, resp);
+                return Task.FromResult(resp);
             }
 
-            return Task.FromResult(okResp);
+            if (i + 2 >= parts.Length || !long.TryParse(parts[i + 2], out var amount) || amount <= 0)
+            {
+                resp = RespBuilder.Error("invalid expire time in 'set' command");
+                Reply(commandContext, resp);
+                return Task.FromResult(resp);
+            }
+
+            ttlMilliseconds = option == "EX" ? amount * 1000 : amount;
         }
 
-        const string expiryCommandConstant = "PX";
+        DataCache.Set(
+            key,
+            value,
+            ttlMilliseconds == null
+                ? null
+                : DateTimeOffset.Now.AddMilliseconds(ttlMilliseconds.Value).ToUnixTimeMilliseconds());
 
-        var expiryCommand = commandContext.CommandDetails.CommandParts[8];
-        if (!string.Equals(expiryCommand, expiryCommandConstant, StringComparison.InvariantCultureIgnoreCase))
-        {
-            commandContext.Socket.SendCommand(RespBuilder.Error($"Unrecognized command: '{expiryCommand}'."));
-        }
-
-        var expiry = int.Parse(commandContext.CommandDetails.CommandParts[10]);
-        DataCache.Set(cacheKey, cacheValue, DateTimeOffset.Now.AddMilliseconds(expiry).ToUnixTimeMilliseconds());
-
-        if (shouldSendOkResponse)
-        {
-            SendIfNotFromTransaction(commandContext, okResp);
-        }
-
-        return Task.FromResult(okResp);
+        Reply(commandContext, OkResp);
+        return Task.FromResult(OkResp);
     }
 }

@@ -78,7 +78,7 @@ public class Xread : Base
             if (streamKeys.Count == 0)
             {
                 resp = RespBuilder.NullArray();
-                commandContext.Socket.SendCommand(resp);
+                Reply(commandContext, resp);
 
                 return Task.FromResult(resp);
             }
@@ -89,13 +89,13 @@ public class Xread : Base
         if (streamEntries.Count == 0)
         {
             resp = RespBuilder.NullArray();
-            commandContext.Socket.SendCommand(resp);
+            Reply(commandContext, resp);
 
             return Task.FromResult(resp);
         }
 
         resp = BuildResp(streamEntries);
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
 
         return Task.FromResult(resp);
     }

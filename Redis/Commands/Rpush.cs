@@ -20,7 +20,7 @@ public class Rpush : Base
 
         var result = DataCache.Rpush(key, values);
         var resp = RespBuilder.Integer(result);
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
 
         return Task.FromResult(resp);
     }

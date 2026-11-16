@@ -21,7 +21,7 @@ public class Geoadd : Base
         var result = DataCache.Geoadd(key, double.Parse(longitude), double.Parse(latitude), member);
         var resp = RespBuilder.Integer(result);
         
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

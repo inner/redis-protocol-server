@@ -6,6 +6,7 @@ public enum RespType
     Echo,
     Quit,
     Set,
+    Psetex,
     Get,
     Del,
     Info,

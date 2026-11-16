@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using Redis.Cache;
 using Redis.Commands.Common;
 using Redis.Common;
 using Redis.Rdb;
@@ -54,46 +55,73 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
         List<CommandQueueItem> commandQueue = [];
         List<string> subscriptions = [];
 
-        var connectionId = $"{client.Client.LocalEndPoint}->{client.Client.RemoteEndPoint}";
-        var commandSource = ResolveCommandSource(client.Client);
+        var socket = client.Client;
+        var connectionId = $"{socket.LocalEndPoint}->{socket.RemoteEndPoint}";
+        var commandSource = ResolveCommandSource(socket);
+        var reader = new RespReader(client.GetStream());
 
-        while (client.Connected)
+        // As in Redis, a connection opened while the default user has no
+        // password is logged in as `default`, and stays logged in if a
+        // password is set later. Connections opened after that must AUTH.
+        if (!DataCache.DefaultUserExists())
         {
-            try
-            {
-                Console.WriteLine($"[{NodeName}] TCP Connection [{connectionId}] established");
+            DataCache.AddAuthenticatedConnection("default", socket);
+        }
 
-                while (true)
+        Console.WriteLine($"[{NodeName}] TCP Connection [{connectionId}] established");
+
+        try
+        {
+            while (true)
+            {
+                string? resp;
+                try
                 {
-                    var resp = client.GetStream()
-                        .AsString();
-
-                    if (string.IsNullOrEmpty(resp))
-                    {
-                        client.Client.SendCommand(RespBuilder.Null());
-                        continue;
-                    }
-
-                    await receiver.Receive(client.Client, resp, commandQueue, subscriptions, commandSource);
-                    LogReceivedCommand(resp);
+                    resp = reader.ReadFrame();
                 }
+                catch (RespParser.ProtocolException ex)
+                {
+                    // Like Redis: report and drop the connection, since the
+                    // stream can no longer be framed reliably.
+                    socket.SendCommand(RespBuilder.Error($"Protocol error: {ex.Message}"));
+                    break;
+                }
+
+                // The peer closed its side of the connection.
+                if (resp == null)
+                {
+                    break;
+                }
+
+                LogReceivedCommand(resp);
+                await receiver.Receive(socket, resp, commandQueue, subscriptions, commandSource);
             }
-            catch (SocketException)
+        }
+        catch (SocketException)
+        {
+            Console.WriteLine($"Closing TCP connection: [{connectionId}]");
+        }
+        catch (IOException)
+        {
+            Console.WriteLine($"Client closed connection (I/O): [{connectionId}]");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}, stack: {ex.StackTrace}");
+        }
+        finally
+        {
+            // Per-connection state lives in global registries keyed by
+            // socket; drop it so closed connections do not accumulate.
+            DataCache.RemoveConnection(socket);
+            WatchRegistry.Unwatch(socket);
+
+            foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value == socket))
             {
-                Console.WriteLine($"Closing TCP connection: [{connectionId}]");
+                ServerInfo.ServerRuntimeContext.Replicas.TryRemove(replica.Key, out _);
             }
-            catch (IOException)
-            {
-                Console.WriteLine($"Client closed connection (I/O): [{connectionId}]");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}, stack: {ex.StackTrace}");
-            }
-            finally
-            {
-                CloseTcpClient(connectionId, client);
-            }
+
+            CloseTcpClient(connectionId, client);
         }
     }
 
@@ -105,14 +133,11 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
             : CommandSource.Client;
     }
 
-    private static void CloseTcpClient(string connectionId, TcpClient? tcpClient)
+    private static void CloseTcpClient(string connectionId, TcpClient tcpClient)
     {
-        if (tcpClient is not { Connected: true })
-        {
-            return;
-        }
-
-        tcpClient.Client.Close();
+        // Always close, even when the peer already disconnected, so the
+        // socket handle is released.
+        tcpClient.Close();
         Console.WriteLine($"TCP Connection [{connectionId}] closed");
     }
 }

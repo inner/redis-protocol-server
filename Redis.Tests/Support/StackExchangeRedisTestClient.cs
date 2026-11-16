@@ -48,20 +48,12 @@ internal static class StackExchangeRedisTestClient
 
     private static ConfigurationOptions CreateConfiguration(string host, int port)
     {
-        // StackExchange.Redis normally performs extra topology and feature probes.
-        // This Redis implementation does not support the full discovery surface and
-        // does not safely parse pipelined handshake traffic, so we force the client
-        // into a thin proxy-style mode against the explicit endpoint.
+        // Default client behavior, including its handshake and topology
+        // probes. Commands the server does not implement (e.g. CLUSTER) get
+        // an error reply, which the client tolerates.
         var options = new ConfigurationOptions
         {
             AbortOnConnectFail = false,
-            ClientName = string.Empty,
-            ConfigCheckSeconds = 0,
-            ConfigurationChannel = string.Empty,
-            CommandMap = CommandMap.Twemproxy,
-            Proxy = Proxy.Twemproxy,
-            SetClientLibrary = false,
-            TieBreaker = string.Empty,
             ConnectTimeout = 5_000,
             SyncTimeout = 5_000,
             AsyncTimeout = 5_000,

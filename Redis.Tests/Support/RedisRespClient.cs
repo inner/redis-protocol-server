@@ -30,10 +30,17 @@ internal sealed class RedisRespClient : IAsyncDisposable
         IReadOnlyList<string> commandParts,
         CancellationToken cancellationToken = default)
     {
-        var request = Encoding.UTF8.GetBytes(RespBuilder.ArrayFromCommands(commandParts.ToArray()));
+        var request = Encoding.Latin1.GetBytes(RespBuilder.ArrayFromCommands(commandParts.ToArray()));
         await stream.WriteAsync(request, cancellationToken);
         await stream.FlushAsync(cancellationToken);
         return await ReadResponseAsync(cancellationToken);
+    }
+
+    // Writes bytes as-is, e.g. several pipelined commands or a partial frame.
+    public async Task SendRawAsync(string request, CancellationToken cancellationToken = default)
+    {
+        await stream.WriteAsync(Encoding.Latin1.GetBytes(request), cancellationToken);
+        await stream.FlushAsync(cancellationToken);
     }
 
     public Task<string> ExecuteCommandAsync(params string[] commandParts)
@@ -75,7 +82,7 @@ internal sealed class RedisRespClient : IAsyncDisposable
         }
 
         var body = await ReadExactlyAsync(length + 2, cancellationToken);
-        return $"{prefix}{length}\r\n{Encoding.UTF8.GetString(body)}";
+        return $"{prefix}{length}\r\n{Encoding.Latin1.GetString(body)}";
     }
 
     private async Task<string> ReadArrayAsync(char prefix, CancellationToken cancellationToken)

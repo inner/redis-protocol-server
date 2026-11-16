@@ -20,7 +20,7 @@ public class Lpush : Base
 
         var result = DataCache.Lpush(key, values);
         var resp = RespBuilder.Integer(result);
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
 
         return Task.FromResult(resp);
     }

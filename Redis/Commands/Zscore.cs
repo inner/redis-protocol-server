@@ -22,7 +22,7 @@ public class Zscore : Base
             ? RespBuilder.BulkString(result.ToString())
             : RespBuilder.Null();
         
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

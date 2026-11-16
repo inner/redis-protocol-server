@@ -4,7 +4,7 @@ namespace Redis.Tests;
 
 public class StringCommandTests
 {
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task SET_ThenGET_ReturnsStoredValue()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -22,7 +22,7 @@ public class StringCommandTests
         Assert.Equal(value, await database.StringGetAsync(key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task SET_Twice_ThenGET_ReturnsLatestValue()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -40,7 +40,7 @@ public class StringCommandTests
         Assert.Equal("second", await database.StringGetAsync(key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task SET_WithPX_ThenGET_ReturnsNullAfterExpiry()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();

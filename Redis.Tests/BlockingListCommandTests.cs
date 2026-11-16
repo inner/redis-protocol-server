@@ -2,7 +2,7 @@ namespace Redis.Tests;
 
 public class BlockingListCommandTests
 {
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task BLPOP_WhenListHasItems_ReturnsKeyAndLeftmostValue()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -26,7 +26,7 @@ public class BlockingListCommandTests
             response);
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task BLPOP_WhenTimeoutExpires_ReturnsNullArray()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -39,7 +39,7 @@ public class BlockingListCommandTests
         Assert.Equal(RespBuilder.NullArray(), response);
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task BLPOP_WhenListIsEmpty_AndLPUSHPushesLater_ReturnsKeyAndValue()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -66,7 +66,7 @@ public class BlockingListCommandTests
             response);
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task BLPOP_WhenListIsEmpty_AndRPUSHPushesLater_ReturnsKeyAndValue()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();

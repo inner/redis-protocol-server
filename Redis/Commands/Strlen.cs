@@ -17,7 +17,7 @@ public class Strlen : Base
         if (parts.Length < 5)
         {
             response = RespBuilder.Error("wrong number of arguments for 'strlen' command");
-            commandContext.Socket.SendCommand(response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
@@ -27,7 +27,7 @@ public class Strlen : Base
         var length = DataCache.Get(parts[4])?.Value.Length ?? 0;
 
         response = RespBuilder.Integer(length);
-        SendIfNotFromTransaction(commandContext, response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

@@ -22,6 +22,7 @@ public class ReplicaNode(IPAddress localAddress, int port, string? masterNode, i
                 : new TcpClient(masterNode, masterPort.Value);
 
             tcpClient.GetStream()
+                .SendAuth(ServerInfo.ServerRuntimeContext.MasterAuth)
                 .SendPing()
                 .SendReplconfListeningPort(port)
                 .SendReplconfCapaPsync2()

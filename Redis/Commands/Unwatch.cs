@@ -16,7 +16,7 @@ public class Unwatch : Base
         WatchRegistry.Unwatch(commandContext.Socket);
 
         var response = RespBuilder.SimpleString("OK");
-        SendIfNotFromTransaction(commandContext, response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

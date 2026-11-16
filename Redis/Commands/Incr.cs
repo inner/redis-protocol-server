@@ -19,21 +19,21 @@ public class Incr : Base
         {
             DataCache.Set(key, "1");
             result = RespBuilder.Integer(1);
-            SendIfNotFromTransaction(commandContext, result);
+            Reply(commandContext, result);
             return Task.FromResult(result);
         }
 
         if (!long.TryParse(cacheItem.Value, out var longValue))
         {
             result = RespBuilder.Error("value is not an integer or out of range");
-            SendIfNotFromTransaction(commandContext, result);
+            Reply(commandContext, result);
             return Task.FromResult(result);
         }
 
         longValue++;
         DataCache.Set(key, longValue.ToString());
         result = RespBuilder.Integer(longValue);
-        SendIfNotFromTransaction(commandContext, result);
+        Reply(commandContext, result);
         return Task.FromResult(result);
     }
 }

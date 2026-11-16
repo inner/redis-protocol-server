@@ -20,7 +20,7 @@ public class Zadd : Base
         var result = DataCache.Zadd(key, double.Parse(score), member);
         var resp = RespBuilder.Integer(result);
         
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

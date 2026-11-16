@@ -19,7 +19,7 @@ public class Ping : Base
             ? RespBuilder.ArrayFromCommands("pong", string.Empty)
             : RespBuilder.SimpleString("PONG");
 
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

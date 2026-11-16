@@ -57,7 +57,7 @@ public class Geopos : Base
             resp = sb.ToString();
         }
         
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

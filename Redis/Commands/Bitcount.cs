@@ -21,7 +21,7 @@ public class Bitcount : Base
         if (parts.Length is not (5 or 9))
         {
             response = RespBuilder.Error("syntax error");
-            SendIfNotFromTransaction(commandContext, response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
@@ -34,7 +34,7 @@ public class Bitcount : Base
             if (!long.TryParse(parts[6], out start) || !long.TryParse(parts[8], out end))
             {
                 response = RespBuilder.Error("value is not an integer or out of range");
-                SendIfNotFromTransaction(commandContext, response);
+                Reply(commandContext, response);
                 return Task.FromResult(response);
             }
 
@@ -56,7 +56,7 @@ public class Bitcount : Base
         }
 
         response = RespBuilder.Integer(count);
-        SendIfNotFromTransaction(commandContext, response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

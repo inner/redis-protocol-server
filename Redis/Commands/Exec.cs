@@ -9,7 +9,9 @@ namespace Redis.Commands;
 public class Exec : Base
 {
     protected override string Name => nameof(Exec);
-    public override bool CanBePropagated => true;
+    // EXEC propagates its transaction itself (see below), not as a single
+    // command.
+    public override bool CanBePropagated => false;
 
     protected override async Task<string> ExecuteCore(CommandContext commandContext)
     {
@@ -18,7 +20,7 @@ public class Exec : Base
         if (commandContext.CommandQueue.All(x => x.RespType != RespType.Multi))
         {
             result = RespBuilder.Error("EXEC without MULTI");
-            commandContext.Socket.SendCommand(result);
+            Reply(commandContext, result);
             return result;
         }
 
@@ -32,7 +34,7 @@ public class Exec : Base
             // Aborted transaction: queued commands are dropped unexecuted and
             // the client gets a null array, as in Redis.
             result = RespBuilder.NullArray();
-            commandContext.Socket.SendCommand(result);
+            Reply(commandContext, result);
             commandContext.CommandQueue.Clear();
             return result;
         }
@@ -41,18 +43,26 @@ public class Exec : Base
             commandContext.CommandQueue.Single().RespType == RespType.Multi)
         {
             result = RespBuilder.EmptyArray();
-            commandContext.Socket.SendCommand(result);
+            Reply(commandContext, result);
             commandContext.CommandQueue.Clear();
             return result;
         }
 
         List<string> commandResults = [];
 
+        // Write commands of the transaction, sent to replicas afterwards.
+        var propagated = new StringBuilder();
+
         foreach (var commandInQueue in commandContext.CommandQueue)
         {
             if (commandInQueue.RespType == RespType.Multi)
             {
                 continue;
+            }
+
+            if (ReceiverExtensions.CreateCommand(commandInQueue.RespType).CanBePropagated)
+            {
+                propagated.Append(commandInQueue.Resp);
             }
 
             var commandDetails = commandInQueue.Resp.BuildCommandDetails();
@@ -74,9 +84,22 @@ public class Exec : Base
             sb.Append($"{commandResult}");
         }
         
-        commandContext.Socket.SendCommand(sb.ToString());
+        var reply = sb.ToString();
+        Reply(commandContext, reply);
         commandContext.CommandQueue.Clear();
-        
-        return string.Empty;
+
+        // Like Redis, replicas get the transaction's writes wrapped in
+        // MULTI ... EXEC so they apply it atomically too. Queued commands were
+        // not propagated when queued, and commands run here are not
+        // propagated individually (FromTransaction).
+        if (ServerInfo.ServerRuntimeContext.IsMaster && propagated.Length > 0)
+        {
+            await ServerRuntimeContext.ExecuteOnReplicas(
+                RespBuilder.ArrayFromCommands("MULTI") +
+                propagated +
+                RespBuilder.ArrayFromCommands("EXEC"));
+        }
+
+        return reply;
     }
 }

@@ -2,7 +2,7 @@ namespace Redis.Tests;
 
 public class ListCommandTests
 {
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task LPUSH_ThenLRANGE_ReturnsValuesInExpectedOrder()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -23,7 +23,7 @@ public class ListCommandTests
             (await database.ListRangeAsync(key, 0, -1)).Select(value => value.ToString()).ToArray());
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task RPUSH_ThenLRANGE_ReturnsValuesInExpectedOrder()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -44,7 +44,7 @@ public class ListCommandTests
             (await database.ListRangeAsync(key, 0, -1)).Select(value => value.ToString()).ToArray());
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task LPUSH_ThenLLEN_ReturnsListLength()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -62,7 +62,7 @@ public class ListCommandTests
         Assert.Equal(3, await database.ListLengthAsync(key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task LPUSH_ThenLPOP_ReturnsLeftmostValue()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -83,7 +83,7 @@ public class ListCommandTests
             (await database.ListRangeAsync(key, 0, -1)).Select(value => value.ToString()).ToArray());
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task LPUSH_ReplicatesListWriteToAllThreeReplicas()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync(replicaCount: 3);

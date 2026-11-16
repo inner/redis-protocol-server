@@ -2,7 +2,7 @@ namespace Redis.Tests;
 
 public class PubSubCommandTests
 {
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task SUBSCRIBE_ThenPUBLISH_DeliversMessageToSubscriber()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -28,7 +28,7 @@ public class PubSubCommandTests
             await subscriber.ReadResponseAsync());
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task PUBLISH_ReturnsSubscriberCount()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -58,7 +58,7 @@ public class PubSubCommandTests
             await subscriberTwo.ReadResponseAsync());
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task UNSUBSCRIBE_ThenPUBLISH_DoesNotDeliverMessage()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();

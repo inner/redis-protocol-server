@@ -2,7 +2,7 @@ namespace Redis.Tests;
 
 public class ReplicationClusterTests
 {
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task SET_ThenGET_ReplicatesValueToAllThreeReplicas()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync(replicaCount: 3);
@@ -24,7 +24,7 @@ public class ReplicationClusterTests
         await AssertReplicatedToAllReplicasAsync(cluster, probeKey, probeValue);
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task SET_MultipleKeys_ReplicatesAllWritesToAllThreeReplicas()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync(replicaCount: 3);
@@ -53,7 +53,7 @@ public class ReplicationClusterTests
         }
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task WAIT_WithThreeReplicas_ReturnsThreeAfterSET()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync(replicaCount: 3);
@@ -75,7 +75,7 @@ public class ReplicationClusterTests
         await AssertReplicatedToAllReplicasAsync(cluster, probeKey, probeValue);
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task RPUSH_ReplicatesListWriteToAllThreeReplicas()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync(replicaCount: 3);
@@ -107,7 +107,7 @@ public class ReplicationClusterTests
         }
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task LPOP_ReplicatesListMutationToAllThreeReplicas()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync(replicaCount: 3);
@@ -140,7 +140,7 @@ public class ReplicationClusterTests
         }
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task ZREM_ReplicatesSortedSetRemovalToAllThreeReplicas()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync(replicaCount: 3);
@@ -174,7 +174,7 @@ public class ReplicationClusterTests
         }
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task DEL_ReplicatesDeletionToAllThreeReplicas()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync(replicaCount: 3);

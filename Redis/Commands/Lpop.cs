@@ -23,7 +23,9 @@ public class Lpop : Base
 
         if (result.Length == 0)
         {
-            return Task.FromResult(RespBuilder.Null());
+            var nullResp = RespBuilder.Null();
+            Reply(commandContext, nullResp);
+            return Task.FromResult(nullResp);
         }
 
         string resp;
@@ -45,7 +47,7 @@ public class Lpop : Base
             resp = sb.ToString();
         }
 
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

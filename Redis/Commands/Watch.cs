@@ -20,7 +20,7 @@ public class Watch : Base
         if (commandContext.CommandQueue.Any(x => x.RespType == RespType.Multi))
         {
             response = RespBuilder.Error("WATCH inside MULTI is not allowed");
-            commandContext.Socket.SendCommand(response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
@@ -36,7 +36,7 @@ public class Watch : Base
         }
 
         response = RespBuilder.SimpleString("OK");
-        SendIfNotFromTransaction(commandContext, response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

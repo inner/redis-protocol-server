@@ -9,28 +9,47 @@ public class Command : Base
 {
     protected override string Name => nameof(Command);
     public override bool CanBePropagated => false;
-    protected override SupportedRoles SupportedRoles => SupportedRoles.MasterOnly;
 
     protected override async Task<string> ExecuteCore(CommandContext commandContext)
     {
-        string resp;
+        var parts = commandContext.CommandDetails.CommandParts;
+        var subcommand = parts.Length > 4 ? parts[4].ToUpperInvariant() : string.Empty;
 
-        var commandPartsLength = commandContext.CommandDetails.CommandParts.Length;
-
-        if (commandPartsLength < 5 || !commandContext.CommandDetails.CommandParts[4]
-                .Equals("DOCS", StringComparison.CurrentCultureIgnoreCase))
+        // TODO: bare COMMAND and COMMAND INFO (per-command arity, flags and key
+        // specs) are not supported.
+        var resp = subcommand switch
         {
-            resp = RespBuilder.Error("Invalid command");
-            commandContext.Socket.SendCommand(resp);
-            return resp;
+            "DOCS" => await GetDocsResp(parts.Length == 7 ? parts[6] : null),
+            "COUNT" => RespBuilder.Integer(SupportedCommandNames().Length),
+            "LIST" => ListResp(),
+            _ => RespBuilder.Error(
+                $"unknown subcommand or wrong number of arguments for '{subcommand}'. Try COMMAND HELP.")
+        };
+
+        Reply(commandContext, resp);
+        return resp;
+    }
+
+    // A command is supported when it has an implementation class; some
+    // RespType values (e.g. PSUBSCRIBE) are only declared.
+    private static string[] SupportedCommandNames()
+    {
+        return Enum.GetNames<RespType>()
+            .Where(name => System.Type.GetType($"Redis.Commands.{name}") != null)
+            .Select(name => name.ToLowerInvariant())
+            .ToArray();
+    }
+
+    private static string ListResp()
+    {
+        var names = SupportedCommandNames();
+        var sb = new StringBuilder(RespBuilder.InitArray(names.Length));
+        foreach (var name in names)
+        {
+            sb.Append(RespBuilder.BulkString(name));
         }
 
-        resp = await GetDocsResp(commandPartsLength == 7
-            ? commandContext.CommandDetails.CommandParts[6]
-            : null);
-
-        commandContext.Socket.SendCommand(resp);
-        return resp;
+        return sb.ToString();
     }
 
     private Task<string> GetDocsResp(string? commandKey = null)

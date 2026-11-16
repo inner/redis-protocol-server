@@ -21,21 +21,14 @@ public class Geosearch : Base
         // Distances are computed in meters, so the radius is converted from
         // its unit first. Factors match the ones Redis uses.
         // TODO: only FROMLONLAT + BYRADIUS is supported (no FROMMEMBER/BYBOX).
-        double? metersPerUnit = commands.Length > 16
-            ? commands[16].ToLowerInvariant() switch
-            {
-                "m" => 1,
-                "km" => 1000,
-                "mi" => 1609.34,
-                "ft" => 0.3048,
-                _ => null
-            }
+        var metersPerUnit = commands.Length > 16
+            ? GeoCalculator.MetersPerUnit(commands[16])
             : 1;
 
         if (metersPerUnit is null)
         {
-            var error = RespBuilder.Error("unsupported unit provided. please use M, KM, FT, MI");
-            commandContext.Socket.SendCommand(error);
+            var error = RespBuilder.Error(GeoCalculator.UnsupportedUnitError);
+            Reply(commandContext, error);
             return Task.FromResult(error);
         }
 
@@ -49,7 +42,7 @@ public class Geosearch : Base
             resp += RespBuilder.BulkString(member);
         }
 
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

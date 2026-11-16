@@ -29,7 +29,7 @@ public class Lrange : Base
         }
 
         var resp = sb.ToString();
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
 
         return Task.FromResult(resp);
     }

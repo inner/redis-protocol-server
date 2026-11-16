@@ -12,13 +12,14 @@ public class Exists : Base
 
     protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
-        var keys = commandContext.CommandDetails.CommandParts[3..]
-            .Where(x => !x.StartsWith("$"))
-            .Distinct();
+        // A key named twice counts twice, as in Redis.
+        var keys = commandContext.CommandDetails.CommandParts
+            .Skip(4)
+            .Where((_, i) => i % 2 == 0);
 
         var count = DataCache.CountKeys(keys.ToArray());
         var result = RespBuilder.Integer(count);
-        commandContext.Socket.SendCommand(result);
+        Reply(commandContext, result);
         return Task.FromResult(result);
     }
 }

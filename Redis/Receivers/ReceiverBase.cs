@@ -25,6 +25,13 @@ public class ReceiverBase
         }
         catch (Exception ex)
         {
+            // A master expects no replies on the replication stream.
+            if (source == CommandSource.ReplicationMaster)
+            {
+                Console.WriteLine($"Failed to apply replicated command: {ex.Message}");
+                return;
+            }
+
             socket.SendCommand(RespBuilder.Error(ex.Message));
         }
     }

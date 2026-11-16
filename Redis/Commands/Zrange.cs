@@ -37,7 +37,7 @@ public class Zrange : Base
             resp = sb.ToString();
         }
         
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         
         return Task.FromResult(resp);
     }

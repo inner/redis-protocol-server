@@ -16,7 +16,7 @@ public class Echo : Base
             _ => RespBuilder.Error("Wrong number of arguments")
         };
 
-        commandContext.Socket.SendCommand(response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

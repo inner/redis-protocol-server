@@ -2,7 +2,7 @@ namespace Redis.Tests;
 
 public class StreamCommandTests
 {
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task XADD_WithAutoId_ReturnsGeneratedEntryId()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -18,7 +18,7 @@ public class StreamCommandTests
         Assert.Matches(@"^\d+-0$", entryId);
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task XADD_WithTimestampSequenceWildcard_IncrementsSequence()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -36,7 +36,7 @@ public class StreamCommandTests
         Assert.Equal("123-2", ParseBulkString(secondResponse));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task XADD_ThenXRANGE_ReturnsEntriesInInsertionOrder()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -65,7 +65,7 @@ public class StreamCommandTests
             response);
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task XREAD_BLOCK_FromZero_WhenEntryArrives_ReturnsNewEntry()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();

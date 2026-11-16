@@ -14,15 +14,7 @@ public static class ReceiverExtensions
         List<string> subscriptions,
         CommandSource source)
     {
-        var className = $"Redis.Commands.{commandDetails.RespType}";
-
-        var type = Type.GetType(className);
-        if (type == null)
-        {
-            throw new ArgumentException("Unknown RESP command.");
-        }
-
-        var command = (Base)Activator.CreateInstance(type)!;
+        var command = CreateCommand(commandDetails.RespType);
 
         var commandContext = new CommandContext
         {
@@ -45,15 +37,24 @@ public static class ReceiverExtensions
         return result;
     }
 
+    public static Base CreateCommand(RespType respType)
+    {
+        var type = Type.GetType($"Redis.Commands.{respType}")
+                   ?? throw new ArgumentException("Unknown RESP command.");
+
+        return (Base)Activator.CreateInstance(type)!;
+    }
+
+    // Propagate write commands from a master once they have actually run.
+    // Not propagated:
+    // - commands rejected before running, or queued by MULTI (not Executed);
+    // - commands run by EXEC (FromTransaction): EXEC propagates the whole
+    //   transaction as one MULTI ... EXEC block instead.
     private static bool ShouldReplicateCommand(Base command, CommandDetails commandDetails)
     {
-        // do not replicate the command if:
-        // - the server is not a master
-        // - the command cannot be propagated
-        // - the command is an ACK response
-
         return ServerInfo.ServerRuntimeContext.IsMaster &&
                command.CanBePropagated &&
-               !commandDetails.Resp.Contains(@"$3\r\nACK\r\n");
+               command.Executed &&
+               !commandDetails.FromTransaction;
     }
 }

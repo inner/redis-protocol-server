@@ -19,12 +19,12 @@ public class Get : Base
         if (cacheItem?.Value == null)
         {
             response = RespBuilder.Null();
-            SendIfNotFromTransaction(commandContext, response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
         response = RespBuilder.BulkString(cacheItem.Value);
-        SendIfNotFromTransaction(commandContext, response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

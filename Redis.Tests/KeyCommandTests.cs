@@ -2,7 +2,7 @@ namespace Redis.Tests;
 
 public class KeyCommandTests
 {
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task SET_ThenEXISTS_ReturnsOne()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -20,7 +20,7 @@ public class KeyCommandTests
         Assert.True(await database.KeyExistsAsync(key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task DEL_RemovesKeyAndReturnsDeletedCount()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -39,7 +39,7 @@ public class KeyCommandTests
         Assert.False(await database.KeyExistsAsync(key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task TYPE_AfterSET_ReturnsString()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -52,7 +52,7 @@ public class KeyCommandTests
         Assert.Equal(RespBuilder.SimpleString("string"), await client.ExecuteCommandAsync("TYPE", key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task TYPE_AfterLPUSH_ReturnsList()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -65,7 +65,7 @@ public class KeyCommandTests
         Assert.Equal(RespBuilder.SimpleString("list"), await client.ExecuteCommandAsync("TYPE", key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task TYPE_AfterXADD_ReturnsStream()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -78,7 +78,7 @@ public class KeyCommandTests
         Assert.Equal(RespBuilder.SimpleString("stream"), await client.ExecuteCommandAsync("TYPE", key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task TYPE_AfterZADD_ReturnsZset()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -91,7 +91,7 @@ public class KeyCommandTests
         Assert.Equal(RespBuilder.SimpleString("zset"), await client.ExecuteCommandAsync("TYPE", key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task TYPE_OnMissingKey_ReturnsNone()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();
@@ -103,7 +103,7 @@ public class KeyCommandTests
         Assert.Equal(RespBuilder.SimpleString("none"), await client.ExecuteCommandAsync("TYPE", key));
     }
 
-    [Fact(Timeout = 60_000)]
+    [DockerFact(Timeout = 60_000)]
     public async Task KEYS_WithWildcard_ReturnsMatchingKeys()
     {
         await using var cluster = await TestcontainersRedisCluster.StartAsync();

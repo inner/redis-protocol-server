@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using Redis.Cache;
 using Redis.Common;
 
@@ -9,16 +8,7 @@ namespace Redis;
 public static class ServerInfo
 {
     public const int DefaultRedisPort = 6379;
-    public const string WindowsMasterDir = @"C:\redis-rdb";
-    public const string WindowsReplicaDir = @"C:\redis-rdb\replica";
-    public const string LinuxMasterDir = "/tmp/redis-rdb";
-    public const string LinuxReplicaDir = "/tmp/redis-rdb/replica";
     public const string RdbExtension = ".rdb";
-
-    public static OSPlatform OperatingSystem =>
-        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? OSPlatform.Windows
-            : OSPlatform.Linux;
 
     public static readonly ServerRuntimeContext ServerRuntimeContext = new();
     public static Replication Replication { get; } = new();
@@ -32,6 +22,9 @@ public class ServerRuntimeContext
     public Socket? MasterSocket { get; set; }
     public string DataDir { get; set; } = null!;
     public string DbFilename { get; set; } = null!;
+
+    // Password a replica sends (AUTH) to its master during the handshake.
+    public string? MasterAuth { get; set; }
     public bool DbFileExists { get; set; }
     public AofOptions Aof { get; } = new();
     public int ConnectedReplicasCount => Replicas.Count(x => x.Value.Connected);
@@ -41,10 +34,21 @@ public class ServerRuntimeContext
         var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
             .Where(x => x.Value.Connected);
 
+        // A replica that went away must not fail the client's command; its
+        // entry is removed when its connection handler exits.
         var tasks = connectedReplicas
             .Select(replica =>
                 Task.Run(() =>
-                    replica.Value.SendCommand(resp)));
+                {
+                    try
+                    {
+                        replica.Value.SendCommand(resp);
+                    }
+                    catch (Exception ex) when (ex is SocketException or ObjectDisposedException)
+                    {
+                        Console.WriteLine($"Failed to propagate to replica {replica.Key}: {ex.Message}");
+                    }
+                }));
 
         await Task.WhenAll(tasks);
     }
@@ -64,7 +68,6 @@ public class AofOptions
 public class Replication
 {
     public bool ReplicaHandshakeCompleted { get; set; }
-    public bool ReplicaFirstByteReceived { get; set; }
     public int ReplicaBytesReceived { get; private set; }
     public int ReplicaAcksReceived { get; set; }
     public void IncrementReplicaAcksReceived() => ReplicaAcksReceived += 1;

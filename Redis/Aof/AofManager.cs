@@ -1,5 +1,4 @@
 using System.Net.Sockets;
-using System.Text;
 using Redis.Common;
 using Redis.Receivers;
 
@@ -126,13 +125,11 @@ public static class AofManager
         var receiver = new ReceiverBase();
 
         // Commands reply on their socket. During replay there is no client, so
-        // an unconnected socket stands in: replies via SendIfNotFromTransaction
-        // are suppressed (FromTransaction), and the few commands that reply
-        // directly throw on Send *after* applying their change, which is
-        // caught below.
+        // an unconnected socket stands in; replies are suppressed because
+        // FromTransaction is set (see Base.Reply).
         using var noClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-        foreach (var resp in ParseCommands(File.ReadAllBytes(path)))
+        foreach (var resp in RespParser.SplitFrames(File.ReadAllBytes(path)))
         {
             try
             {
@@ -149,59 +146,6 @@ public static class AofManager
                 // Reply could not be delivered; the command itself has run.
             }
         }
-    }
-
-    // Splits the file into RESP arrays of bulk strings. Lengths are byte
-    // counts, so framing is done on bytes before decoding each command. The
-    // result uses the escaped "\r\n" form the rest of the pipeline expects.
-    // A truncated trailing command (e.g. after a crash mid-write) is ignored.
-    private static IEnumerable<string> ParseCommands(byte[] data)
-    {
-        var position = 0;
-
-        while (position < data.Length)
-        {
-            var start = position;
-
-            if (data[position] != (byte)'*' || !TryReadLine(data, ref position, out var header) ||
-                !int.TryParse(header.AsSpan(1), out var elementCount))
-            {
-                yield break;
-            }
-
-            for (var i = 0; i < elementCount; i++)
-            {
-                if (position >= data.Length || data[position] != (byte)'$' ||
-                    !TryReadLine(data, ref position, out var lengthLine) ||
-                    !int.TryParse(lengthLine.AsSpan(1), out var length) ||
-                    position + length + 2 > data.Length)
-                {
-                    yield break;
-                }
-
-                // Skip the payload and its trailing \r\n.
-                position += length + 2;
-            }
-
-            yield return Encoding.UTF8.GetString(data, start, position - start)
-                .Replace(Constants.NewLine, Constants.VerbatimNewLine);
-        }
-    }
-
-    private static bool TryReadLine(byte[] data, ref int position, out string line)
-    {
-        for (var i = position; i + 1 < data.Length; i++)
-        {
-            if (data[i] == (byte)'\r' && data[i + 1] == (byte)'\n')
-            {
-                line = Encoding.ASCII.GetString(data, position, i - position);
-                position = i + 2;
-                return true;
-            }
-        }
-
-        line = string.Empty;
-        return false;
     }
 
     // ==========================================================================
@@ -230,9 +174,7 @@ public static class AofManager
             return;
         }
 
-        // The network layer hands commands over with escaped "\r\n" text;
-        // the file must hold the real RESP bytes.
-        var bytes = resp.Replace(Constants.VerbatimNewLine, Constants.NewLine).AsBytes();
+        var bytes = resp.AsBytes();
 
         lock (WriteLock)
         {

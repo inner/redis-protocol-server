@@ -2,6 +2,22 @@ namespace Redis.Common;
 
 public static class GeoCalculator
 {
+    public const string UnsupportedUnitError = "unsupported unit provided. please use M, KM, FT, MI";
+
+    // Conversion factors to meters, as Redis defines them. Returns null for an
+    // unknown unit.
+    public static double? MetersPerUnit(string unit)
+    {
+        return unit.ToLowerInvariant() switch
+        {
+            "m" => 1,
+            "km" => 1000,
+            "mi" => 1609.34,
+            "ft" => 0.3048,
+            _ => null
+        };
+    }
+
     public static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
     {
         const double radius = 6372797.560856;

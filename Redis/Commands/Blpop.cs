@@ -24,7 +24,7 @@ public class Blpop : Base
         if (result.Length == 0)
         {
             resp = RespBuilder.NullArray();
-            commandContext.Socket.SendCommand(resp);
+            Reply(commandContext, resp);
 
             return resp;
         }
@@ -38,7 +38,7 @@ public class Blpop : Base
         }
 
         resp = sb.ToString();
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
 
         return resp;
     }

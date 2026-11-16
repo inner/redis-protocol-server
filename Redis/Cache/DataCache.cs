@@ -14,8 +14,8 @@ public static class DataCache
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
     private static ConcurrentDictionary<string, string> UserPasswords { get; } = new();
     // Keyed by connection, not by username: several connections may be
-    // authenticated as the same user at once.
-    // TODO: entries are never removed when a connection closes.
+    // authenticated as the same user at once. Entries are dropped by
+    // RemoveConnection when the connection closes.
     private static ConcurrentDictionary<Socket, string> AuthenticatedConnections { get; } = new();
 
     // Every keyspace mutation goes through these two helpers so that WATCH can
@@ -72,25 +72,42 @@ public static class DataCache
         return AuthenticatedConnections.TryGetValue(socket, out var username) ? username : null;
     }
 
+    // Forgets everything held for a closed connection.
+    public static void RemoveConnection(Socket socket)
+    {
+        AuthenticatedConnections.TryRemove(socket, out _);
+
+        foreach (var channel in Subscriptions.Keys)
+        {
+            RemoveSubscription(channel, socket);
+        }
+    }
+
+    // Subscriber lists are plain lists shared between connection threads, so
+    // every access locks the list; Publish sends to a snapshot.
     public static void AddSubscription(string channel, Socket socket)
     {
-        if (!Subscriptions.TryGetValue(channel, out var value))
+        var sockets = Subscriptions.GetOrAdd(channel, _ => []);
+        lock (sockets)
         {
-            value = [];
-            Subscriptions[channel] = value;
-        }
-
-        if (!value.Contains(socket))
-        {
-            value.Add(socket);
+            if (!sockets.Contains(socket))
+            {
+                sockets.Add(socket);
+            }
         }
     }
 
     public static int GetSubscriptions(string channel)
     {
-        return Subscriptions.TryGetValue(channel, out var value)
-            ? value.Count
-            : 0;
+        if (!Subscriptions.TryGetValue(channel, out var sockets))
+        {
+            return 0;
+        }
+
+        lock (sockets)
+        {
+            return sockets.Count;
+        }
     }
 
     public static void RemoveSubscription(string channel, Socket socket)
@@ -100,11 +117,14 @@ public static class DataCache
             return;
         }
 
-        sockets.Remove(socket);
-        if (sockets.Count == 0)
+        lock (sockets)
         {
-            Subscriptions.TryRemove(channel, out _);
+            sockets.Remove(socket);
         }
+
+        // TODO: an empty list is left in place rather than removed, so a
+        // concurrent AddSubscription can never add to a list that was just
+        // dropped from the dictionary.
     }
 
     public static void Publish(string channel, string message)
@@ -114,24 +134,24 @@ public static class DataCache
             return;
         }
 
-        Parallel.ForEach(sockets, socket =>
+        Socket[] snapshot;
+        lock (sockets)
+        {
+            snapshot = sockets.ToArray();
+        }
+
+        var bytes = message.AsBytes();
+        foreach (var socket in snapshot)
         {
             try
             {
-                if (socket.Connected)
-                {
-                    socket.Send(message.AsBytes());
-                }
+                socket.Send(bytes);
             }
-            catch (SocketException)
+            catch (Exception ex) when (ex is SocketException or ObjectDisposedException)
             {
-                Subscriptions[channel].Remove(socket);
+                RemoveSubscription(channel, socket);
             }
-            catch (ObjectDisposedException)
-            {
-                Subscriptions[channel].Remove(socket);
-            }
-        });
+        }
     }
 
     public static void Set(string key, string value, long? expiry = null)
@@ -692,7 +712,7 @@ public static class DataCache
 
     public static int CountKeys(params string[] keys)
     {
-        return Cache.Count(x => keys.Distinct().Contains(x.Key));
+        return keys.Count(Cache.ContainsKey);
     }
 
     public static int DelKeys(params string[] keys)

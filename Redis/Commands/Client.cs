@@ -11,7 +11,7 @@ public class Client : Base
     protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         var resp = RespBuilder.SimpleString("OK");
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
 
         return Task.FromResult(resp);
     }

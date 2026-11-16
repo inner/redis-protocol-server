@@ -16,17 +16,8 @@ public class Acl : Base
         var commandParts = commandContext.CommandDetails.CommandParts;
         if (string.Equals(commandParts[4], "WHOAMI", StringComparison.InvariantCultureIgnoreCase))
         {
-            if (ServerRuntimeContext.DefaultUserAuthenticated &&
-                !DataCache.IsConnectionAuthenticated(commandContext.Socket))
-            {
-                resp = RespBuilder.Error(
-                    "NOAUTH Authentication required.",
-                    includeErrPrefix: false);
-                
-                commandContext.Socket.SendCommand(resp);
-                return await Task.FromResult(resp);
-            }
-
+            // Unauthenticated connections never get here: Base.Execute
+            // rejects them with NOAUTH.
             resp = RespBuilder.BulkString(
                 DataCache.GetAuthenticatedUsername(commandContext.Socket) ?? "default");
         }
@@ -72,8 +63,8 @@ public class Acl : Base
                 plaintextPassword = plaintextPassword[1..];
             }
             
+            // The calling connection keeps whatever login it has, as in Redis.
             DataCache.SetPassword(username, PasswordHasher.EncryptPassword(plaintextPassword));
-            DataCache.AddAuthenticatedConnection(username, commandContext.Socket);
             
             resp = RespBuilder.SimpleString("OK");
         }
@@ -82,7 +73,7 @@ public class Acl : Base
             resp = RespBuilder.Error("ACL command not implemented.");
         }
 
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return await Task.FromResult(resp);
     }
 }

@@ -12,30 +12,15 @@ public class ReplicaReceiver : ReceiverBase
         if (!ServerInfo.Replication.ReplicaHandshakeCompleted)
             return;
 
-        if (!ServerInfo.Replication.ReplicaFirstByteReceived)
-        {
-            ServerInfo.Replication.ReplicaFirstByteReceived = true;
-            await base.Receive(socket, resp, commandQueue, subscriptions, source);
-            return;
-        }
-
-        var currentBytesReceived = GetCurrentBytesReceived(resp);
-
-        Console.WriteLine(
-            $"Total bytes received: {ServerInfo.Replication.ReplicaBytesReceived}. " +
-            $"Incrementing bytes received by {currentBytesReceived}");
-
-        ServerInfo.Replication.IncrementReplicaBytesReceived(currentBytesReceived);
         await base.Receive(socket, resp, commandQueue, subscriptions, source);
-    }
 
-    private static int GetCurrentBytesReceived(string resp)
-    {
-        var currentBytesReceived = resp
-            .Replace(Constants.VerbatimNewLine, Constants.NewLine)
-            .AsBytes()
-            .Length;
-
-        return currentBytesReceived;
+        // The replication offset counts every byte of the master's stream,
+        // and only that stream: commands from ordinary clients connected to
+        // this replica do not move it. It is advanced after the command ran,
+        // so REPLCONF GETACK reports the offset before its own bytes.
+        if (source == CommandSource.ReplicationMaster)
+        {
+            ServerInfo.Replication.IncrementReplicaBytesReceived(resp.AsBytes().Length);
+        }
     }
 }

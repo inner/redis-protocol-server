@@ -18,7 +18,7 @@ public class Llen : Base
         var result = DataCache.Llen(key);
         var resp = RespBuilder.Integer(result);
         
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

@@ -13,10 +13,6 @@ public class Keys : Base
     protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
         var keys = DataCache.GetKeys(commandContext.CommandDetails.CommandParts[4]);
-        if (keys.Count == 0)
-        {
-            commandContext.Socket.SendCommand(RespBuilder.EmptyArray());
-        }
 
         var sb = new StringBuilder($"*{keys.Count}\r\n");
         foreach (var key in keys)
@@ -25,7 +21,7 @@ public class Keys : Base
         }
 
         var result = sb.ToString();
-        commandContext.Socket.SendCommand(result);
+        Reply(commandContext, result);
 
         return Task.FromResult(result);
     }

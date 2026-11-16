@@ -24,7 +24,7 @@ public class Replconf : Base
 
         if (handshakeArgs.Contains(replconfArg, StringComparer.InvariantCultureIgnoreCase))
         {
-            commandContext.Socket.SendCommand(result);
+            Reply(commandContext, result);
         }
 
         if (ackArgs.Contains(replconfArg, StringComparer.InvariantCultureIgnoreCase))

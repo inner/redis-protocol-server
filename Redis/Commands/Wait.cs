@@ -34,7 +34,7 @@ public class Wait : Base
             : ServerInfo.Replication.ReplicaAcksReceived;
 
         var acksReceivedResp = RespBuilder.Integer(acksReceived);
-        commandContext.Socket.SendCommand(acksReceivedResp);
+        Reply(commandContext, acksReceivedResp);
         return acksReceivedResp;
     }
 }

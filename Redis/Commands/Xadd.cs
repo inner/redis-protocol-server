@@ -22,14 +22,14 @@ public class Xadd : Base
             var newOrExistingEntryId = DataCache.Xadd(key, values);
 
             resp = RespBuilder.BulkString(newOrExistingEntryId);
-            commandContext.Socket.SendCommand(resp);
+            Reply(commandContext, resp);
 
             return Task.FromResult(resp);
         }
         catch (Exception ex)
         {
             resp = RespBuilder.Error(ex.Message);
-            commandContext.Socket.SendCommand(resp);
+            Reply(commandContext, resp);
         }
 
         return Task.FromResult(resp);

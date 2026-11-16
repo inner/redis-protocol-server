@@ -17,19 +17,19 @@ public class Getbit : Base
         if (parts.Length < 7)
         {
             response = RespBuilder.Error("wrong number of arguments for 'getbit' command");
-            commandContext.Socket.SendCommand(response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
         if (!long.TryParse(parts[6], out var offset) || offset < 0)
         {
             response = RespBuilder.Error("bit offset is not an integer or out of range");
-            SendIfNotFromTransaction(commandContext, response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
         response = RespBuilder.Integer(DataCache.GetBit(parts[4], offset));
-        SendIfNotFromTransaction(commandContext, response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

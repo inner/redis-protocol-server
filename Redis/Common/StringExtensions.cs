@@ -39,16 +39,51 @@ public static class StringExtensions
         throw new ArgumentException($"Unknown client command: {respTypeString}");
     }
 
+    // Turns one RESP array frame into the flat part list commands index into:
+    // ["*3", "$3", "SET", "$3", "key", "$5", "value"]. Values are cut by their
+    // declared length, so they may contain "\r\n" or be empty.
     public static CommandDetails BuildCommandDetails(this string resp)
     {
-        var commandParts = resp.Split(Constants.VerbatimNewLine)
-            .Where(x => !string.IsNullOrEmpty(x))
-            .ToArray();
+        var position = 0;
+
+        string ReadLine()
+        {
+            var end = resp.IndexOf(Constants.NewLine, position, StringComparison.Ordinal);
+            if (end < 0)
+            {
+                throw new ArgumentException("Incomplete RESP command.");
+            }
+
+            var line = resp[position..end];
+            position = end + Constants.NewLine.Length;
+            return line;
+        }
+
+        var header = ReadLine();
+        if (!header.StartsWith('*') || !int.TryParse(header.AsSpan(1), out var count) || count < 1)
+        {
+            throw new ArgumentException("Expected a RESP array command.");
+        }
+
+        var commandParts = new List<string> { header };
+        for (var i = 0; i < count; i++)
+        {
+            var lengthLine = ReadLine();
+            if (!lengthLine.StartsWith('$') || !int.TryParse(lengthLine.AsSpan(1), out var length) ||
+                length < 0 || position + length > resp.Length)
+            {
+                throw new ArgumentException("Expected a RESP bulk string argument.");
+            }
+
+            commandParts.Add(lengthLine);
+            commandParts.Add(resp.Substring(position, length));
+            position += length + Constants.NewLine.Length;
+        }
 
         return new CommandDetails
         {
-            CommandCount = int.Parse(commandParts[0].Replace("*", string.Empty)),
-            CommandParts = commandParts,
+            CommandCount = count,
+            CommandParts = commandParts.ToArray(),
             Resp = resp,
             RespType = commandParts[2].ToCommandType(),
             FromTransaction = false
@@ -71,13 +106,17 @@ public static class StringExtensions
         return result;
     }
     
+    // The wire encoding is Latin-1, not UTF-8: each byte is one char, so RESP
+    // lengths (byte counts) match string lengths and binary values such as
+    // bitmaps round-trip unchanged. UTF-8 text from clients is simply carried
+    // as its raw bytes.
     public static byte[] AsBytes(this string value)
     {
-        return Encoding.UTF8.GetBytes(value);
+        return Encoding.Latin1.GetBytes(value);
     }
     
     public static string AsString(this byte[] value)
     {
-        return Encoding.UTF8.GetString(value);
+        return Encoding.Latin1.GetString(value);
     }
 }

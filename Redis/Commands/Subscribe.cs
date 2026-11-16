@@ -28,7 +28,7 @@ public class Subscribe : Base
         sb.Append(RespBuilder.Integer(commandContext.Subscriptions.Count));
         
         var resp = sb.ToString();
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         
         return Task.FromResult(resp);
     }

@@ -39,7 +39,7 @@ public class Info : Base
         var infoValue = string.Join('\n', infoValues.Select(x => $"{x.Key}:{x.Value}"));
         var response = RespBuilder.BulkString(infoValue);
 
-        commandContext.Socket.SendCommand(response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

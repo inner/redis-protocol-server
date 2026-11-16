@@ -7,7 +7,8 @@ namespace Redis.Commands;
 public class Discard : Base
 {
     protected override string Name => nameof(Discard);
-    public override bool CanBePropagated => true;
+    // Transactions reach replicas as one block sent by EXEC.
+    public override bool CanBePropagated => false;
 
     protected override Task<string> ExecuteCore(CommandContext commandContext)
     {
@@ -25,7 +26,7 @@ public class Discard : Base
             result = RespBuilder.Error("DISCARD without MULTI");
         }
 
-        commandContext.Socket.SendCommand(result);
+        Reply(commandContext, result);
         return Task.FromResult(result);
     }
 }

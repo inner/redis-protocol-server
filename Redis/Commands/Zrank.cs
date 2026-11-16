@@ -22,7 +22,7 @@ public class Zrank : Base
             ? RespBuilder.Null()
             : RespBuilder.Integer(result.Value);
         
-        commandContext.Socket.SendCommand(resp);
+        Reply(commandContext, resp);
         return Task.FromResult(resp);
     }
 }

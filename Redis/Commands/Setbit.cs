@@ -20,7 +20,7 @@ public class Setbit : Base
         if (parts.Length < 9)
         {
             response = RespBuilder.Error("wrong number of arguments for 'setbit' command");
-            commandContext.Socket.SendCommand(response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
@@ -29,21 +29,21 @@ public class Setbit : Base
         if (!long.TryParse(parts[6], out var offset) || offset < 0 || offset > MaxOffset)
         {
             response = RespBuilder.Error("bit offset is not an integer or out of range");
-            SendIfNotFromTransaction(commandContext, response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
         if (parts[8] is not ("0" or "1"))
         {
             response = RespBuilder.Error("bit is not an integer or out of range");
-            SendIfNotFromTransaction(commandContext, response);
+            Reply(commandContext, response);
             return Task.FromResult(response);
         }
 
         var original = DataCache.SetBit(key, offset, parts[8] == "1" ? 1 : 0);
 
         response = RespBuilder.Integer(original);
-        SendIfNotFromTransaction(commandContext, response);
+        Reply(commandContext, response);
         return Task.FromResult(response);
     }
 }

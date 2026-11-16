@@ -74,6 +74,9 @@ string? ReadOption(string name)
     return index != -1 && index + 1 < programArgs.Length ? programArgs[index + 1] : null;
 }
 
+// Password this replica sends to a password-protected master.
+ServerInfo.ServerRuntimeContext.MasterAuth = ReadOption("masterauth");
+
 var aof = ServerInfo.ServerRuntimeContext.Aof;
 aof.AppendOnly = ReadOption("appendonly") ?? aof.AppendOnly;
 aof.AppendDirName = ReadOption("appenddirname") ?? aof.AppendDirName;
