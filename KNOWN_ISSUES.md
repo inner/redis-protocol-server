@@ -29,6 +29,9 @@ Last updated: 2026-11-16.
 | `SET` on a replica never replied to a normal client; unknown `SET` options were ignored | Replies; unknown options return `syntax error` |
 | Nested `MULTI` returned `OK` | Returns `MULTI calls can not be nested` |
 | A replica that went away could fail the client's write while propagating | Propagation errors are logged, not returned |
+| `BLPOP`: one push woke every blocked client and all but one got a null reply; `BLPOP` with a timeout slept the full timeout even when data arrived | Each pushed element goes to one waiter, oldest first; others stay blocked; timed waits wake on push |
+| `LPOP` of the last element left an empty list behind | Emptied lists are deleted |
+| `WAIT` stalled with many replicas: blocking socket reads and a busy-wait loop starved the thread pool | Connections read asynchronously, replica fan-out is inline, `WAIT` yields while waiting |
 | Container tests failed instead of skipping without Docker | `[DockerFact]` skips them |
 | Test cluster treated replicas as ready before they listened (flaky tests) | Each node must answer `PING` first |
 | StackExchange.Redis tests needed a reduced "proxy" configuration because of the pipelining bug | Tests use the client's default configuration |
@@ -39,7 +42,7 @@ Last updated: 2026-11-16.
 - Bare `COMMAND` and `COMMAND INFO` are not supported.
 - A replica that cannot complete its handshake (e.g. wrong `--masterauth`) exits instead of retrying.
 - `SET ... PX` / `PSETEX` are logged to the AOF with a relative TTL, so replayed keys live longer than intended (Redis logs `PXAT`).
-- `BLPOP` inside `MULTI` blocks instead of behaving like `LPOP`; a client that disconnects while blocked in `BLPOP` can still consume a pushed element.
+- `BLPOP` inside `MULTI` blocks instead of behaving like `LPOP`; a client that disconnects while blocked in `BLPOP` can still take a pushed element.
 - `SET` options `NX`, `XX`, `GET`, `KEEPTTL`, `EXAT`, `PXAT` are not supported.
 - Inline commands do not support quoted arguments.
 - `EXISTS` and `KEYS` count keys whose TTL has passed but which were not read since.
