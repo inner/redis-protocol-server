@@ -285,68 +285,82 @@ public static class DataCache
 
     public static int Rpush(string listKey, params string[] listValues)
     {
-        var list = Fetch(listKey)?.Deserialize<List<string>>() ?? [];
-        list.AddRange(listValues);
-
-        var serializedList = JsonSerializer.Serialize(list);
-        Write(listKey, serializedList);
-
-        if (!Waiters.TryRemove(listKey, out var queue))
+        lock (ListLock)
         {
-            return list.Count;
-        }
+            var list = Fetch(listKey)?.Deserialize<List<string>>() ?? [];
+            list.AddRange(listValues);
+            Write(listKey, JsonSerializer.Serialize(list));
 
-        if (queue.TryDequeue(out var first))
-        {
-            first.TrySetResult(serializedList);
+            // The reply is the length after the push, before blocked
+            // clients take elements, as in Redis.
+            var length = list.Count;
+            ServeWaiters(listKey, list);
+            return length;
         }
-
-        while (queue.TryDequeue(out var other))
-        {
-            other.TrySetResult("[]");
-        }
-
-        return list.Count;
     }
 
     public static int Lpush(string listKey, params string[] listValues)
     {
-        var listItem = Fetch(listKey);
-        List<string> list = [];
-        var reversed = listValues.Reverse();
-
-        if (string.IsNullOrEmpty(listItem))
+        lock (ListLock)
         {
-            list.AddRange(reversed);
-            return CompleteLpush(listKey, list);
-        }
+            var list = Fetch(listKey)?.Deserialize<List<string>>() ?? [];
+            list.InsertRange(0, listValues.Reverse());
+            Write(listKey, JsonSerializer.Serialize(list));
 
-        list = listItem.Deserialize<List<string>>() ?? [];
-        list.InsertRange(0, reversed);
-        return CompleteLpush(listKey, list);
+            var length = list.Count;
+            ServeWaiters(listKey, list);
+            return length;
+        }
     }
 
-    private static int CompleteLpush(string listKey, List<string> list)
+    // ==========================================================================
+    // Blocking pops
+    // ==========================================================================
+
+    // List reads and writes that interact with BLPOP waiters run under one
+    // lock, so a push and a waiter registering cannot miss each other.
+    private static readonly object ListLock = new();
+
+    // Hands the list's first elements to blocked clients, oldest first, one
+    // element each. Waiters without an element stay blocked. A waiter that
+    // already timed out refuses the element (TrySetResult fails) and the
+    // element goes to the next one.
+    // TODO: a client that disconnects while blocked still takes an element.
+    private static void ServeWaiters(string listKey, List<string> list)
     {
-        var serializedList = JsonSerializer.Serialize(list);
-        Write(listKey, serializedList);
-
-        if (!Waiters.TryRemove(listKey, out var queue))
+        if (!Waiters.TryGetValue(listKey, out var queue))
         {
-            return list.Count;
+            return;
         }
 
-        if (queue.TryDequeue(out var first))
+        var served = false;
+        while (list.Count > 0 && queue.TryDequeue(out var waiter))
         {
-            first.TrySetResult(serializedList);
+            if (waiter.TrySetResult(list[0]))
+            {
+                list.RemoveAt(0);
+                served = true;
+            }
         }
 
-        while (queue.TryDequeue(out var other))
+        if (queue.IsEmpty)
         {
-            other.TrySetResult("[]");
+            Waiters.TryRemove(listKey, out _);
         }
 
-        return list.Count;
+        if (!served)
+        {
+            return;
+        }
+
+        if (list.Count == 0)
+        {
+            Remove(listKey);
+        }
+        else
+        {
+            Write(listKey, JsonSerializer.Serialize(list));
+        }
     }
 
     public static IList<string> Lrange(string listKey, int start, int stop)
@@ -389,6 +403,14 @@ public static class DataCache
 
     public static string[] Lpop(string listKey, int? count = null)
     {
+        lock (ListLock)
+        {
+            return LpopUnlocked(listKey, count);
+        }
+    }
+
+    private static string[] LpopUnlocked(string listKey, int? count)
+    {
         var listItem = Fetch(listKey);
 
         if (string.IsNullOrEmpty(listItem))
@@ -415,45 +437,7 @@ public static class DataCache
             list.RemoveRange(0, itemsToRemove);
         }
 
-        Write(listKey, JsonSerializer.Serialize(list));
-        return values;
-    }
-
-    public static async Task<string[]> Blpop(string listKey, double timeout = 0.0)
-    {
-        string? listItems;
-
-        if (timeout == 0)
-        {
-            var tcs = new TaskCompletionSource<string>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
-
-            Waiters.GetOrAdd(listKey, _ =>
-                    new ConcurrentQueue<TaskCompletionSource<string>>())
-                .Enqueue(tcs);
-
-            listItems = Fetch(listKey) ?? await tcs.Task;
-        }
-        else
-        {
-            await Task.Delay(TimeSpan.FromSeconds(timeout));
-            listItems = Fetch(listKey);
-        }
-
-        if (string.IsNullOrEmpty(listItems))
-        {
-            return [];
-        }
-
-        var list = listItems.Deserialize<List<string>>() ?? [];
-        if (list.Count == 0)
-        {
-            return [];
-        }
-
-        var value = list[0];
-        list.RemoveAt(0);
-
+        // An emptied list is deleted, as in Redis.
         if (list.Count == 0)
         {
             Remove(listKey);
@@ -463,7 +447,41 @@ public static class DataCache
             Write(listKey, JsonSerializer.Serialize(list));
         }
 
-        return [listKey, value];
+        return values;
+    }
+
+    // Pops immediately when the list has data, otherwise blocks until a push
+    // hands this client an element, or until the timeout (0 = forever).
+    public static async Task<string[]> Blpop(string listKey, double timeout = 0.0)
+    {
+        TaskCompletionSource<string> waiter;
+
+        lock (ListLock)
+        {
+            var popped = Lpop(listKey);
+            if (popped.Length > 0)
+            {
+                return [listKey, popped[0]];
+            }
+
+            waiter = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Waiters.GetOrAdd(listKey, _ => new ConcurrentQueue<TaskCompletionSource<string>>())
+                .Enqueue(waiter);
+        }
+
+        if (timeout > 0)
+        {
+            var finished = await Task.WhenAny(waiter.Task, Task.Delay(TimeSpan.FromSeconds(timeout)));
+
+            // Cancelling fails if a push handed over an element in the
+            // meantime; then that element is ours.
+            if (finished != waiter.Task && waiter.TrySetCanceled())
+            {
+                return [];
+            }
+        }
+
+        return [listKey, await waiter.Task];
     }
 
     public static int Zadd(string key, double score, string member)
