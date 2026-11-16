@@ -1,62 +1,17 @@
-## Redis-inspired RESP protocol server (C#)
-
-- Implemented an in-memory data store using the RESP protocol, inspired by Redis
-- Built custom protocol parsing, command execution, and in-memory data structures
-- Developed as part of hands-on systems programming practice (Codecrafters)
-
-## Authorship note
-
-The core server implementation was developed without AI assistance as part of Codecrafters practice.
-Some later non-implementation work, specifically parts of the automated test suite and documentation, was created or expanded with AI assistance.
-
-This repository contains a Redis-inspired server written in C#.
-
-This README is intentionally Docker-first and `redis-cli`-first. You do not need a local .NET SDK to try the server. If you have Docker installed, you can build the image, start a master with replicas, and copy/paste the examples below exactly as written.
-
-## Scope And Limitations
-
-This is not a full Redis implementation, and it is not a complete RESP-compatible drop-in replacement for real Redis.
-
-- Only a subset of Redis commands is implemented
-- Only a subset of RESP-driven client behavior has been exercised
-- In practice, the supported surface is closer to a partial Redis-inspired server than full Redis command compatibility
-
-The examples in this README focus on the command set that is currently implemented and tested. Outside of that surface, behavior may be unsupported, incomplete, or intentionally simplified.
-
-## Implementation Notes
-
-The active server path is currently a straightforward `TcpListener` / `TcpClient` / `NetworkStream` implementation. It is functional, but it is not especially performance-oriented.
-
-**This codebase is also intentionally not a polished architecture-heavy implementation. It prioritizes learning and directness over layered interfaces, deep abstractions, and framework-style structure.**
-
-- The current runtime path performs more allocations than necessary
-- It relies heavily on string-based parsing and reconstruction
-- It does not use a Linux-specific eventing model such as `epoll` behind the scenes
-- It should be viewed as a learning-oriented server implementation first, not a production-tuned Redis clone
-
-The repository also contains code under [Redis/Sockets](Redis/Sockets) that is not part of the active runtime path today. That code represents an experimental direction toward a lower-allocation, more asynchronous transport layer. The intention there is to have a foundation for a future refactor if the server is pushed further toward performance work.
-
-The RDB support is also intentionally very limited at the moment. The reader under [Redis/Rdb](Redis/Rdb) is a bare-bones loader rather than a full Redis RDB implementation.
-
-- It mainly supports loading simple string values
-- It understands only a narrow subset of RDB opcodes and data types
-- It should be treated as minimal persistence/bootstrap support, not broad Redis dump compatibility
-
-## Prerequisites
-
-- Docker
-
 ## Build The Image
-
-Run this once from the repository root:
 
 ```console
 $ docker build -t codecrafters-redis-csharp .
 ```
 
-## Start A Master And Two Replicas
+## Run Locally Without Docker
 
-Create a private Docker network and start one master plus two replicas:
+```console
+$ ./your_program.sh --port 6380
+$ ./your_program.sh --port 6381 --replicaof "localhost 6380"
+```
+
+## Start A Master And Two Replicas
 
 ```console
 $ docker network create codecrafters-redis-net
@@ -65,115 +20,36 @@ $ docker run -d --name redis-replica-1 --network codecrafters-redis-net -p 6381:
 $ docker run -d --name redis-replica-2 --network codecrafters-redis-net -p 6382:6380 codecrafters-redis-csharp --replicaof "redis-master 6380"
 ```
 
-## Optional Shell Helpers
-
-The helper snippets below are optional. They make the examples much shorter, but they are shell-specific:
-
-- `bash`
-- `zsh`
-- `fish`
-
-If you do not want shell-specific setup, you can still run the long-form `docker run ... redis-cli ...` commands directly.
+## Shell Helpers
 
 ### bash / zsh
 
-Paste this snippet into every `bash` or `zsh` shell you want to use for the examples. It runs `redis-cli` from the official Redis Docker image, so you do not need a local Redis installation either.
-
-```sh
-NET=codecrafters-redis-net
-MASTER=redis-master
-REPLICA1=redis-replica-1
-REPLICA2=redis-replica-2
-
-rcli() {
-  docker run --rm --network "$NET" redis:7-alpine redis-cli --raw "$@"
-}
-
-mcli() {
-  rcli -h "$MASTER" -p 6380 "$@"
-}
-
-r1cli() {
-  rcli -h "$REPLICA1" -p 6380 "$@"
-}
-
-r2cli() {
-  rcli -h "$REPLICA2" -p 6380 "$@"
-}
-
-master_shell() {
-  docker run --rm -it --network "$NET" redis:7-alpine redis-cli --raw -h "$MASTER" -p 6380
-}
-
-master_logs() {
-  docker logs -f "$MASTER"
-}
-
-replica1_logs() {
-  docker logs -f "$REPLICA1"
-}
-
-replica2_logs() {
-  docker logs -f "$REPLICA2"
-}
+```console
+$ source scripts/redis-helpers.sh
 ```
 
 ### fish
 
-If you use `fish`, use this version instead:
-
-```fish
-set -gx NET codecrafters-redis-net
-set -gx MASTER redis-master
-set -gx REPLICA1 redis-replica-1
-set -gx REPLICA2 redis-replica-2
-
-function rcli
-    docker run --rm --network "$NET" redis:7-alpine redis-cli --raw $argv
-end
-
-function mcli
-    rcli -h "$MASTER" -p 6380 $argv
-end
-
-function r1cli
-    rcli -h "$REPLICA1" -p 6380 $argv
-end
-
-function r2cli
-    rcli -h "$REPLICA2" -p 6380 $argv
-end
-
-function master_shell
-    docker run --rm -it --network "$NET" redis:7-alpine redis-cli --raw -h "$MASTER" -p 6380
-end
-
-function master_logs
-    docker logs -f "$MASTER"
-end
-
-function replica1_logs
-    docker logs -f "$REPLICA1"
-end
-
-function replica2_logs
-    docker logs -f "$REPLICA2"
-end
+```console
+$ source scripts/redis-helpers.fish
 ```
 
-The helpers use `redis-cli --raw` on purpose. That keeps array and pub/sub output easy to copy, but it also means a Redis null reply appears as an empty line.
+### Logs
 
-You can also inspect container logs with:
-
-- `master_logs`
-- `replica1_logs`
-- `replica2_logs`
+```console
+$ master_logs
+$ replica1_logs
+$ replica2_logs
+```
 
 ## Smoke Test
 
 ```console
 $ mcli PING
 PONG
+
+$ mcli ECHO hello
+hello
 
 $ mcli INFO replication
 role:master
@@ -202,6 +78,9 @@ $ mcli EXISTS greeting
 $ mcli TYPE greeting
 string
 
+$ mcli STRLEN greeting
+5
+
 $ mcli INCR page-views
 1
 
@@ -215,16 +94,10 @@ $ mcli GET temp-key
 short
 ```
 
-Wait a moment, then:
-
 ```console
 $ mcli GET temp-key
 
 ```
-
-That empty output line is the Redis null reply.
-
-Delete a key:
 
 ```console
 $ mcli DEL greeting
@@ -233,8 +106,6 @@ $ mcli DEL greeting
 $ mcli EXISTS greeting
 0
 ```
-
-Pattern matching:
 
 ```console
 $ mcli SET demo:key:one 1
@@ -248,9 +119,75 @@ demo:key:one
 demo:key:two
 ```
 
-## Replication And WAIT
+## Bitmaps
 
-Write on the master, then read from the replicas:
+```console
+$ mcli SETBIT flags 7 1
+0
+
+$ mcli SETBIT flags 0 1
+0
+
+$ mcli GETBIT flags 7
+1
+
+$ mcli GETBIT flags 3
+0
+
+$ mcli STRLEN flags
+1
+
+$ mcli BITCOUNT flags
+2
+```
+
+```console
+$ mcli SET bits-a abc
+OK
+
+$ mcli SET bits-b abd
+OK
+
+$ mcli BITCOUNT bits-a
+10
+
+$ mcli BITCOUNT bits-a 1 -1
+7
+
+$ mcli BITOP AND bits-and bits-a bits-b
+3
+
+$ mcli GET bits-and
+ab`
+
+$ mcli BITOP OR bits-or bits-a bits-b
+3
+
+$ mcli GET bits-or
+abg
+
+$ mcli BITOP XOR bits-xor bits-a bits-b
+3
+
+$ mcli BITCOUNT bits-xor
+3
+
+$ mcli BITOP NOT bits-not bits-a
+3
+
+$ mcli BITCOUNT bits-not
+14
+```
+
+```console
+$ r1cli GETBIT flags 7
+1
+
+$ r1cli GET bits-and
+ab`
+```
+
+## Replication And WAIT
 
 ```console
 $ mcli SET shared-key replicated
@@ -263,16 +200,12 @@ $ r2cli GET shared-key
 replicated
 ```
 
-Ask the master to wait until both replicas acknowledge the write:
-
 ```console
 $ mcli WAIT 2 5000
 2
 ```
 
 ## Lists
-
-Push and inspect a list:
 
 ```console
 $ mcli LPUSH tasks write-docs review-pr merge
@@ -294,8 +227,6 @@ review-pr
 write-docs
 ```
 
-Right-push keeps append order:
-
 ```console
 $ mcli RPUSH queue one two three
 3
@@ -305,8 +236,6 @@ one
 two
 three
 ```
-
-Replication also works for list mutations:
 
 ```console
 $ mcli RPUSH replicated-list one two three
@@ -325,15 +254,11 @@ three
 
 ## BLPOP With Two Terminals
 
-Paste the helper snippet into both terminals first.
-
 **Terminal 1**
 
 ```console
 $ mcli BLPOP jobs 0
 ```
-
-The command blocks until another client pushes a value.
 
 **Terminal 2**
 
@@ -351,15 +276,9 @@ build-readme
 
 ## Transactions With One Interactive Session
 
-`MULTI` / `EXEC` / `DISCARD` are connection-scoped, so use a persistent `redis-cli` session.
-
-Start an interactive shell:
-
 ```console
 $ master_shell
 ```
-
-Then paste these commands:
 
 ```console
 MULTI
@@ -369,8 +288,6 @@ EXEC
 GET tx-counter
 ```
 
-Expected output:
-
 ```console
 OK
 QUEUED
@@ -379,8 +296,6 @@ OK
 2
 2
 ```
-
-Discard a transaction:
 
 ```console
 MULTI
@@ -389,8 +304,6 @@ DISCARD
 GET tx-discarded
 ```
 
-Expected output:
-
 ```console
 OK
 QUEUED
@@ -398,11 +311,67 @@ OK
 
 ```
 
-That empty output line is the Redis null reply.
+## WATCH With Two Terminals
+
+```console
+$ mcli SET balance 100
+OK
+```
+
+**Terminal 1**
+
+```console
+$ master_shell
+```
+
+```console
+WATCH balance
+MULTI
+INCR balance
+```
+
+```console
+OK
+OK
+QUEUED
+```
+
+**Terminal 2**
+
+```console
+$ mcli SET balance 500
+OK
+```
+
+**Back in Terminal 1**
+
+```console
+EXEC
+GET balance
+```
+
+```console
+
+500
+```
+
+```console
+WATCH balance
+UNWATCH
+MULTI
+INCR balance
+EXEC
+```
+
+```console
+OK
+OK
+OK
+QUEUED
+501
+```
 
 ## Streams
-
-Append entries:
 
 ```console
 $ mcli XADD sensor-stream "*" temperature 21
@@ -411,8 +380,6 @@ $ mcli XADD sensor-stream "*" temperature 21
 $ mcli XADD sensor-stream "1760000000001-*" temperature 22
 1760000000001-1
 ```
-
-Read a range:
 
 ```console
 $ mcli XRANGE sensor-stream - +
@@ -423,8 +390,6 @@ temperature
 temperature
 22
 ```
-
-Read entries after a starting ID:
 
 ```console
 $ mcli XREAD STREAMS sensor-stream 0-0
@@ -438,8 +403,6 @@ temperature
 ```
 
 ## Blocking XREAD With Two Terminals
-
-Paste the helper snippet into both terminals first.
 
 **Terminal 1**
 
@@ -465,8 +428,6 @@ temperature
 
 ## Sorted Sets
 
-Add members with scores:
-
 ```console
 $ mcli ZADD leaderboard 100 alice
 1
@@ -477,8 +438,6 @@ $ mcli ZADD leaderboard 200 bob
 $ mcli ZADD leaderboard 150 charlie
 1
 ```
-
-Inspect ordering:
 
 ```console
 $ mcli ZRANGE leaderboard 0 -1
@@ -496,8 +455,6 @@ $ mcli ZCARD leaderboard
 3
 ```
 
-Remove a member:
-
 ```console
 $ mcli ZREM leaderboard alice
 1
@@ -506,8 +463,6 @@ $ mcli ZRANGE leaderboard 0 -1
 charlie
 bob
 ```
-
-Replication also works for sorted-set writes:
 
 ```console
 $ mcli ZADD replicated-zset 1 alpha
@@ -525,25 +480,44 @@ alpha
 bravo
 ```
 
+## Geospatial
+
+```console
+$ mcli GEOADD places 13.361389 38.115556 Palermo
+1
+
+$ mcli GEOADD places 15.087269 37.502669 Catania
+1
+
+$ mcli GEODIST places Palermo Catania
+166274.1516
+
+$ mcli GEOPOS places Palermo
+13.361389338970184
+38.1155563954963
+
+$ mcli GEOSEARCH places FROMLONLAT 15 37 BYRADIUS 100 km
+Catania
+
+$ mcli GEOSEARCH places FROMLONLAT 15 37 BYRADIUS 200 km
+Palermo
+Catania
+
+$ mcli GEOSEARCH places FROMLONLAT 15 37 BYRADIUS 200000 ft
+Catania
+```
+
 ## Pub/Sub With Two Terminals
 
-Paste the helper snippet into both terminals first.
-
 **Terminal 1**
-
-Start an interactive subscriber:
 
 ```console
 $ master_shell
 ```
 
-Then paste:
-
 ```console
 SUBSCRIBE events
 ```
-
-Expected output:
 
 ```console
 subscribe
@@ -566,18 +540,192 @@ events
 hello
 ```
 
-To unsubscribe in Terminal 1:
-
 ```console
 UNSUBSCRIBE events
 ```
-
-Expected output:
 
 ```console
 unsubscribe
 events
 0
+```
+
+## Configuration
+
+```console
+$ mcli CONFIG GET dir
+dir
+/app
+
+$ mcli CONFIG GET dbfilename
+dbfilename
+master6380.rdb
+
+$ mcli CONFIG GET appendonly
+appendonly
+no
+
+$ mcli CONFIG GET appenddirname
+appenddirname
+appendonlydir
+
+$ mcli CONFIG GET appendfilename
+appendfilename
+appendonly.aof
+
+$ mcli CONFIG GET appendfsync
+appendfsync
+everysec
+```
+
+## Command Docs
+
+```console
+$ mcli COMMAND DOCS SET
+SET
+summary
+Sets the string value of a key, ignoring its type. The key is created if it doesn't exist.
+usage #1
+redis-cli SET key1 val1
+usage #2
+redis-cli SET key1 val1 PX 5000
+```
+
+```console
+$ mcli COMMAND DOCS
+```
+
+## ACL And AUTH
+
+**Terminal 1**
+
+```console
+$ master_shell
+```
+
+```console
+ACL WHOAMI
+ACL GETUSER default
+ACL SETUSER default >s3cret
+ACL GETUSER default
+```
+
+```console
+default
+flags
+nopass
+passwords
+
+OK
+flags
+
+passwords
+1ec1c26b50d5d3c58d9583181af8076655fe00756bf7285940ba3670f99fcba0
+```
+
+**Terminal 2**
+
+```console
+$ mcli ACL WHOAMI
+NOAUTH Authentication required.
+
+$ mcli GET greeting
+NOAUTH Authentication required.
+
+$ mcli AUTH default wrong
+WRONGPASS invalid username-password pair or user is disabled.
+
+$ mcli -a s3cret --no-auth-warning ACL WHOAMI
+default
+```
+
+```console
+$ master_shell
+```
+
+```console
+AUTH default s3cret
+ACL WHOAMI
+```
+
+```console
+OK
+default
+```
+
+## AOF Persistence
+
+```console
+$ docker volume create redis-aof-data
+$ docker run -d --name redis-aof --network codecrafters-redis-net -v redis-aof-data:/data codecrafters-redis-csharp --dir /data --appendonly yes
+```
+
+```console
+$ rcli -h redis-aof -p 6380 CONFIG GET appendonly
+appendonly
+yes
+
+$ rcli -h redis-aof -p 6380 SET persisted-key survives-restart
+OK
+
+$ rcli -h redis-aof -p 6380 RPUSH persisted-list a b c
+3
+
+$ rcli -h redis-aof -p 6380 INCR persisted-counter
+1
+
+$ docker exec redis-aof ls /data/appendonlydir
+appendonly.aof.1.incr.aof
+appendonly.aof.manifest
+
+$ docker exec redis-aof cat /data/appendonlydir/appendonly.aof.manifest
+file appendonly.aof.1.incr.aof seq 1 type i
+```
+
+```console
+$ docker restart redis-aof
+
+$ rcli -h redis-aof -p 6380 GET persisted-key
+survives-restart
+
+$ rcli -h redis-aof -p 6380 LRANGE persisted-list 0 -1
+a
+b
+c
+
+$ rcli -h redis-aof -p 6380 GET persisted-counter
+1
+```
+
+```console
+$ docker run -d --name redis-aof-always --network codecrafters-redis-net codecrafters-redis-csharp --appendonly yes --appendfsync always --appenddirname my-aof --appendfilename data.aof
+
+$ rcli -h redis-aof-always -p 6380 CONFIG GET appendfsync
+appendfsync
+always
+
+$ rcli -h redis-aof-always -p 6380 SET k v
+OK
+
+$ docker exec redis-aof-always ls my-aof
+data.aof.1.incr.aof
+data.aof.manifest
+```
+
+## Load An RDB File
+
+```console
+$ docker volume create redis-rdb-data
+$ docker run --rm -v redis-rdb-data:/data redis:7-alpine sh -c 'redis-server --dir /data --dbfilename dump.rdb --daemonize yes && sleep 1 && redis-cli SET rdb-key from-rdb && redis-cli SAVE && redis-cli SHUTDOWN NOSAVE'
+$ docker run -d --name redis-rdb --network codecrafters-redis-net -v redis-rdb-data:/data codecrafters-redis-csharp --dir /data --dbfilename dump.rdb
+```
+
+```console
+$ rcli -h redis-rdb -p 6380 KEYS "*"
+rdb-key
+
+$ rcli -h redis-rdb -p 6380 GET rdb-key
+from-rdb
 ```
 
 ## Stop The Servers
@@ -594,14 +742,11 @@ $ docker start redis-master redis-replica-1 redis-replica-2
 
 ## Clean Up Everything
 
-Remove the containers and the network:
-
 ```console
-$ docker rm -f redis-master redis-replica-1 redis-replica-2
+$ docker rm -f redis-master redis-replica-1 redis-replica-2 redis-aof redis-aof-always redis-rdb
+$ docker volume rm redis-aof-data redis-rdb-data
 $ docker network rm codecrafters-redis-net
 ```
-
-Optionally remove the built image too:
 
 ```console
 $ docker image rm codecrafters-redis-csharp

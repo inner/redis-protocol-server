@@ -17,7 +17,30 @@ public class Geosearch : Base
         var longitude = double.Parse(commands[8]);
         var latitude = double.Parse(commands[10]);
         var radius = double.Parse(commands[14]);
-        
+
+        // Distances are computed in meters, so the radius is converted from
+        // its unit first. Factors match the ones Redis uses.
+        // TODO: only FROMLONLAT + BYRADIUS is supported (no FROMMEMBER/BYBOX).
+        double? metersPerUnit = commands.Length > 16
+            ? commands[16].ToLowerInvariant() switch
+            {
+                "m" => 1,
+                "km" => 1000,
+                "mi" => 1609.34,
+                "ft" => 0.3048,
+                _ => null
+            }
+            : 1;
+
+        if (metersPerUnit is null)
+        {
+            var error = RespBuilder.Error("unsupported unit provided. please use M, KM, FT, MI");
+            commandContext.Socket.SendCommand(error);
+            return Task.FromResult(error);
+        }
+
+        radius *= metersPerUnit.Value;
+
         var result = DataCache.Geosearch(key, longitude, latitude, radius);
         
         var resp = RespBuilder.InitArray(result.Count);

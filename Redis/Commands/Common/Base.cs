@@ -1,4 +1,5 @@
 ﻿using Redis.Aof;
+using Redis.Cache;
 using Redis.Common;
 
 namespace Redis.Commands.Common;
@@ -27,6 +28,20 @@ public abstract class Base
                 
                 return string.Empty;
             }
+        }
+
+        // Once the default user has a password, a connection must AUTH before
+        // running anything else. The replication stream from a master is
+        // trusted, as is the replica handshake.
+        // TODO: real Redis also requires replicas to authenticate (masterauth).
+        if (ServerRuntimeContext.DefaultUserAuthenticated &&
+            !commandContext.IsReplicationStream &&
+            !AllowedWithoutAuthentication.Contains(commandContext.CommandDetails.RespType) &&
+            !DataCache.IsConnectionAuthenticated(commandContext.Socket))
+        {
+            commandContext.Socket.SendCommand(
+                RespBuilder.Error("NOAUTH Authentication required.", includeErrPrefix: false));
+            return string.Empty;
         }
 
         if (!IsSupportedOnCurrentNodeRole())
@@ -110,6 +125,14 @@ public abstract class Base
         commandContext.Socket.SendCommand(RespBuilder.SimpleString("QUEUED"));
         return true;
     }
+
+    private static readonly RespType[] AllowedWithoutAuthentication =
+    [
+        RespType.Auth,
+        RespType.Quit,
+        RespType.Replconf,
+        RespType.Psync
+    ];
 
     private static readonly RespType[] AllowedWhenInSubscribeMode =
     [

@@ -13,7 +13,10 @@ public static class DataCache
     private static readonly ConcurrentDictionary<string, ConcurrentQueue<TaskCompletionSource<string>>> Waiters = new();
     private static ConcurrentDictionary<string, List<Socket>> Subscriptions { get; } = new();
     private static ConcurrentDictionary<string, string> UserPasswords { get; } = new();
-    private static ConcurrentDictionary<string, Socket> AuthenticatedConnections { get; } = new();
+    // Keyed by connection, not by username: several connections may be
+    // authenticated as the same user at once.
+    // TODO: entries are never removed when a connection closes.
+    private static ConcurrentDictionary<Socket, string> AuthenticatedConnections { get; } = new();
 
     // Every keyspace mutation goes through these two helpers so that WATCH can
     // detect that a key was touched, even if it was later set back to the
@@ -56,29 +59,17 @@ public static class DataCache
     
     public static void AddAuthenticatedConnection(string username, Socket socket)
     {
-        AuthenticatedConnections.AddOrUpdate(
-            username,
-            socket,
-            (_, _) => socket);
+        AuthenticatedConnections[socket] = username;
     }
-    
-    public static void RemoveAuthenticatedConnection(string username)
-    {
-        AuthenticatedConnections.TryRemove(username, out _);
-    }
-    
+
     public static bool IsConnectionAuthenticated(Socket socket)
     {
-        return AuthenticatedConnections.Values
-            .Any(s => s == socket);
+        return AuthenticatedConnections.ContainsKey(socket);
     }
-    
+
     public static string? GetAuthenticatedUsername(Socket socket)
     {
-        var kvp = AuthenticatedConnections
-            .FirstOrDefault(x => x.Value == socket);
-        
-        return kvp.Key;
+        return AuthenticatedConnections.TryGetValue(socket, out var username) ? username : null;
     }
 
     public static void AddSubscription(string channel, Socket socket)
