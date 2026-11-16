@@ -142,37 +142,57 @@ public sealed class RespReader(Stream stream)
     private int end;
 
     // Returns the next frame, or null once the peer has closed the connection.
-    public string? ReadFrame()
+    public string? ReadFrame() => ReadFrameAsync().GetAwaiter().GetResult();
+
+    // Waiting for data is asynchronous so an idle connection does not hold a
+    // thread-pool thread; with many idle replicas, blocking reads starved the
+    // pool and stalled WAIT.
+    public async Task<string?> ReadFrameAsync()
     {
         while (true)
         {
-            var available = buffer.AsSpan(start, end - start);
-
-            if (available.Length > 0 && available[0] != (byte)'*' && available[0] != (byte)'$' &&
-                available[0] != (byte)'+' && available[0] != (byte)'-' && available[0] != (byte)':')
+            var frame = TryTakeFrame();
+            if (frame == string.Empty)
             {
-                var inline = TryTakeInline(available);
-                if (inline != null)
-                {
-                    return inline;
-                }
-            }
-            else if (available.Length > 0)
-            {
-                var length = RespParser.MeasureFrame(available);
-                if (length > 0)
-                {
-                    var frame = Encoding.Latin1.GetString(available[..length]);
-                    start += length;
-                    return frame;
-                }
+                continue; // blank inline line, nothing to run
             }
 
-            if (!Fill())
+            if (frame != null)
+            {
+                return frame;
+            }
+
+            if (!await FillAsync())
             {
                 return null;
             }
         }
+    }
+
+    // Takes one complete frame from the buffer, or returns null when more
+    // bytes are needed. Kept synchronous: spans cannot live in async methods.
+    private string? TryTakeFrame()
+    {
+        var available = buffer.AsSpan(start, end - start);
+        if (available.Length == 0)
+        {
+            return null;
+        }
+
+        if (available[0] is not ((byte)'*' or (byte)'$' or (byte)'+' or (byte)'-' or (byte)':'))
+        {
+            return TryTakeInline(available);
+        }
+
+        var length = RespParser.MeasureFrame(available);
+        if (length == 0)
+        {
+            return null;
+        }
+
+        var frame = Encoding.Latin1.GetString(available[..length]);
+        start += length;
+        return frame;
     }
 
     // Inline commands are split on whitespace and re-encoded as a RESP array,
@@ -195,14 +215,16 @@ public sealed class RespReader(Stream stream)
         start += newline + 1;
 
         var arguments = line.Split([' ', '\t'], StringSplitOptions.RemoveEmptyEntries);
+        // A blank line has nothing to run; an empty string tells the caller
+        // to read on.
         return arguments.Length == 0
-            ? ReadFrame() // blank line: nothing to run, read on
+            ? string.Empty
             : RespBuilder.ArrayFromCommands(arguments);
     }
 
     // Reads more bytes, compacting or growing the buffer first. Returns false
     // at end of stream.
-    private bool Fill()
+    private async Task<bool> FillAsync()
     {
         if (start > 0)
         {
@@ -216,7 +238,7 @@ public sealed class RespReader(Stream stream)
             Array.Resize(ref buffer, buffer.Length * 2);
         }
 
-        var read = stream.Read(buffer, end, buffer.Length - end);
+        var read = await stream.ReadAsync(buffer.AsMemory(end, buffer.Length - end));
         if (read == 0)
         {
             return false;

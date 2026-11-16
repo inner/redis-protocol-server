@@ -27,6 +27,10 @@ public class Wait : Base
             {
                 break;
             }
+
+            // Yield instead of spinning, so this wait does not occupy a
+            // thread the replicas' ACK handlers need.
+            await Task.Delay(1);
         }
 
         var acksReceived = ServerInfo.Replication.ReplicaAcksReceived == 0

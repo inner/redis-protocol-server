@@ -29,28 +29,26 @@ public class ServerRuntimeContext
     public AofOptions Aof { get; } = new();
     public int ConnectedReplicasCount => Replicas.Count(x => x.Value.Connected);
 
-    public static async Task ExecuteOnReplicas(string resp)
+    // Sends inline rather than via Task.Run: a send only copies into the
+    // socket buffer, and depending on free pool threads stalled WAIT when many
+    // replicas were connected.
+    public static Task ExecuteOnReplicas(string resp)
     {
-        var connectedReplicas = ServerInfo.ServerRuntimeContext.Replicas
-            .Where(x => x.Value.Connected);
+        foreach (var replica in ServerInfo.ServerRuntimeContext.Replicas.Where(x => x.Value.Connected))
+        {
+            // A replica that went away must not fail the client's command; its
+            // entry is removed when its connection handler exits.
+            try
+            {
+                replica.Value.SendCommand(resp);
+            }
+            catch (Exception ex) when (ex is SocketException or ObjectDisposedException)
+            {
+                Console.WriteLine($"Failed to propagate to replica {replica.Key}: {ex.Message}");
+            }
+        }
 
-        // A replica that went away must not fail the client's command; its
-        // entry is removed when its connection handler exits.
-        var tasks = connectedReplicas
-            .Select(replica =>
-                Task.Run(() =>
-                {
-                    try
-                    {
-                        replica.Value.SendCommand(resp);
-                    }
-                    catch (Exception ex) when (ex is SocketException or ObjectDisposedException)
-                    {
-                        Console.WriteLine($"Failed to propagate to replica {replica.Key}: {ex.Message}");
-                    }
-                }));
-
-        await Task.WhenAll(tasks);
+        return Task.CompletedTask;
     }
 
     public static bool DefaultUserAuthenticated => DataCache.DefaultUserExists();

@@ -77,7 +77,7 @@ public abstract class NodeBase(IPAddress localAddress, int port, ReceiverBase re
                 string? resp;
                 try
                 {
-                    resp = reader.ReadFrame();
+                    resp = await reader.ReadFrameAsync();
                 }
                 catch (RespParser.ProtocolException ex)
                 {
