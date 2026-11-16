@@ -406,3 +406,7 @@ ASALocalRun/
 
 SESSION.md
 .codex
+
+# Local scratch output
+/tmp/
+tmp_*.txt
